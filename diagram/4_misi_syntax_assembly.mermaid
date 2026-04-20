@@ -1,0 +1,50 @@
+sequenceDiagram
+    autonumber
+    actor Siswa
+    participant View as Tampilan Browser (Alpine.js)
+    participant Ctrl as MisiController
+    participant DB as Database & Models
+
+    rect rgb(30, 41, 59)
+    note right of Siswa: FASE 1: PERSIAPAN MISI (SERVER)
+    Siswa->>View: Buka halaman /misi/level/{id}
+    View->>Ctrl: Request halaman misi
+    
+    Ctrl->>DB: Ambil data Misi, Kunci Jawaban, & Pengecoh
+    DB-->>Ctrl: Return data misi
+    
+    Ctrl->>Ctrl: Ekstrak & Acak blok jawaban (Tokenize)
+    Ctrl-->>View: Render UI + Kirim blok acak (JSON lokal)
+    end
+
+    rect rgb(15, 23, 42)
+    note right of Siswa: FASE 2: PERAKITAN RUMUS (CLIENT-SIDE)
+    loop Proses Menyusun Logika
+        Siswa->>View: Tarik (Drag) blok ke Kotak Rakitan
+        View->>View: Perbarui posisi blok secara visual
+    end
+    end
+
+    rect rgb(30, 41, 59)
+    note right of Siswa: FASE 3: VERIFIKASI RUMUS (AJAX / SERVER)
+    Siswa->>View: Klik "Verifikasi Rakitan"
+    View->>Ctrl: Kirim teks rumus rakitan siswa (POST)
+    
+    Ctrl->>DB: Ambil/Buat riwayat percobaan (Tabel Progress)
+    Ctrl->>Ctrl: Bersihkan spasi & simbol string (Normalisasi)
+    
+    alt [Rumus 100% Cocok Kunci Jawaban]
+        Ctrl->>Ctrl: Kalkulasi Penalti XP (Jika attempts > 3)
+        Ctrl->>DB: Status = 'Completed' & Update XP Global
+        
+        Ctrl-->>View: JSON Berhasil + URL Level Berikutnya
+        View-->>Siswa: Notifikasi Sukses & Pindah Halaman
+        
+    else [Rumus Salah / Komponen Kurang]
+        Ctrl->>DB: Tambah jumlah percobaan (attempts + 1)
+        Ctrl->>Ctrl: Analisis kesalahan untuk Pesan Bantuan
+        
+        Ctrl-->>View: JSON Gagal + Pesan Bantuan Spesifik
+        View-->>Siswa: Layar bergetar. Tetap di halaman untuk revisi.
+    end
+    end

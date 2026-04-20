@@ -1,0 +1,45 @@
+sequenceDiagram
+    autonumber
+    actor Siswa
+    participant View as Tampilan Browser (Alpine.js)
+    participant Ctrl as MateriController
+    participant DB as Database & Models
+
+    rect rgb(30, 41, 59)
+    note right of Siswa: FASE 1: PERSIAPAN DATA (SERVER)
+    Siswa->>View: Buka halaman /materi/{id}
+    View->>Ctrl: Request halaman simulasi
+    
+    Ctrl->>DB: Tarik struktur Materi, Step, dan Hotspot
+    Ctrl->>DB: Catat otomatis kehadiran siswa (Completion)
+    DB-->>Ctrl: Return data lengkap
+    
+    Ctrl-->>View: Render HTML + Kirim Data JSON (Lokal)
+    end
+
+    rect rgb(15, 23, 42)
+    note right of Siswa: FASE 2: SIMULASI LOKAL (CLIENT-SIDE / BEBAS LAG)
+    
+    loop Selama Siswa Aktif Mengeklik
+        Siswa->>View: Klik area/titik target pada gambar
+        
+        alt Klik Tepat Sasaran & Sesuai Urutan
+            View->>View: Catat state "Sudah Diklik"
+            View-->>Siswa: Munculkan Panel Analisis Logika & Video
+        else Klik Area yang Salah / Tidak Urut
+            View-->>Siswa: Abaikan klik (Tunggu sampai benar)
+        end
+    end
+    
+    note right of Siswa: FASE 3: PINDAH TAHAP / SELESAI
+    Siswa->>View: Klik "Lanjut Langkah Berikutnya"
+    
+    alt Masih Ada Step Tersisa
+        View->>View: Ganti gambar latar simulasi secara instan
+        View-->>Siswa: Tampilkan instruksi tahap selanjutnya
+    else Step Terakhir Telah Dikerjakan
+        View-->>Siswa: Pop-up Javascript "Modul Selesai!"
+        View->>Ctrl: Redirect otomatis (window.location)
+        Ctrl-->>View: Kembali ke Beranda Materi (materi.index)
+    end
+    end

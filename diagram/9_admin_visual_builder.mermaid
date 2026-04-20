@@ -1,0 +1,35 @@
+sequenceDiagram
+    autonumber
+    actor Admin
+    participant UI as Visual Builder (Editor)
+    participant Ctrl as AdminMissionController
+    participant Step as MissionStep Model
+    participant Hot as MissionHotspot Model
+
+    Admin->>UI: Buka Builder untuk Misi Terpilih
+    UI->>Ctrl: GET /admin/missions/{id}/steps
+    Ctrl-->>UI: Return Daftar Step & Image Assets
+    
+    rect rgb(240, 240, 240)
+    note over Admin,Hot: Loop: Pembuatan Step-by-Step
+    loop Setiap Langkah Simulasi (Sequence)
+        Admin->>UI: Upload/Pilih Background Image (Step Image)
+        Admin->>UI: Tentukan Koordinat Klik (x, y) pada Gambar
+        Admin->>UI: Input Instruksi & Pesan Feedback
+        
+        Admin->>UI: Klik "Simpan Langkah"
+        UI->>Ctrl: POST /admin/missions/{id}/steps
+        
+        Ctrl->>Step: create(mission_id, step_image, order)
+        Step-->>Ctrl: Return $stepId
+        
+        Ctrl->>Hot: create(step_id, x_percent, y_percent, instruction)
+        Hot-->>Ctrl: Hotspot Terikat ke Step
+        
+        Ctrl-->>UI: Success (Update Storyboard Preview)
+        UI-->>Admin: Render Halaman Berikutnya (Step Baru)
+    end
+    end
+
+    Admin->>UI: Klik "Finalize Mission"
+    UI-->>Admin: Misi Siap Dikerjakan Siswa

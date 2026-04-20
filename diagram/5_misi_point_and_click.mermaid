@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor Siswa
+    participant View as Browser (Alpine.js)
+    participant Ctrl as MisiController
+    participant DB as Database & Models
+
+    rect rgb(30, 41, 59)
+    note right of Siswa: FASE 1: AMBIL DATA (SERVER)
+    Siswa->>View: Buka halaman misi
+    View->>Ctrl: GET /misi/{id}
+    Ctrl->>DB: Ambil struktur Step & Hotspot
+    Ctrl-->>View: Kirim data JSON ke Alpine.js
+    end
+
+    rect rgb(15, 23, 42)
+    note right of Siswa: FASE 2: SIMULASI LOKAL (CLIENT)
+    loop Selama Misi Berlangsung
+        Siswa->>View: Klik pada gambar simulasi
+        alt Klik Benar
+            View->>View: Simpan progres & Tampilkan feedback
+        else Klik Salah
+            View->>View: Attempts + 1 (Potong XP jika > 3 kali)
+            View-->>Siswa: Animasi Shake & Update Skor UI
+        end
+        opt Ganti Step
+            Siswa->>View: Klik "Lanjut" ke gambar berikutnya
+        end
+    end
+    end
+
+    rect rgb(30, 41, 59)
+    note right of Siswa: FASE 3: SIMPAN HASIL (AJAX)
+    Siswa->>View: Klik "Selesaikan Misi"
+    View->>Ctrl: POST total attempts ke Server
+    note over Ctrl: Skor = MaxXP - Penalti (5% per error > 3)
+    Ctrl->>DB: Update Skor & Sinkronkan XP Global
+    Ctrl-->>View: JSON Sukses & Redirect
+    View-->>Siswa: Misi Selesai!
+    end
