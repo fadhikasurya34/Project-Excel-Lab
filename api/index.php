@@ -1,6 +1,6 @@
 <?php
 
-// 1. Paksa penggunaan direktori /tmp untuk semua cache di lingkungan Vercel
+// 1. Paksa penggunaan direktori /tmp untuk semua cache
 putenv('VIEW_COMPILED_PATH=/tmp');
 putenv('APP_CONFIG_CACHE=/tmp/config.php');
 putenv('APP_EVENTS_CACHE=/tmp/events.php');
@@ -18,17 +18,21 @@ require __DIR__ . '/../vendor/autoload.php';
 // 3. Boot Application
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// 4. Paksa Laravel untuk menggunakan path /tmp pada instance aplikasi
+// 4. PAKSA PATH PUBLIC (Kunci perbaikan Vite & Logo)
+// Kita beri tahu Laravel bahwa folder public ada satu tingkat di atas folder api
+$app->instance('path.public', __DIR__ . '/../public');
+
+// 5. Paksa Laravel menggunakan /tmp untuk storage
 $app->useStoragePath('/tmp');
 
-// 5. Handle Request
+// 6. Handle Request
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 
 $response = $kernel->handle(
     $request = Request::capture()
 );
 
-// 6. Send Response
+// 7. Send Response
 $response->send();
 
 $kernel->terminate($request, $response);
