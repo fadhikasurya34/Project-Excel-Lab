@@ -1,21 +1,22 @@
 <?php
 
-use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// 1. Paksa Laravel buat pake folder /tmp (Satu-satunya tempat yang boleh ditulis di Vercel)
+// 1. MUAT AUTOLOADER (Ini wajib nomor satu!)
+require __DIR__.'/../vendor/autoload.php';
+
+// 2. JALANKAN BOOTSTRAP LARAVEL
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
+// 3. PAKSA STORAGE KE /TMP (Khusus Vercel)
 $app->useStoragePath('/tmp');
 
-// 2. Pastikan folder cache view ada di /tmp agar tidak error "view does not exist"
+// 4. PASTIKAN FOLDER VIEWS ADA (Biar nggak Error 500)
 if (!is_dir('/tmp/framework/views')) {
     mkdir('/tmp/framework/views', 0755, true);
 }
 
-// 3. Jalankan Autoload & Handle Request
-require __DIR__.'/../vendor/autoload.php';
-
+// 5. TANGANI REQUEST
 $app->handleRequest(Request::capture());
