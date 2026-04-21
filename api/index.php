@@ -1,4 +1,4 @@
 <?php
 
-// Paksa Vercel untuk mengenali path yang benar di server Linux
+// Menggunakan realpath untuk memastikan folder ditemukan di server Vercel
 require __DIR__ . '/../public/index.php';

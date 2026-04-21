@@ -3,7 +3,8 @@
     "outputDirectory": "public",
     "functions": {
         "api/*.php": {
-            "runtime": "vercel-php@0.7.1"
+            "runtime": "vercel-php@0.7.1",
+            "includeFiles": ["public/**", "bootstrap/**", "config/**", "database/**", "resources/**", "routes/**", "vendor/**"]
         }
     },
     "routes": [
