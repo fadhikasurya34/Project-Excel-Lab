@@ -71,7 +71,7 @@ class User extends Authenticatable
         if ($myPos === false || $this->total_xp <= 0) {
             return [
                 'title' => 'Excel Apprentice', 
-                'medal' => 'apprentice.png',
+                'medal' => 'newbie.png',
                 'color' => 'slate'
             ];
         }
