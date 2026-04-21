@@ -107,8 +107,8 @@
         <nav class="shrink-0 h-[72px] flex items-center justify-between px-4 md:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b-2 border-slate-200/50 dark:border-slate-800/50 z-40">
             <div class="flex items-center">
                 <div class="relative flex items-center justify-center mr-3">
-                    <img src="{{ asset('images/Excel.png') }}" class="h-10 md:h-12 w-auto block dark:hidden">
-                    <img src="{{ asset('images/Excel 2.png') }}" class="h-10 md:h-12 w-auto hidden dark:block">
+                    <img src="{{ asset('images/excel.png') }}" class="h-10 md:h-12 w-auto block dark:hidden">
+                    <img src="{{ asset('images/excel 2.png') }}" class="h-10 md:h-12 w-auto hidden dark:block">
                 </div>
 
                 @if(View::hasSection('header_left'))
