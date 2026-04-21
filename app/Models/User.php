@@ -71,19 +71,19 @@ class User extends Authenticatable
         if ($myPos === false || $this->total_xp <= 0) {
             return [
                 'title' => 'Excel Apprentice', 
-                'medal' => 'Apprentice.png',
+                'medal' => 'apprentice.png',
                 'color' => 'slate'
             ];
         }
 
         $pos = $myPos + 1;
 
-        if ($pos == 1) return ['title' => 'Grandmaster', 'medal' => 'Rank 1.png', 'color' => 'yellow'];
-        if ($pos == 2) return ['title' => 'Expert', 'medal' => 'Rank 2.png', 'color' => 'slate'];
-        if ($pos == 3) return ['title' => 'Challenger', 'medal' => 'Rank 3.png', 'color' => 'orange'];
-        if ($pos <= 5) return ['title' => 'Pro Practitioner', 'medal' => 'Rank 4-5.png', 'color' => 'emerald'];
-        if ($pos <= 10) return ['title' => 'Elite Scholar', 'medal' => 'Rank 6-10.png', 'color' => 'blue'];
-        if ($pos <= 20) return ['title' => 'Rising Star', 'medal' => 'Rank 11-20.png', 'color' => 'purple'];
+        if ($pos == 1) return ['title' => 'Grandmaster', 'medal' => 'rank 1.png', 'color' => 'yellow'];
+        if ($pos == 2) return ['title' => 'Expert', 'medal' => 'rank 2.png', 'color' => 'slate'];
+        if ($pos == 3) return ['title' => 'Challenger', 'medal' => 'rank 3.png', 'color' => 'orange'];
+        if ($pos <= 5) return ['title' => 'Pro Practitioner', 'medal' => 'rank 4-5.png', 'color' => 'emerald'];
+        if ($pos <= 10) return ['title' => 'Elite Scholar', 'medal' => 'rank 6-10.png', 'color' => 'blue'];
+        if ($pos <= 20) return ['title' => 'Rising Star', 'medal' => 'rank 11-20.png', 'color' => 'purple'];
 
         return ['title' => 'Active Learner', 'medal' => 'Apprentice.png', 'color' => 'slate'];
     }
