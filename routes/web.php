@@ -18,13 +18,6 @@ use App\Http\Controllers\Admin\DashboardController;
 | Web Routes - Virtual Lab Excel
 |--------------------------------------------------------------------------
 */
-Route::get('/clear-gaskeun', function() {
-    \Artisan::call('config:clear');
-    \Artisan::call('cache:clear');
-    \Artisan::call('view:clear');
-    return "Berhasil cuci otak Laravel!";
-});
-
 // --- 1. PUBLIC & AUTHENTICATION ---
 Route::get('/', function () {
     return Auth::check() ? redirect('/dashboard') : view('auth.login');
