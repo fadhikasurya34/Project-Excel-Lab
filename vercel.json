@@ -15,7 +15,6 @@
     "env": {
         "APP_ENV": "production",
         "LOG_CHANNEL": "stderr",
-        "VIEW_COMPILED_PATH": "/tmp",
-        "NODE_VERSION": "20.x"
+        "VIEW_COMPILED_PATH": "/tmp"
     }
 }
