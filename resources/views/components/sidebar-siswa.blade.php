@@ -119,7 +119,7 @@
             <a href="{{ route('misi.index') }}" class="sb-card menu-blue group">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                        <img src="{{ asset('images/XP.png') }}" class="w-7 h-7 object-contain">
+                        <img src="{{ asset('images/xp.png') }}" class="w-7 h-7 object-contain">
                     </div>
                     <div class="text-left">
                         <p class="text-[9px] font-black text-slate-400 uppercase mb-0.5">Learning Power</p>

@@ -8,7 +8,7 @@
     {{-- (Section) MOBILE HEADER--}}
     <div class="lg:hidden bg-white border-b border-slate-100 p-4 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center space-x-3">
-            <img src="{{ asset('images/Excel.png') }}" alt="Logo Excel" class="h-9 w-auto object-contain">
+            <img src="{{ asset('images/excel.png') }}" alt="Logo Excel" class="h-9 w-auto object-contain">
             <span class="font-black text-slate-900 tracking-tight">Virtual Lab</span>
         </div>
         {{-- Burger Menu Toggle --}}
@@ -37,7 +37,7 @@
                 <div class="flex items-center space-x-3">
                     <div class="relative">
                         <div class="absolute -inset-1 bg-indigo-500/10 blur-lg rounded-full"></div>
-                        <img src="{{ asset('images/Excel.png') }}" alt="Logo Excel" class="relative h-12 w-auto object-contain">
+                        <img src="{{ asset('images/excel.png') }}" alt="Logo Excel" class="relative h-12 w-auto object-contain">
                     </div>
                     <div>
                         <h1 class="text-base font-black text-slate-900 tracking-tight leading-none">Admin Panel</h1>
@@ -118,7 +118,7 @@
                     <div class="flex items-center">
                         <div class="shrink-0 flex items-center">
                             <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group">
-                                <img src="{{ asset('images/Excel.png') }}" alt="Logo Excel" class="h-10 w-auto object-contain transition-transform group-hover:scale-110">
+                                <img src="{{ asset('images/excel.png') }}" alt="Logo Excel" class="h-10 w-auto object-contain transition-transform group-hover:scale-110">
                                 <span class="font-black text-xl text-slate-900 tracking-tighter">Virtual Lab</span>
                             </a>
                         </div>

@@ -108,7 +108,7 @@
                 <div class="relative z-10 flex-1 w-full">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 bg-purple-50 dark:bg-purple-900/30 rounded-xl flex items-center justify-center shadow-inner overflow-hidden">
-                            <img src="{{ asset('images/Progres.png') }}" 
+                            <img src="{{ asset('images/progres.png') }}" 
                                 alt="Icon Progres" 
                                 class="w-7 h-7 object-contain drop-shadow-sm">
                         </div>
@@ -157,11 +157,11 @@
                             <div class="w-14 h-14 {{ $isDone ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 border-emerald-100' : 'bg-purple-50 dark:bg-slate-800 text-purple-500 border-purple-100 dark:border-slate-700' }} rounded-[1.5rem] flex items-center justify-center border-2 border-dashed shrink-0 shadow-inner">
 
                                 @if($isDone)
-                                    <img src="{{ asset('images/Checklist.png') }}" 
+                                    <img src="{{ asset('images/checklist.png') }}" 
                                         alt="Status Selesai" 
                                         class="w-10 h-10 object-contain drop-shadow-sm">
                                 @else
-                                    <img src="{{ asset('images/Noprogres.png') }}" 
+                                    <img src="{{ asset('images/noprogres.png') }}" 
                                         alt="Status Belum Mulai" 
                                         class="w-10 h-10 object-contain drop-shadow-sm grayscale opacity-70 dark:grayscale-0 dark:opacity-100">
                                 @endif
