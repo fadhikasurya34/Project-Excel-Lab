@@ -4,30 +4,27 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// 1. Muat Autoload
+// 1. Muat Autoloader
 require __DIR__.'/../vendor/autoload.php';
 
-// 2. Jalankan Bootstrap
+// 2. Jalankan Bootstrap Laravel
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-// 3. PAKSA jalur storage ke /tmp (Satu-satunya folder yang bisa ditulis di Vercel)
+// 3. Atur jalur Storage ke /tmp agar bisa menulis file di Vercel
 $app->useStoragePath('/tmp');
 
-// 4. Pastikan folder pendukung ada di /tmp
-$storageFolders = [
+// 4. Pastikan folder yang dibutuhkan ada di /tmp
+$folders = [
     '/tmp/framework/views',
     '/tmp/framework/sessions',
     '/tmp/framework/cache',
 ];
 
-foreach ($storageFolders as $folder) {
+foreach ($folders as $folder) {
     if (!is_dir($folder)) {
         mkdir($folder, 0755, true);
     }
 }
 
-// 5. Paksa Laravel menggunakan folder view yang baru dibuat
-config(['view.compiled' => '/tmp/framework/views']);
-
-// 6. Jalankan Aplikasi
+// 5. Tangani Permintaan (Request)
 $app->handleRequest(Request::capture());
