@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,8 +12,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Jika berjalan di Vercel
-        if (env('VERCEL_URL')) {
+        // Paksa HTTPS jika di lingkungan Vercel/Produksi
+        if (env('VERCEL_URL') || config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
+
+        // Kode public path yang tadi (biar CSS tetap aman)
+        if (isset($_SERVER['VERCEL_URL'])) {
             $this->app->bind('path.public', function () {
                 return base_path('public');
             });
