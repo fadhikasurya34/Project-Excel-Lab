@@ -139,7 +139,7 @@
         <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-12">
             @php
                 $stats = [
-                    ['label' => 'POIN SAYA', 'val' => number_format(auth()->user()->total_xp), 'icon' => 'XP.png', 'bg' => 'purple', 'sil' => 'XP'],
+                    ['label' => 'POIN SAYA', 'val' => number_format(auth()->user()->total_xp), 'icon' => 'xp.png', 'bg' => 'purple', 'sil' => 'XP'],
                     ['label' => 'GURU', 'val' => explode(' ', $classroom->teacher_name)[0], 'icon' => 'guru.png', 'bg' => 'indigo', 'sil' => 'BOSS'],
                     ['label' => 'POPULASI', 'val' => $classroom->users->count() . ' Siswa', 'icon' => 'kelas.png', 'bg' => 'slate', 'sil' => 'TEAM']
                 ];
