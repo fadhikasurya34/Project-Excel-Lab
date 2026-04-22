@@ -205,6 +205,13 @@
                 </svg>
             </button>
         </div>
+        {{-- KODE SIDEBAR --}}
+        <div class="fixed inset-0 z-[100] pointer-events-none" x-show="sidebarOpen" x-cloak>
+            <div @click="sidebarOpen = false" 
+                x-transition.opacity 
+                class="absolute inset-0 bg-slate-950/60 backdrop-blur-md pointer-events-auto"></div>
+            <x-sidebar-siswa />
+        </div>
     @stack('scripts')
 </body>
 </html>
