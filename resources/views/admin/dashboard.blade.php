@@ -199,16 +199,6 @@
             </a>
         </div>
 
-        {{-- Footer Terminal --}}
-        <footer class="mt-20 py-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between opacity-50 px-2">
-            <div class="text-left leading-tight">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2026 UNNES Informatics Education</p>
-                <p class="text-[9px] font-medium text-slate-400 uppercase mt-1">Penelitian Pengembangan Virtual Lab Excel</p>
-            </div>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Production v1.0</span>
-        </footer>
-    </div>
-
     {{-- (Logic) JavaScript: Engine Rendering Chart Pertumbuhan XP --}}
     <script>
         const ctx = document.getElementById('activityChart').getContext('2d');

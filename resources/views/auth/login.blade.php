@@ -171,7 +171,7 @@
                 <div class="form-content w-full">
                     <div class="form-header mb-6">
                         <h1 class="text-2xl md:text-4xl font-black text-slate-900 dark:text-white uppercase leading-none tracking-tighter">Login</h1>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">KLab Terminal</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Lab Terminal</p>
                     </div>
 
                     <form method="POST" action="{{ route('login') }}" class="space-y-4">
