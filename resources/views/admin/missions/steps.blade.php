@@ -1,5 +1,5 @@
 {{-- 
-    VIEW: Storyboard Prosedur Misi
+    VIEW: Storyboard Prosedur Misi (Cloudinary Ready)
     DATA: $mission, $mission->steps
     LOGIC: Upload langkah misi (Image + Instruction + Cell Target) & Sorting.
 --}}
@@ -68,7 +68,7 @@
 
     <div class="min-h-screen bg-admin p-6 sm:p-10" x-data="{ isUploading: false }">
         
-        {{-- (Notification) Toast System: Feedback sinkronisasi data --}}
+        {{-- (Notification) Toast System --}}
         @if(session('success') || session('error') || session('status'))
             <div x-data="{ show: true, progress: 100 }"
                 x-show="show"
@@ -147,7 +147,7 @@
                             <span x-show="!isUploading">Unggah Langkah Prosedur</span>
                             <span x-show="isUploading" class="flex items-center italic">
                                 <svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                Memproses...
+                                Memproses ke Awan...
                             </span>
                         </button>
                     </form>
@@ -160,7 +160,10 @@
                 <div data-id="{{ $step->id }}" class="admin-card p-6 flex flex-col md:flex-row gap-6 group hover:border-emerald-300 transition-all cursor-move relative overflow-hidden">
                     
                     <div class="w-full md:w-48 h-32 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100 shadow-inner">
-                        <img src="{{ asset('storage/' . $step->step_image) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none">
+                        {{-- UPDATE: Panggil link Cloudinary dengan optimasi W_500 --}}
+                        <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $step->step_image) }}" 
+                            class="w-full h-auto object-contain max-h-[50vh]" 
+                            alt="Langkah {{ $index + 1 }}">
                     </div>
 
                     <div class="flex-1 flex flex-col justify-between">
@@ -183,7 +186,7 @@
                                 </a>
                                 <form action="{{ route('admin.missions.destroy-step', $step->id) }}" method="POST">
                                     @csrf @method('DELETE')
-                                    <button type="submit" onclick="return confirm('Hapus langkah prosedur ini?')" class="btn-action bg-red-50 text-red-500 hover:bg-red-500 hover:text-white">
+                                    <button type="submit" onclick="return confirm('Hapus langkah prosedur ini? Seluruh data cloud akan ikut terhapus.')" class="btn-action bg-red-50 text-red-500 hover:bg-red-500 hover:text-white">
                                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </form>
@@ -201,14 +204,16 @@
             </div>
         </div>
     </div>
-    {{-- Footer Terminal --}}
+
+    {{-- Footer --}}
     <footer class="mt-20 py-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between opacity-50 px-2">
         <div class="text-left leading-tight">
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2026 UNNES Informatics Education</p>
-            <p class="text-[9px] font-medium text-slate-400 uppercase mt-1">Penelitian Pengembangan Virtual Lab Excel</p>
+            <p class="text-[9px] font-medium text-slate-400 uppercase mt-1">Virtual Lab Excel Procedure Builder</p>
         </div>
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Production v1.0</span>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Cloud Storage Enabled</span>
     </footer>
+
     {{-- (Logic) Sortable JS --}}
     <script>
         const el = document.getElementById('sortable-mission-steps');

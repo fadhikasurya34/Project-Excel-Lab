@@ -10,12 +10,14 @@ use App\Models\MissionHotspot;
 use App\Models\Progress;
 use App\Models\ScoresAndRanking;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Api\Upload\UploadApi;
 
 class AdminMissionController extends Controller
 {
-    /** * (View) Dashboard statistik kategori misi dan tipe tantangan 
+    /**
+     * (View) Dashboard statistik kategori misi dan tipe tantangan
      */
     public function index() {
         $categories = Level::whereNotNull('category')
@@ -40,7 +42,8 @@ class AdminMissionController extends Controller
         return view('admin.missions.index', compact('categories', 'missions'));
     }
 
-    /** * (View) Daftar misi per topik + Auto-repair urutan level 
+    /**
+     * (View) Daftar misi per topik + Auto-repair urutan level
      */
     public function listByTopic($category) {
         $rawMissions = Mission::with('level')
@@ -92,7 +95,7 @@ class AdminMissionController extends Controller
     }
 
     /**
-     * (Action) Menghapus seluruh topik beserta level dan misinya
+     * (Action) Menghapus seluruh topik beserta level dan misinya (Cloudinary Sync)
      */
     public function destroyTopic($category) {
         DB::transaction(function () use ($category) {
@@ -106,17 +109,19 @@ class AdminMissionController extends Controller
                 $level->delete();
             }
         });
-        return redirect()->route('admin.missions.index')->with('success', 'Topik dan seluruh isinya berhasil dihapus.');
+        return redirect()->route('admin.missions.index')->with('success', 'Topik dan seluruh aset awan berhasil dihapus.');
     }
 
-    /** * (View) Wizard Step 1: Form Topik Baru
+    /**
+     * (View) Wizard Step 1: Form Topik Baru
      */
     public function create() {
         $allTopics = Level::select('category')->distinct()->pluck('category');
         return view('admin.missions.create', compact('allTopics'));
     }
 
-    /** * (Action) Simpan Step 1 & Lanjut ke Step 2
+    /**
+     * (Action) Simpan Step 1 & Lanjut ke Step 2
      */
     public function store(Request $request) {
         $request->validate([
@@ -134,10 +139,11 @@ class AdminMissionController extends Controller
         });
 
         return redirect()->route('admin.missions.topic', $request->category)
-                        ->with('success', 'Topik berhasil dibuat! Silakan tambah misi di bawah ini.');
+                        ->with('success', 'Topik berhasil dibuat!');
     }
 
-    /** * (View) Wizard Step 2: Form Isi Soal Misi
+    /**
+     * (View) Wizard Step 2: Form Isi Soal Misi
      */
     public function createDetail($level_id) {
         $level = Level::findOrFail($level_id);
@@ -147,13 +153,14 @@ class AdminMissionController extends Controller
             ->whereHas('level', fn($q) => $q->where('category', $category))
             ->get()
             ->groupBy(function($item) {
-                return $item->level->category; // Mengelompokkan berdasarkan nama kategori
+                return $item->level->category;
             });
 
         return view('admin.missions.levels', compact('level', 'groupedLevels'));
     }
 
-    /** * (Action) Simpan Soal Misi Final
+    /**
+     * (Action) Simpan Soal Misi Final
      */
     public function storeDetail(Request $request) {
         $request->validate([
@@ -192,7 +199,8 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Misi ditambahkan.');
     }
 
-    /** * (View) Form Edit Misi
+    /**
+     * (View) Form Edit Misi
      */
     public function edit($id) {
         $mission = Mission::with('level')->findOrFail($id);
@@ -200,7 +208,8 @@ class AdminMissionController extends Controller
         return view('admin.missions.edit', compact('mission', 'allTopics'));
     }
 
-    /** * (Action) Update Informasi Dasar Misi
+    /**
+     * (Action) Update Informasi Dasar Misi
      */
     public function update(Request $request, $id) {
         $mission = Mission::findOrFail($id);
@@ -215,19 +224,22 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Data misi diperbarui.');
     }
 
-    /** * (Action) Hapus Misi Satuan
+    /**
+     * (Action) Hapus Misi Satuan (Cloudinary Sync)
      */
     public function destroy($id) {
         DB::transaction(function () use ($id) {
-            $mission = Mission::with('level', 'steps')->findOrFail($id);
+            $mission = Mission::with('level', 'steps.hotspots')->findOrFail($id);
             $affectedUserIds = Progress::where('mission_id', $id)->pluck('user_id');
+            
             $this->deleteMissionAssets($mission);
+            
             $levelId = $mission->level_id;
             $mission->delete();
             if ($levelId) Level::destroy($levelId);
             foreach ($affectedUserIds as $userId) { $this->recalculateUserTotalXp($userId); }
         });
-        return back()->with('success', 'Misi dihapus.');
+        return back()->with('success', 'Misi dan aset Cloudinary dihapus.');
     }
 
     /**
@@ -238,28 +250,37 @@ class AdminMissionController extends Controller
         return view('admin.missions.steps', compact('mission'));
     }
 
-    /** * (Action) Simpan Langkah Misi Baru
+    /**
+     * (Action) Simpan Langkah Misi Baru (Upload Cloudinary)
      */
     public function storeStep(Request $request, $id) {
         $request->validate(['image' => 'required|image|max:2048', 'instruction' => 'required']);
-        $path = $request->file('image')->store('mission_steps', 'public');
+        
+        $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+        $upload = $uploadApi->upload($request->file('image')->getRealPath(), ['folder' => 'mission_steps']);
 
         MissionStep::create([
             'mission_id' => $id, 
-            'step_image' => $path, 
+            'step_image' => $upload['secure_url'], 
             'instruction' => $request->instruction,
             'key_answer_cell' => $request->key_answer_cell ?? '-', 
             'step_order' => MissionStep::where('mission_id', $id)->count() + 1,
             'target_x' => 0, 'target_y' => 0,
         ]);
-        return back()->with('success', 'Langkah ditambahkan.');
+        return back()->with('success', 'Langkah berhasil diunggah ke awan.');
     }
 
+    /**
+     * (Action) Hapus Langkah Misi (Clean Cloudinary)
+     */
     public function destroyStep($id) {
         $step = MissionStep::findOrFail($id);
-        if ($step->step_image) Storage::disk('public')->delete($step->step_image);
+        if ($step->step_image) {
+            $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+            $uploadApi->destroy($this->getPublicId($step->step_image));
+        }
         $step->delete();
-        return back()->with('success', 'Langkah dihapus.');
+        return back()->with('success', 'Langkah dan gambar di awan dihapus.');
     }
 
     public function reorderSteps(Request $request) {
@@ -287,18 +308,30 @@ class AdminMissionController extends Controller
         } catch (\Exception $e) { return response()->json(['status' => 'error'], 500); }
     }
 
+    /**
+     * (Action) Update Konten Soal & Gambar Utama Misi (Cloudinary Sync)
+     */
     public function updateContent(Request $request, $id) {
         $mission = Mission::findOrFail($id);
         $data = $request->validate([
             'question' => 'required', 'key_answer' => 'required', 
             'distractors' => 'nullable', 'mission_image' => 'nullable|image|max:2048'
         ]);
+
         if ($request->hasFile('mission_image')) {
-            if ($mission->mission_image) Storage::disk('public')->delete($mission->mission_image);
-            $data['mission_image'] = $request->file('mission_image')->store('missions', 'public');
+            $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+            
+            if ($mission->mission_image) {
+                $uploadApi->destroy($this->getPublicId($mission->mission_image));
+            }
+            
+            $upload = $uploadApi->upload($request->file('mission_image')->getRealPath(), ['folder' => 'missions']);
+            
+            $data['mission_image'] = $upload['secure_url']; 
         }
+
         $mission->update($data);
-        return back()->with('success', 'Konten diperbarui.');
+        return back()->with('success', 'Konten misi diperbarui.');
     }
 
     public function builder($stepId) {
@@ -307,22 +340,55 @@ class AdminMissionController extends Controller
         return view('admin.missions.builder', compact('step', 'mission'));
     }
 
+    /**
+     * (Action) Plotting Hotspot & Upload Video (Anti-Nguwer)
+     */
     public function storeHotspot(Request $request) {
-        $request->validate(['step_id' => 'required', 'x_percent' => 'required', 'y_percent' => 'required', 'content' => 'required']);
-        $videoPath = $request->hasFile('video') ? $request->file('video')->store('hotspot_videos', 'public') : null;
-        MissionHotspot::create([
-            'step_id' => $request->step_id, 'x_percent' => $request->x_percent, 'y_percent' => $request->y_percent, 
-            'content' => $request->content, 'video_path' => $videoPath,
-            'order' => MissionHotspot::where('step_id', $request->step_id)->count() + 1
+        $request->validate([
+            'step_id' => 'required', 
+            'x_percent' => 'required', 
+            'y_percent' => 'required', 
+            'content' => 'required',
+            'video' => 'nullable|mimes:mp4,mov,avi|max:10240' // Diperketat 10MB biar gak timeout
         ]);
-        return back()->with('success', 'Titik target dipetakan.');
+        
+        $videoPath = null;
+        if ($request->hasFile('video')) {
+            set_time_limit(300);
+            $config = Configuration::instance(env('CLOUDINARY_URL'));
+            $config->api->uploadTimeout = 300;
+            
+            $uploadApi = new UploadApi($config);
+            $upload = $uploadApi->upload($request->file('video')->getRealPath(), [
+                'folder'        => 'hotspot_videos',
+                'resource_type' => 'video',
+                'chunk_size'    => 6000000
+            ]);
+            $videoPath = $upload['secure_url'];
+        }
+
+        MissionHotspot::create([
+            'step_id'   => $request->step_id, 
+            'x_percent' => $request->x_percent, 
+            'y_percent' => $request->y_percent, 
+            'content'   => $request->content, 
+            'video_path'=> $videoPath,
+            'order'     => MissionHotspot::where('step_id', $request->step_id)->count() + 1
+        ]);
+        return back()->with('success', 'Titik target berhasil dipetakan.');
     }
 
+    /**
+     * (Action) Hapus Hotspot (Hapus Video di Awan)
+     */
     public function destroyHotspot($id) { 
         $hs = MissionHotspot::findOrFail($id);
-        if ($hs->video_path) Storage::disk('public')->delete($hs->video_path);
+        if ($hs->video_path) {
+            $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+            $uploadApi->destroy($this->getPublicId($hs->video_path), ['resource_type' => 'video']);
+        }
         $hs->delete(); 
-        return back()->with('success', 'Titik dihapus.'); 
+        return back()->with('success', 'Titik berhasil dihapus.'); 
     }
 
     public function reorderHotspots(Request $request) {
@@ -334,7 +400,7 @@ class AdminMissionController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    // --- HELPERS ---
+    // --- LOGIKA HELPER ---
 
     private function syncUserXpForMission($missionId) {
         $mission = Mission::findOrFail($missionId);
@@ -349,10 +415,29 @@ class AdminMissionController extends Controller
     }
 
     private function deleteMissionAssets($mission) {
-        if ($mission->mission_image) Storage::disk('public')->delete($mission->mission_image);
-        foreach ($mission->steps as $step) {
-            if ($step->step_image) Storage::disk('public')->delete($step->step_image);
-            foreach ($step->hotspots as $hs) { if ($hs->video_path) Storage::disk('public')->delete($hs->video_path); }
+        $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+
+        if ($mission->mission_image) {
+            $uploadApi->destroy($this->getPublicId($mission->mission_image));
         }
+
+        foreach ($mission->steps as $step) {
+            if ($step->step_image) {
+                $uploadApi->destroy($this->getPublicId($step->step_image));
+            }
+            foreach ($step->hotspots as $hs) { 
+                if ($hs->video_path) {
+                    $uploadApi->destroy($this->getPublicId($hs->video_path), ['resource_type' => 'video']); 
+                }
+            }
+        } 
+    }
+
+    private function getPublicId($url) {
+        $path = parse_url($url, PHP_URL_PATH);
+        $segments = explode('/', $path);
+        $filename = end($segments);
+        $folder = $segments[count($segments)-2];
+        return $folder . '/' . pathinfo($filename, PATHINFO_FILENAME);
     }
 }

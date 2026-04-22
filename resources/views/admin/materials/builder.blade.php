@@ -1,4 +1,4 @@
-{{-- //* (View) Editor Visual Target (Hotspot) */ --}}
+{{-- //* (View) Editor Visual Target (Hotspot) - Cloudinary Version */ --}}
 
 <x-app-layout>
     {{-- //* (Asset) SortableJS untuk manajemen urutan drag & drop */ --}}
@@ -46,7 +46,6 @@
             pointer-events: none;
         }
 
-        /* //* (Fix) Preview Marker: Dipastikan tersembunyi total sebelum interaksi pertama */
         #preview-marker {
             position: absolute;
             width: 32px;
@@ -54,7 +53,7 @@
             background: #818cf8;
             border: 3px solid white;
             border-radius: 9999px;
-            display: none; /* //* Mencegah kemunculan di titik 0,0 (pojok) saat load */
+            display: none; 
             align-items: center;
             justify-content: center;
             transform: translate(-50%, -50%);
@@ -71,7 +70,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 
-    {{-- //* (Notification) Toast System: Feedback sinkronisasi data */ --}}
+    {{-- //* (Notification) Toast System --}}
     @if(session('success') || session('error') || session('status'))
         <div x-data="{ show: true, progress: 100 }"
             x-show="show"
@@ -108,7 +107,7 @@
 
     <div class="min-h-screen bg-admin p-6 sm:p-10">
         
-        {{-- //* (Header) Navigasi Storyboard & Info Langkah */ --}}
+        {{-- //* (Header) --}}
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
             <div>
                 <div class="flex items-center space-x-2 mb-2">
@@ -135,12 +134,13 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
-            {{-- //* (Canvas) Area Interaksi Plotting Koordinat */ --}}
+            {{-- //* Area Interaksi Plotting --}}
             <div class="lg:col-span-8 space-y-4">
                 <div class="canvas-wrapper">
                     <div class="relative w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-100 custom-crosshair shadow-inner" onclick="setPoint(event)">
-                        <img id="canvas" src="{{ asset('storage/' . $step->step_image) }}" 
-                             class="w-full h-auto block pointer-events-none select-none">
+                        {{-- //* UPDATE: Direct Cloudinary URL --}}
+                        <img id="canvas" src="{{ $step->step_image }}" 
+                             class="w-full h-auto block pointer-events-none select-none shadow-sm">
                         
                         <div id="hotspot-container">
                             @if($step->hotspots)
@@ -163,9 +163,8 @@
                 </div>
             </div>
 
-            {{-- //* (Sidebar) Konfigurasi Titik & Form Media */ --}}
+            {{-- //* Sidebar Konfigurasi --}}
             <div class="lg:col-span-4 space-y-6">
-                
                 <div class="admin-card p-8 border-t-4 border-t-indigo-600">
                     <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-6">Konfigurasi Titik</h2>
                     
@@ -188,20 +187,20 @@
                                 <div class="relative overflow-hidden bg-slate-50 border border-dashed border-slate-300 rounded-xl p-4 hover:border-indigo-400 transition-colors">
                                     <input type="file" name="video" class="absolute inset-0 opacity-0 cursor-pointer">
                                     <div class="text-center">
-                                        <p class="text-[10px] font-bold text-indigo-600 uppercase">Upload MP4</p>
+                                        <p class="text-[10px] font-bold text-indigo-600 uppercase">Upload MP4 ke Cloud</p>
                                     </div>
                                 </div>
                             </div>
 
                             <button type="submit" id="save-btn" disabled 
-                                class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg disabled:bg-slate-100 disabled:text-slate-400 hover:bg-slate-800 transition-all">
+                                class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold uppercase text-[10px] tracking-[0.2em] shadow-lg disabled:bg-slate-100 disabled:text-slate-400 hover:bg-slate-800 transition-all active:scale-95">
                                 Simpan Titik Baru
                             </button>
                         </div>
                     </form>
                 </div>
 
-                {{-- //* (List) Urutan Interaksi & Status Media */ --}}
+                {{-- //* Daftar Urutan & Status Media --}}
                 <div class="admin-card p-8">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-slate-800 tracking-tight">Daftar Urutan</h2>
@@ -215,13 +214,13 @@
                                 <div class="w-7 h-7 bg-slate-100 text-slate-500 text-[10px] font-black rounded-lg flex items-center justify-center mr-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                                     {{ $loop->iteration }}
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <p class="text-xs font-bold text-slate-700 truncate capitalize">{{ $hs->content }}</p>
                                     @if($hs->video_path)
                                         <div class="flex items-center mt-1">
                                             <span class="text-[8px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter flex items-center border border-emerald-100">
                                                 <svg class="w-2.5 h-2.5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zm6 2l4 2-4 2V8z"></path></svg>
-                                                Video Active
+                                                Cloud Video
                                             </span>
                                         </div>
                                     @endif
@@ -230,7 +229,7 @@
                             
                             <form action="{{ route('admin.materials.destroy-hotspot', $hs->id) }}" method="POST" class="opacity-0 group-hover:opacity-100 transition-opacity">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="p-2 text-slate-300 hover:text-red-500">
+                                <button type="submit" onclick="return confirm('Hapus titik ini?')" class="p-2 text-slate-300 hover:text-red-500">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
                             </form>
@@ -245,18 +244,18 @@
             </div>
         </div>
 
-        {{-- Footer Terminal --}}
+        {{-- Footer --}}
         <footer class="mt-20 py-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between opacity-50 px-2">
             <div class="text-left leading-tight">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2026 UNNES Informatics Education</p>
-                <p class="text-[9px] font-medium text-slate-400 uppercase mt-1">Penelitian Pengembangan Virtual Lab Excel</p>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">© 2026 UNNES Informatics Education</p>
+                <p class="text-[8px] font-medium text-slate-400 uppercase mt-1">Virtual Lab Excel Visual Builder</p>
             </div>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Production v1.0</span>
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Cloud Sync Active</span>
         </footer>
     </div>
 
     <script>
-        // //* (Logic) SortableJS: Handle reordering via drag-and-drop */
+        // //* (Logic) SortableJS
         const el = document.getElementById('sortable-list');
         if (el) {
             Sortable.create(el, {
@@ -279,7 +278,7 @@
             });
         }
 
-        // //* (Logic) Point Setter: Konversi koordinat klik ke persentase (%) */
+        // //* (Logic) Point Setter
         function setPoint(event) {
             const img = document.getElementById('canvas');
             const previewMarker = document.getElementById('preview-marker');

@@ -61,6 +61,42 @@
     </style>
 
     <div class="min-h-screen bg-admin p-6 sm:p-10">
+
+        {{-- //* (Notification) Toast System: Feedback sinkronisasi data */ --}}
+        @if(session('success') || session('error') || session('status'))
+            <div x-data="{ show: true, progress: 100 }"
+                x-show="show"
+                x-init="let interval = setInterval(() => { progress -= 1; if(progress <= 0) { show = false; clearInterval(interval); } }, 30);"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="translate-y-10 opacity-0 scale-90"
+                x-transition:enter-end="translate-y-0 opacity-100 scale-100"
+                class="fixed bottom-10 right-10 z-[200]">
+                
+                <div class="bg-slate-900 border {{ session('error') ? 'border-red-500/30' : 'border-indigo-500/30' }} p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center space-x-4 min-w-[320px] overflow-hidden relative">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 {{ session('error') ? 'bg-red-600/20' : 'bg-indigo-600/20' }} blur-3xl"></div>
+                    
+                    <div class="flex-shrink-0 w-10 h-10 {{ session('error') ? 'bg-red-600' : 'bg-indigo-600' }} rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            @if(session('error'))
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            @else
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            @endif
+                        </svg>
+                    </div>
+
+                    <div class="flex-1">
+                        <p class="text-[10px] font-black {{ session('error') ? 'text-red-400' : 'text-indigo-400' }} uppercase tracking-[0.2em] leading-none mb-1">System Update</p>
+                        <p class="text-sm font-bold text-white tracking-tight leading-tight">
+                            {{ session('success') ?? session('status') ?? session('error') }}
+                        </p>
+                    </div>
+
+                    <div class="absolute bottom-0 left-0 h-1 {{ session('error') ? 'bg-red-600' : 'bg-indigo-600' }} transition-all ease-linear" :style="'width: ' + progress + '%'"></div>
+                </div>
+            </div>
+        @endif
+
         <div class="max-w-3xl mx-auto">
             
             {{-- (Section) Header & Navigasi --}}

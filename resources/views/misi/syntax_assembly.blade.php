@@ -1,4 +1,4 @@
-{{-- //* (View) Lab Perakitan Rumus (Syntax Assembly) */ --}}
+{{-- //* (View) Lab Perakitan Rumus (Syntax Assembly) - Cloudinary Ready */ --}}
 
 @extends('layouts.siswa')
 
@@ -95,7 +95,6 @@
 @endpush
 
 @section('header_left')
-    {{-- Logic: Jika ada parameter from_task, balik ke detail task. Jika tidak, ke level kategori --}}
     @if(request('from_task'))
         <a href="{{ route('kelas.task.show', request('from_task')) }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-menu-pegas text-slate-600 dark:text-slate-300 shadow-sm">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path d="M15 19l-7-7 7-7" /></svg>
@@ -121,15 +120,13 @@
 @section('content')
 <div x-data="missionEngine()" class="relative h-full">
     
-    {{-- Toast Feedback (Fixed Top-Center) --}}
+    {{-- Toast Feedback --}}
     <div x-show="toast.show" x-cloak x-transition.opacity 
         class="toast-top shadow-xl flex items-center space-x-3" 
         :style="toast.type === 'error' ? 'border-color: #ef4444; border-bottom-color: #b91c1c;' : 'border-color: #10b981; border-bottom-color: #047857;'">
         
         <div class="w-10 h-10 rounded-xl flex items-center justify-center animate-bounce bg-slate-50 dark:bg-slate-900/50 shadow-inner">
-            <img :src="'{{ asset('images') }}/' + toast.icon" 
-                :alt="toast.title" 
-                class="w-7 h-7 object-contain drop-shadow-sm">
+            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-7 h-7 object-contain drop-shadow-sm">
         </div>
         
         <div class="text-left flex-1">
@@ -138,12 +135,14 @@
         </div>
     </div>
 
-    {{-- //* (Modal) Preview skenario layar penuh */ --}}
+    {{-- //* (Modal) Preview skenario layar penuh (Cloudinary Ready) */ --}}
     <div x-show="scenarioMaximized" x-transition.opacity x-cloak class="scenario-modal" @click="scenarioMaximized = false">
         <button class="absolute top-8 right-8 p-3 bg-white/10 hover:bg-red-500 text-white rounded-2xl transition-colors">
             <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
-        <img src="{{ asset('storage/' . $mission->mission_image) }}" class="max-w-full max-h-full object-contain rounded-3xl shadow-2xl border-4 border-white/5">
+        {{-- UPDATE: Langsung panggil link Cloudinary dari database --}}
+        <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $mission->mission_image) }}" 
+             class="max-w-full max-h-full object-contain rounded-3xl shadow-2xl border-4 border-white/5">
     </div>
 
     <template x-if="status === 'wrong'">
@@ -160,7 +159,9 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
                 </button>
                 <div class="overflow-hidden rounded-[2rem] bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800/50 shadow-inner w-full cursor-zoom-in" @click="scenarioMaximized = true">
-                    <img src="{{ asset('storage/' . $mission->mission_image) }}" class="w-full h-auto object-contain max-h-[50vh] lg:max-h-[55vh]" alt="Skenario">
+                    {{-- UPDATE: Langsung panggil link Cloudinary --}}
+                    <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $mission->mission_image) }}" 
+                         class="w-full h-auto object-contain max-h-[50vh] lg:max-h-[55vh]" alt="Skenario">
                 </div>
             </div>
 
@@ -170,7 +171,7 @@
             </div>
         </div>
 
-        {{-- //* (Column) Workspace: Perakitan Rumus & Gudang Komponen */ --}}
+        {{-- //* (Column) Workspace */ --}}
         <div class="scroll-column space-y-6">
             <div class="bg-white dark:bg-slate-900 p-7 rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px] flex flex-col transition-all duration-300" 
                  :class="status === 'wrong' ? 'shake-error shadow-red-100 dark:shadow-none' : ''">
@@ -180,7 +181,6 @@
                     <span class="text-[8px] font-black text-blue-500 uppercase tracking-widest animate-pulse" x-show="answerBox.length > 0">Klik hapus | Geser urutan</span>
                 </div>
 
-                {{-- //* (Dropzone) Area interaksi SortableJS untuk penyusunan token */ --}}
                 <div class="flex items-start gap-3 bg-slate-50 dark:bg-slate-950 rounded-[2.2rem] p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 shadow-inner min-h-[140px] z-10">
                     <span class="text-4xl font-mono font-black text-emerald-500 mt-1 select-none">=</span>
                     <div id="dropzone" class="flex flex-wrap gap-3 items-center flex-grow min-h-[80px]"
@@ -213,7 +213,7 @@
                 </button>
             </div>
 
-            {{-- //* (Inventory) Daftar token yang tersedia untuk digunakan */ --}}
+            {{-- //* (Inventory) */ --}}
             <div class="bg-white dark:bg-slate-900 p-7 rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px]">
                 <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-6">Gudang Komponen</h3>
                 <div class="flex flex-wrap gap-3 justify-center">
@@ -233,7 +233,6 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-    // //* (Engine) Logika utama perakitan sintaks berbasis Alpine.js */
     function missionEngine() {
         return {
             answerBox: [], status: 'idle', hint: '', scenarioMaximized: false,
@@ -242,25 +241,21 @@
             toast: { show: false, message: '', title: '', icon: '', type: 'info' }, 
 
             init() {
-                // //* (Watchers) Sinkronisasi display XP di header */
                 this.$watch('currentPotentialXP', v => { 
                     const el = document.getElementById('header-xp-display');
                     if(el) el.innerText = v;
                 });
             },
 
-            // //* (Trigger) Pemicu notifikasi gamifikasi */
             triggerToast(title, message, icon = 'bintang.png', type = 'info') {
                 this.toast.title = title;
                 this.toast.message = message;
                 this.toast.icon = icon; 
                 this.toast.type = type;
                 this.toast.show = true;
-                
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
 
-            // //* (Parser) Pemecah input string menjadi token terpisah */
             get availableBlocks() {
                 let result = [];
                 this.rawAvailableBlocks.forEach(block => {
@@ -270,7 +265,6 @@
                 return [...new Set(result)].sort();
             },
 
-            // //* (Classify) Pewarnaan tematik berdasarkan tipe blok (Function/Cell/String) */
             getBlockClass(block) {
                 const funcRegex = /^(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT)$/i;
                 const cellRegex = /^[A-Z]+\$?[0-9]+$/i;
@@ -290,7 +284,6 @@
             addToAnswer(block) { this.answerBox.push(block); this.status = 'idle'; this.hint = ''; },
             removeFromAnswer(index) { this.answerBox.splice(index, 1); },
             
-            // //* (Validator) Pengiriman rumus ke server & kalkulasi penalti XP */
             submitSyntax() {
                 if(this.answerBox.length === 0) { 
                     this.status = 'wrong'; 

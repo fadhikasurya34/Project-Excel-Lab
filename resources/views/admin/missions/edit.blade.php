@@ -109,16 +109,6 @@
                     <h1 class="text-3xl font-black text-slate-900 text-header tracking-tight">Editor <span class="text-emerald-600">Konten Misi</span></h1>
                     <p class="text-slate-500 font-medium text-sm mt-1">Konfigurasi aset visual dan logika sintaks untuk tantangan praktikan.</p>
                 </div>
-
-                <div class="flex items-center bg-white p-2 rounded-2xl shadow-sm border border-slate-200 pr-6">
-                    <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold shadow-md">
-                        {{ $step->step_order ?? $mission->id }}
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-[9px] text-slate-400 font-bold uppercase leading-none tracking-widest">Langkah Misi</p>
-                        <p class="text-xs font-bold text-slate-700 mt-1 capitalize">{{ $mission->title }}</p>
-                    </div>
-                </div>
             </div>
 
             {{-- Form Utama --}}
@@ -132,10 +122,9 @@
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 ml-2 text-center">Screenshot Tabel Excel (Skenario Utama)</label>
                         
                         <div class="relative flex-1 rounded-3xl overflow-hidden bg-slate-50 border-2 border-dashed border-slate-200 min-h-[420px] flex items-center justify-center group transition-all hover:border-emerald-300 shadow-inner">
-                            <img id="img-preview" 
-                                 src="{{ $mission->mission_image ? asset('storage/'.$mission->mission_image) : asset('storage/placeholder_excel.png') }}" 
-                                 class="max-w-[92%] max-h-[380px] object-contain transition-all duration-500 rounded-lg {{ $mission->mission_image ? 'opacity-100 shadow-2xl' : 'opacity-30' }}">
-                            
+                        <img id="img-preview" 
+                            src="{{ str_contains($mission->mission_image, 'http') ? $mission->mission_image : asset('storage/' . $mission->mission_image) }}" 
+                            class="max-w-[92%] max-h-[380px] object-contain transition-all duration-500 rounded-lg opacity-100 shadow-2xl">
                             <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-900/5 backdrop-blur-[2px]">
                                 <span class="bg-white px-6 py-2.5 rounded-full text-[10px] font-black text-emerald-600 shadow-xl tracking-[0.2em] uppercase">Ganti Media</span>
                             </div>

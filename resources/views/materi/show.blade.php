@@ -6,14 +6,19 @@
         return [
             'id' => $step->id,
             'instruction' => $step->instruction ?? 'Ikuti instruksi pengerjaan studi kasus pada layar.',
-            'image' => asset('storage/' . $step->step_image),
+            
+            // UPDATE: Langsung ambil URL dari database (Cloudinary)
+            'image' => $step->step_image, 
+            
             'hotspots' => $step->hotspots->sortBy('order')->values()->map(function($hs) {
                 return [
                     'id' => $hs->id, 
                     'x' => $hs->x_percent, 
                     'y' => $hs->y_percent,
                     'content' => $hs->content, 
-                    'video' => $hs->video_path ? asset('storage/' . $hs->video_path) : null
+                    
+                    // UPDATE: Langsung ambil URL Video dari Cloudinary
+                    'video' => $hs->video_path ?: null 
                 ];
             })->toArray()
         ];
@@ -261,13 +266,10 @@
     </div>
 
     {{-- 5. Video Overlay --}}
-    <div x-show="showVideo && activeHotspotData?.video" x-cloak class="video-box-ultra" @mousedown.stop @touchstart.stop>
-        <button @click.stop="showVideo = false" class="absolute top-6 right-6 z-[300] w-12 h-12 bg-red-500 text-white rounded-2xl flex items-center justify-center shadow-2xl active:scale-90 transition-transform">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-
+    <div x-show="showVideo && activeHotspotData?.video" x-cloak class="video-box-ultra">
         <div class="w-full h-full p-4 md:p-8 flex items-center justify-center">
             <div class="w-full max-w-6xl max-h-[85vh] aspect-video rounded-[2.5rem] overflow-hidden border-4 border-slate-800 shadow-2xl bg-black relative">
+                {{-- Alpine.js akan otomatis memutar URL Cloudinary di sini --}}
                 <video :key="activeHotspotData?.video" :src="activeHotspotData?.video" autoplay controls playsinline class="w-full h-full object-contain"></video>
             </div>
         </div>

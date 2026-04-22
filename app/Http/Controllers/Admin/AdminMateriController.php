@@ -8,8 +8,9 @@ use App\Models\MaterialActivity;
 use App\Models\Hotspot;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Cloudinary\Configuration\Configuration; // Import Native Config
+use Cloudinary\Api\Upload\UploadApi; // Import Native Upload
 
 class AdminMateriController extends Controller
 {
@@ -24,7 +25,7 @@ class AdminMateriController extends Controller
         return view('admin.dashboard', compact('stats'));
     }
 
-    /** (View) Menampilkan daftar modul materi beserta jumlah langkahnya */
+    /** (View) Menampilkan daftar modul materi */
     public function index() {
         $materials = Material::withCount('activities')->get();
         return view('admin.materials.index', compact('materials'));
@@ -52,7 +53,7 @@ class AdminMateriController extends Controller
         ]);
 
         return redirect()->route('admin.materials.steps', $material->id)
-                         ->with('success', 'Modul berhasil dibuat. Silakan susun langkah-langkahnya!');
+                         ->with('success', 'Modul berhasil dibuat!');
     }
 
     /** (View) Form edit identitas modul materi */
@@ -75,15 +76,17 @@ class AdminMateriController extends Controller
         return redirect()->route('admin.materials.index')->with('success', 'Identitas modul diperbarui.');
     }
 
-    /** * (Action) Menghapus modul secara total  */
+    /** (Action) Menghapus modul secara total */
     public function destroy($id) {
         DB::transaction(function () use ($id) {
             $material = Material::with('activities.hotspots')->findOrFail($id);
+            $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+
             foreach ($material->activities as $step) {
                 foreach ($step->hotspots as $hs) {
-                    if ($hs->video_path) Storage::disk('public')->delete($hs->video_path);
+                    if ($hs->video_path) $uploadApi->destroy($this->getPublicId($hs->video_path), ['resource_type' => 'video']);
                 }
-                if ($step->step_image) Storage::disk('public')->delete($step->step_image);
+                if ($step->step_image) $uploadApi->destroy($this->getPublicId($step->step_image));
             }
             $material->delete();
         });
@@ -96,18 +99,23 @@ class AdminMateriController extends Controller
         return view('admin.materials.steps', compact('material'));
     }
 
-    /** (Action) Mengunggah gambar langkah baru dan menentukan urutan otomatis */
+    /** (Action) Unggah gambar ke Cloudinary menggunakan Native SDK */
     public function storeStep(Request $request, $id) {
         $request->validate([
             'image'       => 'required|image|max:2048',
             'instruction' => 'nullable'
         ]);
 
-        $path = $request->file('image')->store('materials/steps', 'public');
+        // Inisialisasi Cloudinary secara manual (Bypass Provider yang error)
+        $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+        
+        $upload = $uploadApi->upload($request->file('image')->getRealPath(), [
+            'folder' => 'materials/steps'
+        ]);
 
         MaterialActivity::create([
             'material_id' => $id,
-            'step_image'  => $path,
+            'step_image'  => $upload['secure_url'],
             'instruction' => $request->instruction ?? 'Perhatikan bagian ini.',
             'step_order'  => MaterialActivity::where('material_id', $id)->count() + 1,
         ]);
@@ -128,13 +136,16 @@ class AdminMateriController extends Controller
         }
     }
 
-    /** (Action) Menghapus satu langkah materi beserta file gambarnya */
+    /** (Action) Menghapus satu langkah materi */
     public function destroyStep($id) {
         $step = MaterialActivity::with('hotspots')->findOrFail($id);
+        $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+
         foreach ($step->hotspots as $hs) {
-            if ($hs->video_path) Storage::disk('public')->delete($hs->video_path);
+            if ($hs->video_path) $uploadApi->destroy($this->getPublicId($hs->video_path), ['resource_type' => 'video']);
         }
-        if ($step->step_image) Storage::disk('public')->delete($step->step_image);
+        if ($step->step_image) $uploadApi->destroy($this->getPublicId($step->step_image));
+        
         $step->delete();
         return back()->with('success', 'Langkah dihapus.');
     }
@@ -146,20 +157,36 @@ class AdminMateriController extends Controller
         return view('admin.materials.builder', compact('step', 'material'));
     }
 
-    /** (Action) Menyimpan koordinat hotspot dan mengelola upload video bantuan */
+    /** (Action) Simpan hotspot & upload video ke Cloudinary (Native Chunked) */
     public function storeHotspot(Request $request)
     {
         $request->validate([
             'content'   => 'required',
-            'video'     => 'nullable|mimes:mp4,mov,avi|max:51200',
+            'video'     => 'nullable|mimes:mp4,mov,avi|max:51200', // Max 50MB
             'step_id'   => 'required',
             'x_percent' => 'required',
             'y_percent' => 'required'
         ]);
         
-        $videoPath = $request->hasFile('video') ? $request->file('video')->store('materials/videos', 'public') : null;
+        $videoPath = null;
+        if ($request->hasFile('video')) {
+                set_time_limit(600); 
 
-        // Logika: Menentukan nomor urutan hotspot agar tetap runtut
+                $config = Configuration::instance(env('CLOUDINARY_URL'));
+                
+                $config->api->uploadTimeout = 600;
+                $config->api->connectionTimeout = 600;
+
+                $uploadApi = new UploadApi($config);
+                
+                $upload = $uploadApi->upload($request->file('video')->getRealPath(), [
+                    'folder'        => 'materials/videos',
+                    'resource_type' => 'video',
+                    'async'         => false, 
+                ]);
+                $videoPath = $upload['secure_url'];
+            }
+
         $maxOrder = Hotspot::where('material_activity_id', $request->step_id)->max('order');
         $nextOrder = is_null($maxOrder) ? 
                      Hotspot::where('material_activity_id', $request->step_id)->count() + 1 : 
@@ -175,7 +202,7 @@ class AdminMateriController extends Controller
             'order'                => $nextOrder
         ]);
 
-        return back()->with('success', 'Titik berhasil ditambahkan ke urutan #' . $nextOrder);
+        return back()->with('success', 'Titik interaksi dan video berhasil disimpan!');
     }
 
     /** (Process) Update urutan tampilan hotspot (AJAX) */
@@ -191,11 +218,23 @@ class AdminMateriController extends Controller
         }
     }
 
-    /** (Action) Menghapus titik hotspot dan video yang melampirinya */
+    /** (Action) Menghapus titik hotspot */
     public function destroyHotspot($id) {
         $hotspot = Hotspot::findOrFail($id);
-        if ($hotspot->video_path) Storage::disk('public')->delete($hotspot->video_path);
+        if ($hotspot->video_path) {
+            $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+            $uploadApi->destroy($this->getPublicId($hotspot->video_path), ['resource_type' => 'video']);
+        }
         $hotspot->delete();
         return back()->with('success', 'Titik hotspot dihapus.');
+    }
+
+    /** (Helper) Mengambil Public ID dari URL Cloudinary untuk proses hapus */
+    private function getPublicId($url) {
+        $path = parse_url($url, PHP_URL_PATH);
+        $segments = explode('/', $path);
+        $filename = end($segments);
+        $folder = $segments[count($segments)-3] . '/' . $segments[count($segments)-2];
+        return $folder . '/' . pathinfo($filename, PATHINFO_FILENAME);
     }
 }
