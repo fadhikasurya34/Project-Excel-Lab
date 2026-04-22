@@ -138,7 +138,7 @@
             </a>
 
             {{-- Peringkat Global (Link ke Peringkat) --}}
-            <a href="{{ route('peringkat.show') }}" class="sb-card menu-silver group">
+            <a href="{{ route('peringkat.show', ['type' => 'global']) }}" class="sb-card menu-silver group">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center shrink-0">
                         <img src="{{ asset('images/peringkat.png') }}" class="w-7 h-7 object-contain">
