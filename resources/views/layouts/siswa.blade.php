@@ -103,16 +103,19 @@
 
     <div class="app-wrapper">
         
-        {{-- HEADER--}}
+        {{-- HEADER --}}
         <nav class="shrink-0 h-[72px] flex items-center justify-between px-4 md:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b-2 border-slate-200/50 dark:border-slate-800/50 z-40">
             <div class="flex items-center">
-                <div class="relative flex items-center justify-center mr-3">
+                
+                {{-- LOGO DINAMIS --}}
+                <div class="relative {{ request()->routeIs('dashboard') ? 'flex' : 'hidden md:flex' }} items-center justify-center mr-3">
                     <img src="{{ asset('images/excel.png') }}" class="h-10 md:h-12 w-auto block dark:hidden">
                     <img src="{{ asset('images/excel 2.png') }}" class="h-10 md:h-12 w-auto hidden dark:block">
                 </div>
 
                 @if(View::hasSection('header_left'))
-                    <div class="flex items-center border-l-2 border-slate-200 dark:border-slate-700 pl-4">
+                    {{-- Border kiri dinamis --}}
+                    <div class="flex items-center {{ request()->routeIs('dashboard') ? 'border-l-2' : 'border-l-0 md:border-l-2' }} border-slate-200 dark:border-slate-700 {{ request()->routeIs('dashboard') ? 'pl-4' : 'pl-0 md:pl-4' }}">
                         @yield('header_left')
                     </div>
                 @endif
