@@ -17,10 +17,12 @@
         .profile-ring { animation: spin-slow 12s linear infinite; }
         @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- 1. CHUNKY SILVER GLOW CARD --- */
+        /* --- 1. CHUNKY METALLIC CARD --- */
         .sb-card {
             border-radius: 1.5rem;
-            border: 2px solid #f1f5f9;
+            border: 2px solid #e2e8f0;
+            /* Warna Dasar Silver Chrome */
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
             border-bottom: 6px solid #cbd5e1;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
@@ -28,43 +30,49 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #ffffff;
+            /* Efek Inner Light (Cahaya di pinggir dalam) */
+            box-shadow: inset 0 2px 4px rgba(255,255,255,1);
         }
 
         .dark .sb-card { 
-            background: #1e293b; 
+            background: linear-gradient(145deg, #1e293b, #0f172a); 
             border-color: #334155; 
             border-bottom-color: #020617; 
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
         }
         
         .sb-card:active { transform: translateY(4px) scale(0.98); border-bottom-width: 2px; }
 
-        /* --- 2. EFEK SILVER MENYALA (GLOW) --- */
+        /* --- 2. EFEK SILVER MENYALA (HIGH GLOSS) --- */
         .menu-silver:hover { 
-            border-color: #cbd5e1; 
-            border-bottom-color: #94a3b8; 
-            background: #f8fafc; 
-            /* Efek Cahaya Silver */
-            box-shadow: 0 15px 30px -5px rgba(148, 163, 184, 0.4); 
-            transform: translateY(-5px); 
+            border-color: #f1f5f9;
+            border-bottom-color: #cbd5e1;
+            /* Cahaya Putih Terang (Light Effect) */
+            background: linear-gradient(145deg, #ffffff, #e2e8f0);
+            box-shadow: 
+                0 20px 30px -10px rgba(148, 163, 184, 0.5),
+                inset 0 0 15px rgba(255,255,255,1); 
+            transform: translateY(-6px); 
         }
 
         .dark .menu-silver:hover { 
-            background: #2d3a4f !important; 
-            border-color: #64748b;
-            border-bottom-color: #1e293b;
-            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.6);
+            background: linear-gradient(145deg, #334155, #1e293b) !important; 
+            border-color: #94a3b8;
+            border-bottom-color: #0f172a;
+            /* Glow Biru/Putih dingin khas metal di kegelapan */
+            box-shadow: 
+                0 20px 40px -10px rgba(0, 0, 0, 0.7),
+                0 0 15px rgba(148, 163, 184, 0.2);
         }
 
-        /* Khusus Logout (Tetap Red Alert) */
+        /* Khusus Logout */
         .menu-red:hover { 
             border-color: #fecaca; 
             border-bottom-color: #ef4444; 
-            background: #fef2f2; 
+            background: linear-gradient(145deg, #fff1f2, #fee2e2); 
             box-shadow: 0 15px 30px -5px rgba(239, 68, 68, 0.3);
-            transform: translateY(-5px); 
+            transform: translateY(-6px); 
         }
-        .dark .menu-red:hover { background: rgba(239, 68, 68, 0.1) !important; }
 
         .font-game { font-family: 'Bangers', cursive; }
     </style>
