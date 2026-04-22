@@ -13,7 +13,7 @@
     
     /* //* (Theme) */
     .card-purple:hover { border-color: #a855f7; box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.4); }
-    .card-emerald:hover { border-color: #10b981; box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.4); }
+    .card-amber:hover { border-color: #f59e0b; box-shadow: 0 20px 40px -10px rgba(245, 158, 11, 0.4); }
 
     /* //* (Dekorasi) Teks latar belakang gaya game */
     .card-silhouette {
@@ -101,7 +101,9 @@
 
                 <div class="flex-1 flex flex-col items-start gap-4 lg:gap-5 z-10">
                     <div class="w-12 h-12 lg:w-14 lg:h-14 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center text-2xl lg:text-3xl shadow-inner border border-purple-100 dark:border-purple-800">
-                        👥
+                        <img src="{{ asset('images/kelas.png') }}" 
+                            alt="Icon Peringkat Kelas" 
+                            class="w-10 h-10 lg:w-12 lg:h-12 object-contain drop-shadow-[0_4px_6px_rgba(168,85,247,0.3)]">
                     </div>
                     
                     <div>
@@ -119,27 +121,29 @@
             </div>
 
             {{-- //* (Action) Peringkat seluruh server sistem --}}
-            <div class="glass-card card-emerald bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 lg:p-8 border-b-[8px] flex flex-col items-start relative overflow-hidden h-full shadow-sm hover:-translate-y-2 active:scale-[0.98]">
+            <div class="glass-card card-amber bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 lg:p-8 border-b-[8px] flex flex-col items-start relative overflow-hidden h-full shadow-sm hover:-translate-y-2 active:scale-[0.98]">
                 
-                <div class="card-silhouette">GLOBAL</div>
+                {{-- Siluet Latar Belakang --}}
+                <div class="card-silhouette text-amber-500/10">RANK</div>
 
                 <div class="flex-1 flex flex-col items-start gap-4 lg:gap-5 z-10">
-                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-emerald-50 dark:bg-emerald-900/30 rounded-2xl flex items-center justify-center shadow-inner border border-emerald-100 dark:border-emerald-800 transition-transform hover:scale-105">
+                    {{-- Container Ikon dengan Tema Amber --}}
+                    <div class="w-14 h-14 lg:w-16 lg:h-16 bg-amber-50 dark:bg-amber-900/30 rounded-2xl flex items-center justify-center shadow-inner border border-amber-100 dark:border-amber-800 transition-transform hover:scale-105">
                         <img src="{{ asset('images/peringkat.png') }}" 
                             alt="Icon Peringkat Global" 
-                            class="w-10 h-10 lg:w-12 lg:h-12 object-contain drop-shadow-[0_4px_6px_rgba(16,185,129,0.3)]">
+                            class="w-10 h-10 lg:w-12 lg:h-12 object-contain drop-shadow-[0_4px_6px_rgba(245,158,11,0.3)]">
                     </div>
                     
                     <div>
-                        <h3 class="text-lg lg:text-xl font-bold text-slate-900 dark:text-white uppercase leading-tight">Peringkat Global</h3>
+                        <h3 class="text-lg lg:text-xl font-bold text-slate-900 dark:text-white capitalize leading-tight">Peringkat Global</h3>
                         <p class="text-[11px] lg:text-[12px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed font-medium">
-                            Lihat posisi kamu dalam skala besar di seluruh sistem virtual lab Excel.
+                            Pantau posisimu dalam klasemen skor antar praktikan secara real-time.
                         </p>
                     </div>
                 </div>
 
                 <a href="{{ route('peringkat.show', ['type' => 'global']) }}" 
-                    class="btn-menu-pegas w-36 lg:w-40 mt-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl text-[9px] lg:text-[10px] tracking-widest border-emerald-800 uppercase text-center z-10 shadow-lg shadow-emerald-100">
+                    class="btn-menu-pegas w-36 lg:w-40 mt-6 lg:mt-8 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl text-[9px] lg:text-[10px] tracking-widest border-amber-800 uppercase text-center z-10 shadow-lg shadow-amber-100">
                     Lihat Rank
                 </a>
             </div>
