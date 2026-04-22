@@ -254,6 +254,9 @@ class AdminMissionController extends Controller
      * (Action) Simpan Langkah Misi Baru (Upload Cloudinary)
      */
     public function storeStep(Request $request, $id) {
+        if (!env('CLOUDINARY_URL')) {
+        abort(500, 'Woi Lan, CLOUDINARY_URL belum ada di Vercel!');
+    }
         $request->validate(['image' => 'required|image|max:2048', 'instruction' => 'required']);
         
         $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
