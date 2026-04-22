@@ -124,7 +124,7 @@
             <div class="flex items-center space-x-2 md:space-x-3">
                 {{-- 1. Tombol Home (Hanya muncul di Desktop/Tablet) --}}
                 <a href="{{ route('dashboard') }}" 
-                class="hidden md:flex w-10 h-10 md:w-11 md:h-11 items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-400 hover:text-emerald-500">
+                class="hidden md:flex w-10 h-10 md:w-11 md:h-11 items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-500 dark:text-emerald-400 shadow-xl">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                 </a>
 
@@ -180,7 +180,7 @@
         </main>
         {{-- 
             FLOATING NAV: Home & Dark Mode
-            Posisi: Kanan bawah (Sejajar dengan tombol profil/sidebar di atasnya)
+            Posisi: Kanan bawah
         --}}
         <div class="fixed bottom-6 right-4 flex flex-col space-y-4 z-50 md:hidden">
             
@@ -192,14 +192,14 @@
                 </svg>
             </a>
 
-            {{-- 2. Tombol Theme Toggle (Sesuai gaya yang kamu minta) --}}
+            {{-- 2. Tombol Theme Toggle --}}
             <button @click="toggleTheme()" 
                     class="w-11 h-11 flex items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl">
                 {{-- Ikon Matahari (Muncul pas Dark Mode) --}}
                 <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
-                {{-- Ikon Bulan (Muncul pas Light Mode) --}}
+                {{-- Ikon Bulan --}}
                 <svg x-show="!darkMode" class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                 </svg>
