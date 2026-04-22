@@ -201,36 +201,33 @@
             {{-- Divider --}}
             <div class="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
 
-            {{-- Tombol Mode Gelap (Alpine.js) --}}
-            <button @click="toggleTheme()" 
-                    class="flex flex-col items-center justify-center transition-colors">
-                <div x-show="darkMode" x-cloak class="flex flex-col items-center text-yellow-400">
+            {{-- 
+                FLOATING CONTROL: Home & Dark Mode 
+                Hanya muncul di Mobile (md:hidden) agar header tidak sumpek
+            --}}
+            <div class="fixed bottom-4 right-4 flex flex-col space-y-3 z-50 md:hidden">
+                
+                {{-- Tombol Home --}}
+                <a href="{{ route('dashboard') }}" 
+                class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl hover:scale-110 active:scale-95 transition-transform text-slate-500 dark:text-emerald-400">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </a>
+
+                {{-- Tombol Dark Mode (Sesuai Logic Alpine.js kamu) --}}
+                <button @click="toggleTheme()" 
+                        class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl hover:scale-110 active:scale-95 transition-transform">
+                    {{-- Ikon Sun (Muncul pas Dark Mode Aktif) --}}
+                    <svg x-show="darkMode" x-cloak class="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
-                    <span class="text-[9px] font-black uppercase tracking-tighter mt-1">Light</span>
-                </div>
-                <div x-show="!darkMode" class="flex flex-col items-center text-slate-500">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    {{-- Ikon Moon (Muncul pas Light Mode Aktif) --}}
+                    <svg x-show="!darkMode" class="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
-                    <span class="text-[9px] font-black uppercase tracking-tighter mt-1 text-slate-500">Dark</span>
-                </div>
-            </button>
-
-            {{-- Divider --}}
-            <div class="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
-
-            {{-- Tombol Menu/Sidebar --}}
-            <button @click="sidebarOpen = true" 
-                    class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                    <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
-                </svg>
-                <span class="text-[9px] font-black uppercase tracking-tighter mt-1">Menu</span>
-            </button>
-        </div>
-    </div>
+                </button>
+            </div>
     @stack('scripts')
 </body>
 </html>
