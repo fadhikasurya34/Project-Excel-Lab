@@ -185,7 +185,52 @@
             <x-sidebar-siswa />
         </div>
     </div>
+    {{-- FLOATING BOTTOM NAV (Hanya muncul di Mobile) --}}
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden">
+        <div class="flex items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg px-4 py-3 rounded-3xl border-2 border-slate-200/50 dark:border-slate-800/50 shadow-2xl space-x-6">
+            
+            {{-- Tombol Home --}}
+            <a href="{{ route('dashboard') }}" 
+            class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                <span class="text-[9px] font-black uppercase tracking-tighter mt-1">Home</span>
+            </a>
 
+            {{-- Divider --}}
+            <div class="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
+
+            {{-- Tombol Mode Gelap (Alpine.js) --}}
+            <button @click="toggleTheme()" 
+                    class="flex flex-col items-center justify-center transition-colors">
+                <div x-show="darkMode" x-cloak class="flex flex-col items-center text-yellow-400">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <span class="text-[9px] font-black uppercase tracking-tighter mt-1">Light</span>
+                </div>
+                <div x-show="!darkMode" class="flex flex-col items-center text-slate-500">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                    <span class="text-[9px] font-black uppercase tracking-tighter mt-1 text-slate-500">Dark</span>
+                </div>
+            </button>
+
+            {{-- Divider --}}
+            <div class="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
+
+            {{-- Tombol Menu/Sidebar --}}
+            <button @click="sidebarOpen = true" 
+                    class="flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                </svg>
+                <span class="text-[9px] font-black uppercase tracking-tighter mt-1">Menu</span>
+            </button>
+        </div>
+    </div>
     @stack('scripts')
 </body>
 </html>
