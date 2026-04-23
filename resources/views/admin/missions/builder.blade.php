@@ -192,7 +192,7 @@
 
                         <div class="space-y-6">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Keterangan Titik (Internal)</label>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Tambahkan Hint</label>
                                 <textarea name="content" required class="form-input-premium p-4" rows="3" placeholder="Misal: Tombol Autosum..."></textarea>
                             </div>
                             
