@@ -1,18 +1,32 @@
 <!DOCTYPE html>
 <html lang="id" x-data="{ 
     darkMode: localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches),
+    showPassword: false,
+    toast: { 
+        show: false, 
+        type: 'error', 
+        title: 'Akses Ditolak', 
+        message: 'Kata sandi yang Anda masukkan salah.' 
+    },
     toggleTheme() { 
         this.darkMode = !this.darkMode; 
         localStorage.setItem('theme', this.darkMode ? 'dark' : 'light'); 
-    } 
-}" :class="{'dark': darkMode}">
+    },
+    init() {
+        @if ($errors->any())
+            this.toast.show = true;
+            this.toast.message = '{{ $errors->first() }}';
+            setTimeout(() => { this.toast.show = false }, 5000);
+        @endif
+    }
+}" :class="{'dark': darkMode}" class="h-full antialiased">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konfirmasi Keamanan - Virtual Lab Excel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Emerald Terminal - Konfirmasi Keamanan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -20,12 +34,8 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-                    borderRadius: { '25': '25px' },
-                    colors: {
-                        brand: {
-                            light: '#60a5fa',
-                            dark: '#3b82f6'
-                        }
+                    colors: { 
+                        excel: { light: '#10b981', dark: '#059669', deep: '#035a41' } 
                     }
                 }
             }
@@ -33,104 +43,144 @@
     </script>
 
     <style>
-        .smooth-layout { transition: all 0.5s ease-out; }
         [x-cloak] { display: none !important; }
-        body { overflow: hidden; }
+        body { transition: background-color 0.5s ease; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        input:-webkit-autofill {
-            -webkit-text-fill-color: inherit !important;
-            -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
-            transition: background-color 5000s ease-in-out 0s;
+        .bg-lab {
+            background-color: #f0fdf4;
+            background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+            background-size: 24px 24px;
         }
-
-        .btn-3d {
-            transition: all 0.1s;
-            box-shadow: 0 4px 0 #2563eb;
-        }
-        .btn-3d:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #2563eb;
+        .dark .bg-lab { 
+            background-color: #060a0f; 
+            background-image: radial-gradient(#064e3b 1px, transparent 1px); 
         }
 
-        .glow-effect {
-            box-shadow: 0 0 30px rgba(96, 165, 250, 0.3);
+        /* MEKANIK DEEP BUTTON (Meciut) */
+        .btn-excel { transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 5px solid #035a41; }
+        .btn-excel:active { transform: translateY(3px) scale(0.98); border-bottom-width: 1px; }
+
+        /* INPUT & DARK MODE TEXT FIX */
+        .input-lab { background: #f8fafc; border: 2px solid #e2e8f0; color: #0f172a; transition: all 0.2s; }
+        .dark .input-lab { background: #0d1117; border-color: #1e293b; color: #ffffff !important; }
+        .input-lab:focus { border-color: #10b981; background: white; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
+        .dark .input-lab:focus { background: #0d1117; border-color: #10b981; }
+
+        .card-emerald { border-bottom: 8px solid #10b981; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+
+        /* TOAST ANIMATION */
+        .toast-top {
+            position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+            z-index: 1000; animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes toast-down { from { transform: translate(-50%, -100%) scale(0.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+
+        .wrapper { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; z-index: 10; }
+
+        /* --- MODE 1: MOBILE VERTICAL (Default) --- */
+        .main-container { display: flex; flex-direction: column; width: 100%; max-width: 340px; margin: auto; background: white; border-radius: 2.5rem; overflow: hidden; }
+        .panel-logo { padding: 1.5rem; }
+        .panel-form { padding: 2rem 1.5rem; }
+
+        /* --- MODE 2: MOBILE HORIZONTAL (Landscape HP) --- */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .main-container { flex-direction: row !important; max-width: 580px !important; } 
+            .panel-logo { width: 35% !important; padding: 1rem !important; border-right: 2px solid #e2e8f0; border-bottom: 0 !important; }
+            .panel-form { width: 65% !important; padding: 1rem 1.25rem !important; }
+            
+            /* Rampingkan form isian agar tidak melar */
+            .form-content { max-width: 260px !important; margin: 0 auto; } 
+            
+            .logo-box { width: 3.5rem !important; height: 3.5rem !important; }
+            .brand-title { font-size: 1.15rem !important; }
+            .form-header { margin-bottom: 0.5rem !important; }
+            .form-header h1 { font-size: 1.4rem !important; }
+            .form-header p { display: none; }
+            
+            .input-lab { padding: 0.45rem 0.75rem !important; font-size: 0.75rem !important; border-radius: 10px !important; }
+            .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem !important; }
         }
 
-        .deep-container {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
-                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
-        }
-        .dark .deep-container {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6),
-                        inset 0 1px 0px rgba(255, 255, 255, 0.05);
+        /* --- MODE 3: WINDOWS/DESKTOP --- */
+        @media (min-width: 1024px) {
+            .main-container { flex-direction: row; max-width: 780px; }
+            .panel-logo { width: 40%; padding: 3rem; border-right: 2px solid #f1f5f9; }
+            .panel-form { padding: 3rem; }
+            .logo-box { width: 10rem; height: 10rem; }
+            .form-content { max-width: 320px; margin: 0 auto; }
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-[#080c14] transition-colors duration-500 font-sans text-left text-slate-900 dark:text-white">
+<body class="bg-lab antialiased">
 
-    <div class="smooth-layout relative flex flex-col md:flex-row items-center justify-center w-full max-w-[280px] md:max-w-[540px]">
-        
-        <div class="smooth-layout z-20 glow-effect
-                    w-28 h-28 md:w-44 md:h-44 
-                    bg-brand-light dark:bg-brand-dark rounded-25 shadow-2xl
-                    flex items-center justify-center
-                    mb-[-2.5rem] md:mb-0 md:mr-[-3.5rem] 
-                    shrink-0 border-4 border-white dark:border-slate-800">
-            
-            <div class="relative w-16 h-16 md:w-28 md:h-28 bg-white/20 rounded-full border-2 border-white/30 flex items-center justify-center">
-                <svg class="w-10 h-10 md:w-16 md:h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-            </div>
+    <div x-show="toast.show" x-cloak class="toast-top bg-white dark:bg-slate-800 border-2 border-red-500 border-bottom-[6px] border-b-red-700 rounded-2xl p-3 shadow-2xl flex items-center space-x-3 min-w-[280px]">
+        <div class="w-10 h-10 bg-red-50 dark:bg-red-900/30 rounded-xl flex items-center justify-center shrink-0">
+            <img src="{{ asset('images/alert.png') }}" class="w-6 h-6 object-contain" alt="Alert">
         </div>
+        <div class="flex-1">
+            <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none" x-text="toast.title"></p>
+            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
+        </div>
+        <button @click="toast.show = false" class="text-slate-400 hover:text-red-500 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
 
-        <div class="smooth-layout z-10 deep-container
-                    bg-white dark:bg-slate-900 w-full 
-                    p-5 pt-14 md:pt-8 md:pl-20 md:pr-7
-                    rounded-25 border-2 border-slate-50 dark:border-slate-800/50
-                    flex flex-col overflow-hidden relative">
+    <div class="wrapper">
+        <div class="main-container card-emerald dark:bg-slate-900 shadow-2xl">
             
-            <div class="mb-4">
-                <h2 class="text-brand-light dark:text-brand-light text-[8px] font-black uppercase tracking-[0.2em] leading-none">Security Area</h2>
-                <h1 class="text-slate-900 dark:text-white text-base font-extrabold tracking-tight leading-tight mt-1">Konfirmasi Kata Sandi</h1>
+            <div class="panel-logo bg-emerald-50 dark:bg-emerald-950/20 flex flex-row md:flex-col items-center justify-center gap-4 dark:border-emerald-900/50">
+                <div class="logo-box w-20 h-20 md:w-44 md:h-44 shrink-0 flex items-center justify-center relative">
+                    <img src="{{ asset('images/excel.png') }}" class="max-w-full max-h-full object-contain absolute transition-opacity duration-300" :class="darkMode ? 'opacity-0' : 'opacity-100'">
+                    <img src="{{ asset('images/excel 2.png') }}" class="max-w-full max-h-full object-contain absolute transition-opacity duration-300" :class="darkMode ? 'opacity-100' : 'opacity-0'">
+                </div>
+                <div class="text-left md:text-center leading-none">
+                    <h2 class="brand-title font-extrabold text-2xl md:text-4xl tracking-tight text-emerald-600 dark:text-emerald-400 uppercase leading-none">VIRTUAL LAB</h2>
+                    <div class="brand-badge mt-2 hidden md:inline-flex items-center px-2 py-0.5 bg-emerald-500 text-white rounded-full">
+                        <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse mr-1.5"></span>
+                        <span class="text-[8px] font-black tracking-widest uppercase">Area Aman</span>
+                    </div>
+                </div>
             </div>
 
-            <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                Ini adalah area aman. Harap konfirmasi kata sandi Anda sebelum melanjutkan akses ke Virtual Lab.
-            </p>
+            <div class="panel-form flex flex-col justify-center">
+                <div class="form-content w-full">
+                    <div class="form-header mb-6">
+                        <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase leading-none tracking-tighter">KEAMANAN</h1>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 font-medium mt-3 leading-relaxed">
+                            Harap konfirmasi kata sandi Anda sebelum melanjutkan akses ke terminal lab.
+                        </p>
+                    </div>
 
-            <form method="POST" action="{{ route('password.confirm') }}" class="space-y-4">
-                @csrf
+                    <form method="POST" action="{{ route('password.confirm') }}" class="space-y-4">
+                        @csrf
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 capitalize">Kata sandi anda</label>
+                            <div class="relative">
+                                <input :type="showPassword ? 'text' : 'password'" name="password" required autofocus autocomplete="current-password"
+                                       class="input-lab w-full px-4 py-3 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
+                                       placeholder="••••••••">
+                                <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-emerald-500">
+                                    <svg x-show="!showPassword" class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                    <svg x-show="showPassword" x-cloak class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                                </button>
+                            </div>
+                        </div>
 
-                <div class="relative text-left group">
-                    <input type="password" name="password" id="password" required autofocus autocomplete="current-password" placeholder=" " 
-                        class="block w-full px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white bg-transparent border-2 border-slate-100 dark:border-slate-800 rounded-25 appearance-none focus:outline-none focus:border-brand-light transition-all peer" />
-                    <label for="password" class="absolute text-slate-400 dark:text-slate-500 text-[10px] font-bold duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-2 left-4 pointer-events-none 
-                        peer-focus:text-brand-light 
-                        peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 
-                        peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 
-                        peer-focus:bg-white dark:peer-focus:bg-slate-900
-                        peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-slate-900
-                        peer-[:not(:placeholder-shown)]:top-2 peer-[:not(:placeholder-shown)]:scale-75 peer-[:not(:placeholder-shown)]:-translate-y-4 leading-none">
-                        Kata Sandi
-                    </label>
-                    <x-input-error :messages="$errors->get('password')" class="mt-1" />
+                        <div class="pt-2">
+                            <button type="submit" class="w-full btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-3 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
+                                Konfirmasi akses
+                            </button>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="flex justify-end pt-1">
-                    <button type="submit" 
-                        class="btn-3d bg-brand-light text-white text-[10px] font-black px-8 py-3 rounded-25 uppercase tracking-widest leading-none">
-                        Konfirmasi
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
-    <button @click="toggleTheme()" class="fixed bottom-6 right-6 p-3.5 rounded-25 bg-white dark:bg-slate-800 shadow-xl border-2 border-slate-100 dark:border-slate-700 transition-all hover:scale-110 active:rotate-12 focus:outline-none z-50">
-        <svg x-show="!darkMode" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-        <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+    <button @click="toggleTheme()" class="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl z-50 hover:scale-110 active:scale-95 transition-transform duration-200">
+        <svg x-show="!darkMode" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+        <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
     </button>
-
 </body>
 </html>

@@ -4,16 +4,14 @@
     toast: { 
         show: false, 
         type: 'success', 
-        icon: '📩', 
         title: 'Email Terkirim', 
-        message: 'Tautan verifikasi baru telah dikirim.' 
+        message: 'Tautan verifikasi baru telah dikirim ke alamat email Anda.' 
     },
     toggleTheme() { 
         this.darkMode = !this.darkMode; 
         localStorage.setItem('theme', this.darkMode ? 'dark' : 'light'); 
     },
     init() {
-        {{-- Munculkan toast jika tautan verifikasi baru saja dikirim --}}
         @if (session('status') == 'verification-link-sent')
             this.toast.show = true;
             setTimeout(() => { this.toast.show = false }, 5000);
@@ -23,18 +21,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Verifikasi Email - Virtual Lab Excel</title>
+    <title>Emerald Terminal - Verifikasi Email</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'], game: ['Bangers', 'cursive'] },
-                    colors: { excel: { light: '#10b981', dark: '#059669', deep: '#047857' } }
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    colors: { 
+                        excel: { light: '#10b981', dark: '#059669', deep: '#035a41' } 
+                    }
                 }
             }
         }
@@ -42,9 +42,8 @@
 
     <style>
         [x-cloak] { display: none !important; }
-        body { transition: background-color 0.5s ease; }
+        body { transition: background-color 0.5s ease; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        /* Background Dot Grid */
         .bg-lab {
             background-color: #f0fdf4;
             background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
@@ -55,121 +54,113 @@
             background-image: radial-gradient(#064e3b 1px, transparent 1px); 
         }
 
-        /* Tombol Pegas 3D */
-        .btn-excel { transition: all 0.1s ease; border-bottom: 4px solid #047857; }
-        .btn-excel:active { transform: translateY(2px); border-bottom-width: 1px; }
-
-        .btn-secondary { border-bottom: 4px solid #94a3b8; }
+        /* MEKANIK DEEP BUTTON */
+        .btn-excel { transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 5px solid #035a41; }
+        .btn-excel:active { transform: translateY(3px) scale(0.98); border-bottom-width: 1px; }
+        .btn-secondary { border-bottom-color: #94a3b8; }
         .dark .btn-secondary { border-bottom-color: #1e293b; }
 
-        .card-emerald {
-            border-bottom: 8px solid #10b981;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-        }
+        .card-emerald { border-bottom: 8px solid #10b981; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
 
-        /* Toast Styling */
+        /* TOAST ANIMATION */
         .toast-top {
-            position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
-            z-index: 1000; background: white; border-radius: 1.5rem;
-            border: 2px solid #10b981; border-bottom: 6px solid #047857;
-            min-width: 280px; padding: 0.8rem 1.2rem;
-            animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
+            z-index: 1000; animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .dark .toast-top { background: #1e293b; }
+        @keyframes toast-down { from { transform: translate(-50%, -100%) scale(0.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
 
-        @keyframes toast-down { 
-            from { transform: translate(-50%, -100%) scale(0.8); opacity: 0; } 
-            to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
-        }
+        .wrapper { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; z-index: 10; }
 
-        .wrapper {
-            min-height: 100dvh; display: flex; align-items: center; justify-content: center;
-            padding: 1rem; position: relative; z-index: 10;
-        }
+        /* --- MODE 1: MOBILE VERTICAL (Default) --- */
+        .main-container { display: flex; flex-direction: column; width: 100%; max-width: 340px; margin: auto; background: white; border-radius: 2.5rem; overflow: hidden; }
+        .panel-logo { padding: 1.5rem; }
+        .panel-form { padding: 2rem 1.5rem; }
 
-        .main-container { display: flex; flex-direction: column; width: 100%; max-width: 340px; margin: auto; transition: all 0.3s ease; }
-
-        /* LANDSCAPE OPTIMIZATION */
+        /* --- MODE 2: MOBILE HORIZONTAL (Landscape HP) --- */
         @media (orientation: landscape) and (max-height: 500px) {
-            .main-container { flex-direction: row !important; max-width: 600px !important; }
-            .panel-logo { width: 35% !important; padding: 1rem !important; gap: 0.2rem !important; border-right-width: 2px !important; border-bottom-width: 0 !important; }
-            .panel-form { width: 65% !important; padding: 1.2rem 1.5rem !important; }
-            .logo-box { width: 4.5rem !important; height: 4.5rem !important; }
-            .brand-title { font-size: 1.4rem !important; }
-            .form-header h1 { font-size: 1.2rem !important; }
-            .info-text { font-size: 0.7rem !important; margin-bottom: 1rem !important; }
-            .btn-excel { padding: 0.5rem !important; font-size: 0.8rem !important; }
-            .form-content { max-width: 320px; margin: 0 auto; }
+            .main-container { flex-direction: row !important; max-width: 600px !important; } 
+            .panel-logo { width: 35% !important; padding: 1rem !important; border-right: 2px solid #e2e8f0; border-bottom: 0 !important; }
+            .panel-form { width: 65% !important; padding: 1rem 1.25rem !important; }
+            
+            .form-content { max-width: 280px !important; margin: 0 auto; } 
+            
+            .logo-box { width: 3.5rem !important; height: 3.5rem !important; }
+            .brand-title { font-size: 1.15rem !important; }
+            .form-header { margin-bottom: 0.5rem !important; }
+            .form-header h1 { font-size: 1.3rem !important; }
+            .form-header p { font-size: 9px !important; margin-top: 2px !important; }
+            
+            .info-text { font-size: 10px !important; line-height: 1.4 !important; margin-bottom: 1rem !important; }
+            .btn-group { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+            .btn-excel { padding: 0.4rem !important; font-size: 0.75rem !important; }
         }
 
-        @media (min-width: 768px) and (min-height: 501px) {
+        /* --- MODE 3: WINDOWS/DESKTOP --- */
+        @media (min-width: 1024px) {
             .main-container { flex-direction: row; max-width: 780px; }
-            .panel-logo { width: 40%; padding: 3rem; }
-            .panel-form { width: 60%; padding: 3.5rem; }
+            .panel-logo { width: 40%; padding: 3rem; border-right: 2px solid #f1f5f9; }
+            .panel-form { padding: 3rem; }
             .logo-box { width: 10rem; height: 10rem; }
+            .form-content { max-width: 340px; margin: 0 auto; }
         }
     </style>
 </head>
-<body class="bg-lab antialiased text-slate-900 dark:text-white">
+<body class="bg-lab antialiased">
 
-    {{-- Notifikasi --}}
-    <div x-show="toast.show" x-cloak class="toast-top shadow-xl flex items-center space-x-3">
-        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-lg animate-pulse bg-emerald-50 dark:bg-emerald-900/30" x-text="toast.icon"></div>
-        <div class="text-left flex-1">
-            <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1" x-text="toast.message"></p>
+    <div x-show="toast.show" x-cloak 
+         class="toast-top bg-white dark:bg-slate-800 border-2 border-emerald-500 border-bottom-[6px] border-b-emerald-700 rounded-2xl p-3 shadow-2xl flex items-center space-x-3 min-w-[280px]">
+        <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center shrink-0">
+            <img src="{{ asset('images/alert.png') }}" class="w-6 h-6 object-contain" alt="Alert">
         </div>
-        <button @click="toast.show = false" class="text-slate-300 hover:text-emerald-500 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg></button>
+        <div class="flex-1">
+            <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none" x-text="toast.title"></p>
+            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
+        </div>
+        <button @click="toast.show = false" class="text-slate-400 hover:text-emerald-500 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
     </div>
 
     <div class="wrapper">
-        <div class="main-container card-emerald bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden">
+        <div class="main-container card-emerald dark:bg-slate-900 shadow-2xl">
             
-            {{-- PANEL 1: BRANDING --}}
-            <div class="panel-logo bg-emerald-50 dark:bg-emerald-950/30 flex flex-row md:flex-col items-center justify-center gap-4 border-b-2 md:border-b-0 md:border-r-2 border-emerald-100 dark:border-emerald-800 p-6">
-                <div class="logo-box w-20 h-20 md:w-44 md:h-44 shrink-0 flex items-center justify-center relative hover:scale-105 transition-transform">
+            <div class="panel-logo bg-emerald-50 dark:bg-emerald-950/20 flex flex-row md:flex-col items-center justify-center gap-4 dark:border-emerald-900/50">
+                <div class="logo-box w-20 h-20 md:w-44 md:h-44 shrink-0 flex items-center justify-center relative">
                     <img src="{{ asset('images/excel.png') }}" class="max-w-full max-h-full object-contain absolute transition-opacity duration-300" :class="darkMode ? 'opacity-0' : 'opacity-100'">
                     <img src="{{ asset('images/excel 2.png') }}" class="max-w-full max-h-full object-contain absolute transition-opacity duration-300" :class="darkMode ? 'opacity-100' : 'opacity-0'">
                 </div>
-                <div class="text-left md:text-center">
-                    <h2 class="brand-title font-game text-2xl md:text-4xl tracking-widest text-emerald-600 dark:text-emerald-400 uppercase leading-none">Virtual Lab</h2>
+                <div class="text-left md:text-center leading-none">
+                    <h2 class="brand-title font-extrabold text-2xl md:text-4xl tracking-tight text-excel-dark dark:text-emerald-400 uppercase leading-none">VIRTUAL LAB</h2>
                     <div class="brand-badge mt-2 hidden md:inline-flex items-center px-2 py-0.5 bg-emerald-500 text-white rounded-full">
                         <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse mr-1.5"></span>
-                        <span class="text-[8px] font-black uppercase tracking-widest">Verifikasi</span>
+                        <span class="text-[8px] font-black tracking-widest uppercase">Verifikasi</span>
                     </div>
                 </div>
             </div>
 
-            {{-- PANEL 2: CONTENT --}}
-            <div class="panel-form p-8 flex flex-col justify-center">
+            <div class="panel-form flex flex-col justify-center">
                 <div class="form-content w-full">
                     <div class="form-header mb-6">
-                        <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase leading-none tracking-tighter">Satu Langkah Lagi</h1>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Validasi Identitas Anda</p>
+                        <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white uppercase leading-none tracking-tighter">EMAIL</h1>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 font-medium mt-2">Satu langkah lagi untuk memulai misi.</p>
                     </div>
 
-                    <div class="info-text text-[11px] md:text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-8">
-                        Terima kasih telah bergabung! Sebelum memulai misi di laboratorium, silakan verifikasi email Anda dengan mengeklik tautan yang baru saja kami kirimkan. 
-                        <br><br>
-                        Jika Anda tidak menerima email tersebut, tim laboratorium kami akan mengirimkan tautan yang baru.
+                    <div class="info-text text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 font-medium">
+                        Terima kasih telah bergabung! Silakan verifikasi email Anda dengan mengeklik tautan yang baru saja kami kirimkan ke alamat Anda.
                     </div>
 
-                    <div class="flex flex-col gap-4">
-                        {{-- Tombol Kirim Ulang --}}
-                        <form method="POST" action="{{ route('verification.send') }}">
+                    <div class="space-y-3 btn-group">
+                        <form method="POST" action="{{ route('verification.send') }}" class="w-full">
                             @csrf
-                            <button type="submit" 
-                                    class="btn-excel w-full bg-emerald-600 hover:bg-emerald-500 text-white font-game text-lg md:text-xl py-3.5 rounded-2xl tracking-[0.1em] shadow-lg shadow-emerald-500/20 uppercase">
-                                KIRIM ULANG EMAIL
+                            <button type="submit" class="w-full btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-3 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
+                                Kirim ulang email
                             </button>
                         </form>
 
-                        {{-- Tombol Logout --}}
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" class="w-full">
                             @csrf
-                            <button type="submit" 
-                                    class="btn-excel btn-secondary w-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 font-game text-lg md:text-xl py-3 rounded-2xl tracking-[0.1em] text-center border-slate-300 dark:border-slate-700 uppercase">
-                                KELUAR / LOGOUT
+                            <button type="submit" class="w-full btn-excel btn-secondary bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 font-black text-xs md:text-sm py-3 rounded-xl text-center border-slate-300 dark:border-slate-700 uppercase tracking-tighter">
+                                Keluar / Logout
                             </button>
                         </form>
                     </div>
@@ -178,8 +169,7 @@
         </div>
     </div>
 
-    <button @click="toggleTheme()" 
-            class="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-11 h-11 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl z-50 hover:scale-110 active:scale-95 transition-transform">
+    <button @click="toggleTheme()" class="fixed bottom-4 right-4 md:bottom-6 md:right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl z-50 hover:scale-110 active:scale-95 transition-transform duration-200">
         <svg x-show="!darkMode" class="w-5 h-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
         <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
     </button>
