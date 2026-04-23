@@ -1,4 +1,4 @@
-{{-- //* (View) Simulasi Misi Point & Click - Final Gamified Integrated --}}
+{{-- //* (View) Simulasi Misi Point & Click - Optimized Scroll & Rotary Guard --}}
 
 @php
     $jsonData = $mission->steps->sortBy('step_order')->values()->map(function($step) {
@@ -37,34 +37,47 @@
     .phone-rotate { animation: rotatePhone 2s ease-in-out infinite; }
     @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
 
-    /* //* (Layout) Anti-Gesture & Scroller */
-    .simulation-wrapper { position: relative; width: 100%; min-height: calc(100vh - 160px); touch-action: none; }
-    .main-scroller { overflow: auto !important; -webkit-overflow-scrolling: touch; }
+    /* //* (Layout) Fix Scroll & Anti-Gesture */
+    .simulation-wrapper { 
+        position: relative; 
+        width: 100%; 
+        min-height: calc(100vh - 160px); 
+        /* Izinkan scroll vertikal tapi matikan gesture bawaan browser */
+        touch-action: pan-y; 
+    }
+    .main-scroller { 
+        overflow-y: auto !important; 
+        overflow-x: hidden !important; 
+        -webkit-overflow-scrolling: touch;
+        height: 100%;
+    }
 
-    /* //* (Visual) Unified Glass Theme - Blue HUD */
+    /* //* (Visual) Glassmorphism Theme - Blue */
     .glass-ui-shared {
         background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
         border: 2px solid #3b82f6; border-bottom: 6px solid #1d4ed8;
         border-radius: 1.8rem; overflow: hidden;
     }
 
-    .hud-controller { position: fixed; z-index: 90; width: 320px; pointer-events: auto; touch-action: none; }
+    .hud-controller { position: fixed; z-index: 90; width: 320px; pointer-events: auto; }
     
     /* //* (Buttons) Gamified Pegas */
     .btn-pegas-blue { background: #2563eb; border-bottom: 4px solid #1e3a8a; transition: all 0.1s; }
     .btn-pegas-blue:active { transform: translateY(2px); border-bottom-width: 1px; }
     .btn-pegas-emerald { background: #10b981; border-bottom: 4px solid #064e3b; transition: all 0.1s; }
     .btn-pegas-emerald:active { transform: translateY(2px); border-bottom-width: 1px; }
-    .btn-pegas-6 { transition: all 0.1s ease; border-bottom-width: 6px !important; }
-    .btn-pegas-6:active { transform: translateY(4px); border-bottom-width: 2px !important; }
-
+    .btn-menu-pegas {transition: all 0.1s ease; border-bottom-width: 6px;}
+    .btn-menu-pegas:active {transform: translateY(4px);border-bottom-width: 2px;}
+    .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
+    .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
+    
     /* //* (FX) Error Feedback */
     .flash-error { position: fixed; inset: 0; background: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 100; animation: fade-out 0.4s forwards; }
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
     @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 
-    /* //* (Marker) Marker Done */
+    /* //* (Marker) Done State */
     .marker-ring {
         position: absolute; width: 34px; height: 34px; margin-top: -17px; margin-left: -17px;
         border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;
@@ -87,9 +100,12 @@
 @endpush
 
 @section('header_left')
-    <a href="{{ route('misi.category.levels', $mission->level->category) }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-pegas-6 text-slate-600 shadow-sm">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path d="M15 19l-7-7 7-7" /></svg>
+    <a href="{{ route('misi.category.levels', $mission->level->category) }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path d="M15 19l-7-7 7-7" />
+        </svg>
     </a>
+    
     <div class="flex flex-col text-left ml-3 leading-none">
         <span class="text-base font-extrabold tracking-tight dark:text-white uppercase truncate max-w-[150px]">{{ $mission->title }}</span>
         <div class="flex items-center space-x-1.5 mt-1.5">
@@ -108,7 +124,7 @@
 @section('content')
 <div x-data="missionEngine()" class="relative w-full min-h-screen main-scroller bg-slate-950">
 
-    {{-- Landscape Blocker --}}
+    {{-- 1. Landscape Guard --}}
     <div id="landscape-notice">
         <div class="phone-rotate mb-6 relative">
             <div class="absolute -inset-6 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -117,7 +133,7 @@
             </svg>
         </div>
         <h2 class="font-game text-3xl tracking-widest uppercase mb-2">Putar Layar</h2>
-        <p class="text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] max-w-[280px]">Misi ini wajib menggunakan mode Landscape agar presisi klik tetap akurat.</p>
+        <p class="text-slate-400 text-[9px] uppercase tracking-widest">Misi wajib menggunakan mode Landscape agar presisi klik akurat.</p>
     </div>
 
     {{-- FX Flash Error --}}
@@ -211,7 +227,7 @@
     function missionEngine() {
         return {
             currentStep: 0, 
-            currentHotspotIndex: 0, // LOGIKA URUTAN DIMULAI DARI SINI
+            currentHotspotIndex: 0, 
             clickedHotspots: [], 
             isExpanded: true, 
             showModal: false, 
@@ -238,20 +254,19 @@
             },
 
             handleHotspotClick(hs, index) {
-                // LOGIKA WAJIB URUT: Cek apakah index hotspot yang diklik sesuai dengan urutan sistem
+                // LOGIKA WAJIB URUT
                 if (index === this.currentHotspotIndex) {
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots.push(hs.id);
-                        this.currentHotspotIndex++; // Naikkan giliran hotspot
+                        this.currentHotspotIndex++;
                         this.showErrorEffect = false;
                         this.showHintButton = false; 
                         
                         if (this.allHotspotsInStepDone) {
-                            this.showToast('Langkah Berhasil', 'Instruksi terpenuhi, lanjutkan misi.', 'checklist.png');
+                            this.showToast('Langkah Berhasil', 'Target ditemukan, lanjut ke skenario berikutnya.', 'checklist.png');
                         }
                     }
                 } else {
-                    // Jika klik hotspot tapi bukan gilirannya (Salah Urutan)
                     this.triggerError();
                 }
             },
@@ -267,30 +282,28 @@
                 this.attempts++;
                 
                 this.showHintButton = true;
-                
-                // Hint otomatis mengambil konten hotspot yang seharusnya diklik saat ini
                 let correctHotspot = this.steps[this.currentStep].hotspots[this.currentHotspotIndex];
-                this.currentHint = correctHotspot ? correctHotspot.content : 'Analisis kembali urutan pengerjaan.';
+                this.currentHint = correctHotspot ? correctHotspot.content : 'Perhatikan instruksi misi.';
 
-                // LOGIKA PENGURANGAN XP
+                // Logika Pengurangan XP (Penalty)
                 if (this.attempts > 3) {
                     let penalty = Math.floor({{ $mission->max_score }} * 0.05);
                     this.currentPotentialXP = Math.max(this.currentPotentialXP - penalty, Math.floor({{ $mission->max_score }} * 0.4));
                 }
 
-                this.showToast('Klik Salah', 'Perhatikan urutan dan instruksi.', 'alert.png');
+                this.showToast('Klik Salah', 'Point XP berkurang sedikit.', 'alert.png');
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
 
             showToast(title, message, icon = 'bintang.png') {
                 this.toast = { show: true, title, message, icon };
-                setTimeout(() => { this.toast.show = false; }, 3000);
+                setTimeout(() => { this.toast.show = false; }, 3500);
             },
 
             nextStep() {
                 if (this.currentStep < this.steps.length - 1) {
                     this.currentStep++;
-                    this.currentHotspotIndex = 0; // Reset urutan klik untuk step baru
+                    this.currentHotspotIndex = 0;
                     this.clickedHotspots = [];
                     this.showHintButton = false;
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -299,7 +312,7 @@
                         answer: 'MISSION_COMPLETED', 
                         attempts: this.attempts 
                     }).then(res => {
-                        this.showToast('Misi Berhasil', 'Seluruh XP berhasil dikumpulkan.', 'bintang.png');
+                        this.showToast('Misi Berhasil', 'Seluruh XP telah dikumpulkan.', 'bintang.png');
                         setTimeout(() => { window.location.href = res.data.next_url; }, 2000);
                     });
                 }
@@ -314,7 +327,7 @@
 
                 const move = (e) => {
                     if (!this.isDragging) return;
-                    e.preventDefault(); 
+                    // Mencegah scroll hanya jika benar-benar sedang drag HUD
                     let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                     let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
                     this.boxX = x - this.offX;
@@ -323,7 +336,7 @@
 
                 const stop = () => { this.isDragging = false; document.removeEventListener('mousemove', move); document.removeEventListener('touchmove', move); };
                 document.addEventListener('mousemove', move);
-                document.addEventListener('touchmove', move, { passive: false });
+                document.addEventListener('touchmove', move, { passive: true });
                 document.addEventListener('mouseup', stop);
                 document.addEventListener('touchend', stop);
             }

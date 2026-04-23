@@ -1,4 +1,4 @@
-{{-- //* (View) Engine Simulasi Materi Interaktif - Final Integrated HUD v2 --}}
+{{-- //* (View) Engine Simulasi Materi - Optimized UI & Production Ready --}}
 @php
     $jsonData = $material->activities->sortBy('step_order')->values()->map(function($step) {
         return [
@@ -25,50 +25,59 @@
 
 @push('styles')
 <style>
-    /* //* (Layout) Anti-Gesture & Scroller */
-    .simulation-wrapper { position: relative; width: 100%; min-height: calc(100vh - 160px); touch-action: none; }
-    .main-scroller { overflow: auto !important; -webkit-overflow-scrolling: touch; }
+    /* //* (Guard) Mode Landscape Mobile - WAJIB */
+    #landscape-notice { display: none; }
+    @media screen and (orientation: portrait) and (max-width: 1024px) {
+        #landscape-notice {
+            display: flex; position: fixed; inset: 0; z-index: 9999;
+            background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(20px);
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 2rem; text-align: center; color: white;
+        }
+    }
+    .phone-rotate { animation: rotatePhone 2s ease-in-out infinite; }
+    @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
 
-    /* //* (Visual) Unified Glass Theme - Blue */
+    /* //* (Layout) Scroll Fix & Anti-Gesture */
+    .simulation-wrapper { 
+        position: relative; 
+        width: 100%; 
+        min-height: calc(100vh - 160px); 
+        touch-action: pan-y; /* 'pan-y' memungkinkan scroll HP jalan kembali */
+    }
+    .main-scroller { 
+        overflow-y: auto !important; 
+        overflow-x: hidden !important; 
+        -webkit-overflow-scrolling: touch;
+        height: 100%;
+    }
+
+    /* //* (Visual) Glassmorphism Theme */
     .glass-ui-shared {
         background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px);
         border: 2px solid #3b82f6; border-bottom: 6px solid #1d4ed8;
         border-radius: 1.8rem; overflow: hidden;
     }
 
-    .hud-controller { position: fixed; z-index: 90; width: 320px; pointer-events: auto; touch-action: none; }
+    .hud-controller { position: fixed; z-index: 90; width: 320px; pointer-events: auto; }
     
-    /* //* (Modal) Penjelasan - Identik HUD */
     .modal-overlay {
         position: fixed; inset: 0; z-index: 200; background: rgba(15, 23, 42, 0.85);
         display: flex; align-items: center; justify-content: center; padding: 1.5rem;
     }
-    .modal-scroll { overflow-y: auto; padding: 1.25rem; flex: 1; } /* p-5 */
+    .modal-scroll { overflow-y: auto; padding: 1.25rem; flex: 1; }
 
-    /* //* (Buttons) Gamified Pegas - No Emoji */
+    /* //* (Buttons) Gamified Pegas */
     .btn-pegas-blue { background: #2563eb; border-bottom: 4px solid #1e3a8a; transition: all 0.1s; }
     .btn-pegas-blue:active { transform: translateY(2px); border-bottom-width: 1px; }
     .btn-pegas-emerald { background: #10b981; border-bottom: 4px solid #064e3b; transition: all 0.1s; }
     .btn-pegas-emerald:active { transform: translateY(2px); border-bottom-width: 1px; }
-    
-    /* //* (UI) Mekanik tombol pegas 3D standar lab */
-    .btn-menu-pegas {
-        transition: all 0.1s ease;
-        border-bottom-width: 6px;
-    }
-    .btn-menu-pegas:active {
-        transform: translateY(4px);
-        border-bottom-width: 2px;
-    }
 
-    .btn-back-pegas {
-        transition: all 0.1s ease;
-        border-bottom-width: 6px;
-    }
-    .btn-back-pegas:active {
-        transform: translateY(2px);
-        border-bottom-width: 0px;
-    }
+    .btn-menu-pegas {transition: all 0.1s ease; border-bottom-width: 6px;}
+    .btn-menu-pegas:active {transform: translateY(4px);border-bottom-width: 2px;}
+    .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
+    .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
+    
 
     /* //* (Hotspot) Marker Ring */
     .marker-ring {
@@ -80,16 +89,12 @@
     .marker-done { background: #10b981; border-color: transparent; opacity: 0.7; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-    /* //* (Video) Small Preview Overlay */
+    /* //* (Video) Small Preview Style */
     .video-overlay {
         position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.7);
         display: flex; align-items: center; justify-content: center; padding: 1rem;
     }
-    /* Ukuran video preview dibuat kecil (max-width: 450px) agar tidak full layar */
-    .video-window-small { 
-        width: 100%; max-width: 450px; 
-        @apply glass-ui-shared;
-    }
+    .video-window-small { width: 100%; max-width: 450px; }
 
     /* //* (Notification) Original Toast */
     .toast-top {
@@ -99,20 +104,19 @@
         min-width: 260px; padding: 0.8rem 1.2rem; text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .dark .toast-top { background: #1e293b; border-color: #3b82f6; border-bottom-color: #1e40af; }
     @keyframes toast-down { from { transform: translate(-50%, -100%) scale(0.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
 </style>
 @endpush
 
 @section('header_left')
-    {{-- //* (Nav) Tombol Back & Header Info --}}
-        <a href="{{ route('materi.index') }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
+        {{-- //* (Nav) Kembali ke Dashboard --}}
+    <a href="{{ route('materi.index') }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
             <path d="M15 19l-7-7 7-7" />
         </svg>
     </a>
     <div class="flex flex-col text-left ml-3 leading-none">
-        <span class="text-base font-extrabold tracking-tight dark:text-white uppercase leading-none">{{ $material->title }}</span>
+        <span class="text-base font-extrabold tracking-tight dark:text-white uppercase">{{ $material->title }}</span>
         <div class="flex items-center space-x-1.5 mt-1.5">
             <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
             <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Simulasi Laboratorium Aktif</span>
@@ -123,8 +127,20 @@
 @section('content')
 <div x-data="labInteraction()" class="relative w-full min-h-screen main-scroller bg-slate-950">
 
-    {{-- Notification Toast --}}
-    <div x-show="toast.show" x-cloak class="toast-top shadow-xl flex items-center space-x-3">
+    {{-- 1. Landscape Rotary Guard --}}
+    <div id="landscape-notice">
+        <div class="phone-rotate mb-6 relative">
+            <div class="absolute -inset-6 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <svg class="relative w-20 h-20 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h2 class="font-bold text-2xl uppercase mb-2">Putar Layar</h2>
+        <p class="text-slate-400 text-[9px] uppercase tracking-widest">Mode Landscape diperlukan untuk simulasi interaktif.</p>
+    </div>
+
+    {{-- Toast System --}}
+    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-slate-900/50">
             <img :src="'{{ asset('images') }}/' + toast.icon" class="w-7 h-7 object-contain animate-bounce">
         </div>
@@ -165,7 +181,7 @@
         </div>
     </div>
 
-    {{-- Modal Penjelasan (Identik HUD) --}}
+    {{-- Modal Penjelasan --}}
     <div x-show="showModal" x-cloak class="modal-overlay" x-transition.opacity>
         <div class="glass-ui-shared w-full max-w-[550px] max-h-[80vh] flex flex-col shadow-2xl">
             <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
@@ -178,11 +194,10 @@
                 </button>
             </div>
             
-            <div class="modal-scroll scrollbar-hide">
-                <p class="text-slate-100 font-bold text-sm leading-relaxed text-center" x-text="activeHotspot?.content"></p>
-                
+            <div class="modal-scroll scrollbar-hide text-center">
+                <p class="text-slate-100 font-bold text-sm leading-relaxed" x-text="activeHotspot?.content"></p>
                 <template x-if="activeHotspot?.video">
-                    <button @click="showVideo = true" class="mt-6 w-full py-4 bg-slate-800/50 text-blue-400 rounded-2xl font-black text-[10px] uppercase border-2 border-blue-500/30 border-b-4 hover:bg-slate-800 transition-all">
+                    <button @click="showVideo = true" class="mt-6 w-full py-4 bg-slate-800/50 text-blue-400 rounded-2xl font-black text-[10px] uppercase border-2 border-blue-500/30 border-b-4">
                         Putar Tutorial Video
                     </button>
                 </template>
@@ -190,17 +205,16 @@
         </div>
     </div>
 
-    {{-- Video Window Preview (Small Mode) --}}
+    {{-- Video Window Preview --}}
     <div x-show="showVideo" x-cloak class="video-overlay" x-transition.fade>
-        <div class="video-window-small shadow-2xl">
+        <div class="glass-ui-shared video-window-small shadow-2xl">
             <div class="p-3 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
-                <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest">Video Player</span>
+                <span class="text-[8px] font-black text-blue-400 uppercase">Video Player</span>
                 <button @click="showVideo = false" class="p-1.5 bg-red-500 text-white rounded-lg active:scale-90 transition-all">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="bg-black">
-                {{-- Native Video Player: Gunakan tombol fullscreen bawaan untuk maximize --}}
                 <video :key="activeHotspot?.video" :src="activeHotspot?.video" controls autoplay class="w-full aspect-video object-contain"></video>
             </div>
         </div>
@@ -209,7 +223,7 @@
     {{-- Canvas Simulasi --}}
     <div class="simulation-wrapper !p-0">
         <div class="relative w-full inline-block">
-            <img :src="steps[currentStep].image" class="w-full h-auto block select-none" @contextmenu.prevent>
+            <img :src="steps[currentStep].image" class="w-full h-auto block select-none shadow-2xl">
             
             <template x-for="(hs, index) in steps[currentStep].hotspots" :key="hs.id">
                 <div class="marker-ring" 
@@ -237,7 +251,7 @@
 
             get allHotspotsInStepDone() {
                 let currentStepData = this.steps[this.currentStep];
-                return this.clickedHotspots.length === currentStepData.hotspots.length;
+                return currentStepData && this.clickedHotspots.length === currentStepData.hotspots.length;
             },
 
             handleInteraction(hs, index) {
@@ -282,18 +296,22 @@
                 this.offX = cX - this.boxX;
                 this.offY = cY - this.boxY;
 
-                const move = (e) => {
-                    if (!this.isDragging) return;
-                    e.preventDefault(); 
-                    let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
-                    let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
-                    this.boxX = x - this.offX;
-                    this.boxY = y - this.offY;
-                };
+            const move = (e) => {
+                if (!this.isDragging) return;
 
-                const stop = () => { this.isDragging = false; document.removeEventListener('mousemove', move); document.removeEventListener('touchmove', move); };
-                document.addEventListener('mousemove', move); document.addEventListener('touchmove', move, { passive: false });
-                document.addEventListener('mouseup', stop); document.addEventListener('touchend', stop);
+                e.preventDefault(); 
+
+                let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+                let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
+                this.boxX = x - this.offX;
+                this.boxY = y - this.offY;
+            };
+
+                const stop = () => { this.isDragging = false; document.addEventListener('touchmove', move, { passive: false }); };
+                document.addEventListener('mousemove', move);
+                document.addEventListener('touchmove', move, { passive: true }); // Ubah ke passive agar scroll lancar
+                document.addEventListener('mouseup', stop);
+                document.addEventListener('touchend', stop);
             }
         }
     }
