@@ -1,9 +1,0 @@
-    /* //* (Buttons) Gamified Pegas */
-    .btn-pegas-blue { background: #2563eb; border-bottom: 4px solid #1e3a8a; transition: all 0.1s; }
-    .btn-pegas-blue:active { transform: translateY(2px); border-bottom-width: 1px; }
-    .btn-pegas-emerald { background: #10b981; border-bottom: 4px solid #064e3b; transition: all 0.1s; }
-    .btn-pegas-emerald:active { transform: translateY(2px); border-bottom-width: 1px; }
-    .btn-menu-pegas {transition: all 0.1s ease; border-bottom-width: 6px;}
-    .btn-menu-pegas:active {transform: translateY(4px);border-bottom-width: 2px;}
-    .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
-    .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
