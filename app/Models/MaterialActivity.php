@@ -8,13 +8,13 @@ class MaterialActivity extends Model
 {
     protected $fillable = ['material_id', 'step_image', 'instruction', 'step_order'];
 
-    public function hotspots()
+    public function material()
     {
-        return $this->hasMany(Hotspot::class, 'material_activity_id');
+        return $this->belongsTo(Material::class);
     }
 
-    public function completedMaterials()
+    public function hotspots()
     {
-        return $this->hasMany(MaterialCompletion::class, 'user_id');
+        return $this->hasMany(Hotspot::class, 'material_activity_id')->orderBy('order');
     }
 }

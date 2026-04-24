@@ -20,8 +20,4 @@ class MissionStep extends Model {
     {
         return $this->hasMany(MissionHotspot::class, 'step_id');
     }
-    public function mission(): BelongsTo
-    {
-    return $this->belongsTo(Mission::class);
-    }
 }

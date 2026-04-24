@@ -9,10 +9,15 @@ class Material extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'category', 'material_type', 'background_image'];
+    protected $fillable = ['title', 'description', 'category'];
 
     public function activities()
     {
-        return $this->hasMany(MaterialActivity::class);
+        return $this->hasMany(MaterialActivity::class)->orderBy('step_order');
+    } 
+
+    public function completions()
+    {
+        return $this->hasMany(MaterialCompletion::class);
     }
 }

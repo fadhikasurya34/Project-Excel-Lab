@@ -16,7 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'class_id',
+        'class_id', // Biarkan jika memang masih dipakai di tempat lain
         'avatar',
         'profile_color', 
     ];
@@ -39,16 +39,16 @@ class User extends Authenticatable
         return $this->belongsToMany(Classroom::class, 'classroom_user')->withTimestamps();
     }
 
-    /** (Relation) Relasi One-to-Many ke log aktivitas materi */
-    public function materialActivities()
-    {
-        return $this->hasMany(MaterialActivity::class, 'user_id');
-    }
-
     /** (Relation) Relasi One-to-Many ke progres pengerjaan misi */
     public function progress()
     {
         return $this->hasMany(Progress::class, 'user_id');
+    }
+
+    /** (Relation) Relasi One-to-Many ke riwayat pengerjaan modul materi */
+    public function completedMaterials()
+    {
+        return $this->hasMany(MaterialCompletion::class, 'user_id');
     }
 
     /** (Attribute) Mengambil total XP user secara dinamis dari relasi ranking */
@@ -87,6 +87,7 @@ class User extends Authenticatable
 
         return ['title' => 'Active Learner', 'medal' => 'Apprentice.png', 'color' => 'slate'];
     }
+
     /** (Logic) Bootstrapping model: Menetapkan role 'siswa' secara default saat registrasi */
     protected static function boot()
     {
@@ -94,11 +95,5 @@ class User extends Authenticatable
         static::creating(function ($user) {
             $user->role = $user->role ?? 'siswa';
         });
-    }
-
-    /** (Relation) Relasi One-to-Many ke riwayat pengerjaan modul materi */
-    public function completedMaterials()
-    {
-        return $this->hasMany(MaterialCompletion::class, 'user_id');
     }
 }
