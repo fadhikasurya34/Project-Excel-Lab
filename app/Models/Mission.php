@@ -8,17 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Mission extends Model
 {
     protected $fillable = [
-        'title',        
-        'mission_type',
-        'question',
-        'key_answer',
-        'max_score',
-        'level_id',
-        'mission_image', 
-        'target_x',
-        'target_y',
-        'distractors'
+    'title', 'mission_type', 'question', 'key_answer', 
+    'max_score', 'level_id', 'mission_image', 'distractors'
     ];
+    
     public function level(): BelongsTo
     {
         return $this->belongsTo(Level::class);

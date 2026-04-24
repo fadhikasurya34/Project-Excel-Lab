@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MissionStep extends Model {
     protected $fillable = [
@@ -18,5 +19,9 @@ class MissionStep extends Model {
     public function hotspots()
     {
         return $this->hasMany(MissionHotspot::class, 'step_id');
+    }
+    public function mission(): BelongsTo
+    {
+    return $this->belongsTo(Mission::class);
     }
 }
