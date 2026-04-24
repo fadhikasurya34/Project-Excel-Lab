@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class MaterialCompletion extends Model
 {
-    // Tabel ini hanya mencatat User ID dan Material ID
     protected $fillable = ['user_id', 'material_id'];
 
     public function user()
