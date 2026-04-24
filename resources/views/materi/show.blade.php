@@ -81,14 +81,39 @@
 
     /* //* (Hotspot) Marker Ring */
     .marker-ring {
-        position: absolute; width: 34px; height: 34px; margin-top: -17px; margin-left: -17px;
-        border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;
-        font-weight: 900; font-size: 11px; transition: all 0.3s; z-index: 20; color: white;
+        position: absolute; 
+        width: 34px; 
+        height: 34px; 
+        margin-top: -17px; 
+        margin-left: -17px;
+        border-radius: 50%; 
+        border: 3px solid white;
+        background: transparent !important;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        font-weight: 900; 
+        font-size: 11px; 
+        transition: all 0.3s; 
+        z-index: 20;
     }
-    .marker-active { background: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); animation: pulse 1.5s infinite; cursor: pointer; }
-    .marker-done { background: #10b981; border-color: transparent; opacity: 0.7; }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+   .marker-active { 
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); 
+    animation: pulse-border 1.5s infinite; 
+    cursor: pointer; 
+    }
+    .marker-done { 
+        border-color: #10b981 !important; 
+        opacity: 1;
+        background: transparent !important;
+    }
 
+    @keyframes pulse-border { 
+    0% { box-shadow: 0 0 0 0px rgba(245, 158, 11, 0.4); } 
+    70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 
+    100% { box-shadow: 0 0 0 0px rgba(245, 158, 11, 0); } 
+    }
     /* //* (Video) Small Preview Style */
     .video-overlay {
         position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.7);
@@ -227,11 +252,13 @@
             
             <template x-for="(hs, index) in steps[currentStep].hotspots" :key="hs.id">
                 <div class="marker-ring" 
-                     :class="getMarkerClass(hs, index)"
-                     :style="`top: ${hs.y}%; left: ${hs.x}%;`"
-                     @click="handleInteraction(hs, index)">
-                    <span class="text-white" x-show="!clickedHotspots.includes(hs.id)" x-text="index + 1"></span>
-                    <span x-show="clickedHotspots.includes(hs.id)" class="text-white">✔</span>
+                    :class="getMarkerClass(hs, index)"
+                    :style="`top: ${hs.y}%; left: ${hs.x}%;`"
+                    @click="handleInteraction(hs, index)">
+                    
+                    <span class="text-amber-500" x-show="!clickedHotspots.includes(hs.id)" x-text="index + 1"></span>
+                    
+                    <span class="text-emerald-500" x-show="clickedHotspots.includes(hs.id)">✔</span>
                 </div>
             </template>
         </div>
@@ -309,7 +336,7 @@
 
                 const stop = () => { this.isDragging = false; document.addEventListener('touchmove', move, { passive: false }); };
                 document.addEventListener('mousemove', move);
-                document.addEventListener('touchmove', move, { passive: true }); // Ubah ke passive agar scroll lancar
+                document.addEventListener('touchmove', move, { passive: true });
                 document.addEventListener('mouseup', stop);
                 document.addEventListener('touchend', stop);
             }
