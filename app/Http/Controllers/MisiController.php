@@ -171,14 +171,14 @@ class MisiController extends Controller
         return max($maxScore - $penalty, $maxScore * 0.4);
     }
 
-    /** * //* (Action) KUNCI UTAMA: Penanganan sukses & Sinkronisasi XP absolut 
+    /** * //* (Action) KUNCI UTAMA: Penanganan sukses & Sinkronisasi XP absolut + Statistik
      */
     private function handleSuccess($mission, $earnedScore) {
         return DB::transaction(function () use ($mission, $earnedScore) {
             $userId = Auth::id();
             $currentMax = $mission->max_score;
 
-            // 1. Validasi skor agar tidak melebihi Max Score saat ini (Security check)
+            // 1. Validasi skor agar tidak melebihi Max Score saat ini
             $validatedScore = min($earnedScore, $currentMax);
 
             // 2. Ambil progres lama untuk perbandingan High Score
@@ -187,10 +187,9 @@ class MisiController extends Controller
                 ->first();
 
             $oldScore = $oldProgress ? $oldProgress->score : 0;
-
-            // 3. Tentukan nilai High Score (Hanya ambil yang terbesar)
             $finalHighScore = max($oldScore, $validatedScore);
 
+            // 3. Update status pengerjaan
             Progress::updateOrCreate(
                 ['user_id' => $userId, 'mission_id' => $mission->id],
                 [
@@ -200,13 +199,34 @@ class MisiController extends Controller
                 ]
             );
 
-            // //* 4. RECALCULATION METHOD: Hitung ulang total XP dari nol (Agar 100% akurat)
+            // 4. HITUNG ULANG STATISTIK UNTUK RANKING & SQUAD DETAIL
+            
+            // A. Total XP Akumulatif
             $totalXpNow = Progress::where('user_id', $userId)
                 ->where('status', 'completed')
                 ->sum('score');
 
+            // B. Jumlah Misi Selesai
+            $missionsCount = Progress::where('user_id', $userId)
+                ->where('status', 'completed')
+                ->count();
+
+            // C. Jumlah Modul (Level) Selesai
+            // Modul dianggap selesai jika semua misi di dalam level tersebut berstatus 'completed'
+            $modulesCount = Level::where('level_order', '>', 0)
+                ->whereDoesntHave('missions', function($query) use ($userId) {
+                    $query->whereNotIn('id', function($sub) use ($userId) {
+                        $sub->select('mission_id')->from('progress')
+                            ->where('user_id', $userId)
+                            ->where('status', 'completed');
+                    });
+                })->count();
+
+            // 5. Simpan ke Tabel ScoresAndRanking
             $scoreRecord = ScoresAndRanking::firstOrNew(['user_id' => $userId]);
             $scoreRecord->total_xp = $totalXpNow;
+            $scoreRecord->completed_missions_count = $missionsCount;
+            $scoreRecord->completed_modules_count = $modulesCount;
             $scoreRecord->save();
 
             $msg = ($validatedScore > $oldScore) 
@@ -267,12 +287,10 @@ class MisiController extends Controller
         $newMax = $mission->max_score;
 
         DB::transaction(function () use ($missionId, $newMax) {
-            // 1. Cap skor yang melebihi batas baru
             Progress::where('mission_id', $missionId)
                 ->where('score', '>', $newMax)
                 ->update(['score' => $newMax]);
 
-            // 2. Refresh total XP semua user yang terlibat
             $userIds = Progress::where('mission_id', $missionId)->pluck('user_id');
             foreach ($userIds as $userId) {
                 $total = Progress::where('user_id', $userId)->where('status', 'completed')->sum('score');

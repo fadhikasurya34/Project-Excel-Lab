@@ -24,13 +24,15 @@ class KelasController extends Controller
     /** (View) Menampilkan leaderboard internal kelas dan daftar Task */
     public function show($id)
     {
-        // Logika: Load kelas, user (dengan ranking untuk XP), dan tasks yang dibuat admin
+        // PEMBARUAN: Tambahkan users.progress dan users.completedMaterials ke dalam with()
         $classroom = Classroom::with([
             'users.ranking', 
+            'users.progress',           // Memuat data misi untuk dihitung di Blade
+            'users.completedMaterials', // Memuat data modul untuk dihitung di Blade
             'tasks.missions'
         ])->findOrFail($id);
 
-        // Mengurutkan user berdasarkan XP tertinggi (menggunakan collection sorting karena XP adalah accessor)
+        // Mengurutkan user berdasarkan XP tertinggi
         $sortedUsers = $classroom->users->sortByDesc(function($user) {
             return $user->total_xp;
         });
@@ -41,8 +43,7 @@ class KelasController extends Controller
         return view('kelas.show', compact('classroom', 'currentUserRank'));
     }
 
-    /** * (NEW View) Menampilkan detail isi Task (Daftar Misi Pilihan Admin)
-     */
+    /** * (NEW View) Menampilkan detail isi Task (Daftar Misi Pilihan Admin) */
     public function showTask($id)
     {
         $task = Task::with(['missions.level', 'classroom'])->findOrFail($id);

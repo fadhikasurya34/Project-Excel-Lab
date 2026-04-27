@@ -26,14 +26,18 @@
             availableMissions: @js($availableMissions),
             
             {{-- Data Users Mapping --}}
+            {{-- Cari bagian mapping users ini di file Blade --}}
             users: {{ $classroom->users->map(function($user) {
                 return [
                     'id' => $user->id,
                     'name' => (string) $user->name,
                     'email' => (string) $user->email,
                     'xp' => (int) ($user->total_xp ?? 0),
-                    'materials' => (int) ($user->material_activities_count ?? 0),
-                    'missions' => (int) ($user->progress_count ?? 0),
+
+                    // HITUNG LANGSUNG: Solusi paling akurat agar tidak muncul angka 0
+                    'materials' => (int) $user->completedMaterials->count(), 
+                    'missions' => (int) $user->progress->where('status', 'completed')->count(),
+                    
                     'badge_medal' => (string) ($user->rank_status['medal'] ?? '-'),
                     'badge_title' => (string) ($user->rank_status['title'] ?? 'Newbie'),
                     'avatar' => 'https://api.dicebear.com/9.x/bottts/svg?seed='.($user->avatar ?? $user->name).'&backgroundColor=transparent',

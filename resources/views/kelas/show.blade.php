@@ -236,9 +236,11 @@
                                         <span class="ml-2 px-2 py-0.5 bg-purple-600 text-white text-[8px] rounded-lg uppercase font-black tracking-widest shadow-lg shadow-purple-200">ME</span> 
                                     @endif
                                 </h4>
-                                <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">
-                                    {{ $siswa->material_activities_count ?? 0 }} Modul • {{ $siswa->progress_count ?? 0 }} Misi
-                                </p>
+                                    {{-- Di dalam loop @foreach($sortedUsers as $siswa) --}}
+                                    <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">
+                                        {{-- Hitung langsung dari koleksi yang sudah di-load di Controller --}}
+                                        {{ $siswa->completedMaterials->count() }} Modul • {{ $siswa->progress->where('status', 'completed')->count() }} Misi
+                                    </p>
                             </div>
                         </div>
 

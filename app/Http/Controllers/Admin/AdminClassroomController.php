@@ -43,30 +43,26 @@ class AdminClassroomController extends Controller
     public function show($id)
     {
         try {
-            // Eager Loading semua relasi agar data tersedia di Blade & Alpine
+            // Eager Loading relasi yang benar agar data tersedia untuk pemetaan Alpine.js
             $classroom = Classroom::with([
-                'users' => function($query) {
-                    // Hitung jumlah materi dan misi secara efisien
-                    $query->withCount(['materialActivities', 'progress']);
-                },
-                'users.ranking', 
-                'users.progress', 
+                'users.ranking',          // Mengambil data dari tabel scores_and_rankings
+                'users.progress',         // Mengambil riwayat misi (untuk hitung manual jika ranking 0)
+                'users.completedMaterials', // Nama yang benar sesuai Model User kamu
                 'tasks.missions' 
             ])
             ->withCount(['users']) 
             ->findOrFail($id);
             
-
             // Ambil semua misi untuk checklist 'Ambil Nilai'
             $availableMissions = Mission::orderBy('title', 'asc')->get();
 
             return view('admin.classrooms.show', compact('classroom', 'availableMissions'));
 
         } catch (\Exception $e) {
-            Log::error("Error pada AdminClassroomController@show: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("Error pada AdminClassroomController@show: " . $e->getMessage());
             
             return redirect()->route('admin.classrooms.index')
-                             ->with('error', 'Gagal memuat data kelas: ' . $e->getMessage());
+                            ->with('error', 'Gagal memuat data kelas: ' . $e->getMessage());
         }
     }
 
