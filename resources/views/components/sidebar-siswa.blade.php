@@ -17,7 +17,7 @@
         .profile-ring { animation: spin-slow 12s linear infinite; }
         @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- MEKANISME BASE (SAMAKAN DENGAN CODE KAMU) --- */
+        /* --- MEKANISME BASE --- */
         .sb-card {
             border-radius: 1.5rem;
             border: 2px solid #f1f5f9;
@@ -32,10 +32,8 @@
         }
         .dark .sb-card { background: #0f172a; border-color: #1e293b; border-bottom-color: #020617; }
         
-        /* Efek Pegas Pas Di-klik */
         .sb-card:active { transform: translateY(4px) scale(0.98); border-bottom-width: 2px; }
 
-        /* --- HOVER STATES: EMAS (MENU & TICKET) --- */
         .menu-gold:hover { 
             border-color: #fde68a; 
             border-bottom-color: #f59e0b; 
@@ -45,7 +43,6 @@
         }
         .dark .menu-gold:hover { background: rgba(245, 158, 11, 0.05) !important; border-color: #f59e0b; }
 
-        /* --- HOVER STATES: MERAH (LOGOUT) --- */
         .menu-red:hover { 
             border-color: #fecaca; 
             border-bottom-color: #ef4444; 
@@ -71,10 +68,9 @@
         $firstClass = $userClasses->first();
     @endphp
 
-    {{-- KONTENER SCROLL (Logout ada di dalam sini) --}}
     <div class="flex-1 overflow-y-auto scrollbar-hide p-5 md:p-6 pb-10">
         
-        {{-- Header Section: Close & Ticket --}}
+        {{-- Header Section --}}
         <div class="flex items-center justify-between mb-8">
             <button @click="sidebarOpen = false" 
                     class="w-10 h-10 flex items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-sm text-slate-400 hover:text-red-500 transition-all">
@@ -83,7 +79,6 @@
                 </svg>
             </button>
 
-            {{-- Tiket (Efek Button Gold tapi No Nav) --}}
             <div class="sb-card menu-gold cursor-default !py-2 !px-4 shadow-sm">
                 <div class="flex items-center space-x-2.5">
                     <img src="{{ asset('images/tiket.png') }}" class="w-6 h-6 object-contain">
@@ -95,7 +90,7 @@
             </div>
         </div>
 
-        {{-- Profil Avatar --}}
+        {{-- Profil Avatar & Small Edit Icon --}}
         <div class="text-center mb-10">
             <div class="relative w-24 h-24 mx-auto mb-4 profile-float">
                 <div class="absolute inset-0 rounded-[2.2rem] border-[3px] border-dashed opacity-40 profile-ring" style="border-color: #{{ $userColor }};"></div>
@@ -104,11 +99,19 @@
                 </div>
             </div>
             <p class="text-xl font-black text-slate-800 dark:text-white leading-tight capitalize truncate px-2">{{ $user->name }}</p>
+            
+            {{-- Icon Edit Profil Minimalis --}}
+            <a href="{{ route('profile.edit') }}" class="inline-flex items-center mt-2 px-3 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:text-amber-600 dark:hover:text-amber-500 transition-all active:scale-90 shadow-sm">
+                <svg class="w-2.5 h-2.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Edit Profil
+            </a>
         </div>
 
         <div class="flex flex-col space-y-4">
             
-            {{-- XP (Navigasi Aktif - Gold) --}}
+            {{-- XP --}}
             <a href="{{ route('misi.index') }}" class="sb-card menu-gold group">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
@@ -122,7 +125,7 @@
                 <span class="text-base font-black text-amber-600">{{ number_format($user->total_xp) }}</span>
             </a>
 
-            {{-- Rank (Navigasi Aktif - Gold) --}}
+            {{-- Rank --}}
             <a href="{{ route('peringkat.index') }}" class="sb-card menu-gold group">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
@@ -136,7 +139,7 @@
                 <span class="text-base font-black text-amber-600">#{{ $globalRank }}</span>
             </a>
 
-            {{-- Title Badge (SHOW ONLY - Gold) --}}
+            {{-- Title Badge --}}
             <div class="sb-card menu-gold group cursor-default">
                 <div class="flex items-center space-x-3.5">
                     <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
@@ -149,7 +152,7 @@
                 </div>
             </div>
 
-            {{-- Squad (Navigasi Aktif - Gold) --}}
+            {{-- Squad --}}
             <a href="{{ route('kelas.index') }}" class="sb-card menu-gold group">
                 <div class="flex items-center space-x-3.5 overflow-hidden flex-1 min-w-0">
                     <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
@@ -165,7 +168,7 @@
 
             <div class="h-4"></div>
 
-            {{-- LOGOUT (Navigasi Aktif - Merah & Ikut Scroll) --}}
+            {{-- LOGOUT --}}
             <form method="POST" action="{{ route('logout') }}" class="pb-10">
                 @csrf
                 <button type="submit" class="sb-card menu-red w-full flex items-center justify-center space-x-3 group active:scale-95">
