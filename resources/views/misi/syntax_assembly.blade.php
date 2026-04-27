@@ -135,7 +135,7 @@
             <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Lab Perakitan Rumus</span>
         </div>
     </div>
-    <div class="ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-4 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 font-game text-emerald-600 text-xl tracking-wider hidden md:block">
+    <div class="ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-4 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 font-game text-emerald-600 text-xl tracking-wider">
         <span id="header-xp-display">{{ $mission->max_score }}</span> XP
     </div>
 @endsection
@@ -317,7 +317,7 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        this.triggerToast('Berhasil!', data.message, 'misi.png', 'info');
+                        this.triggerToast('Berhasil!', data.message, 'bintang.png', 'info');
                         setTimeout(() => { window.location.href = data.next_url; }, 1500);
                     } else {
                         this.status = 'wrong'; 
