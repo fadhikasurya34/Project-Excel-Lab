@@ -13,7 +13,9 @@ class ScoresAndRanking extends Model
         'user_id',
         'class_id',
         'total_xp',
-        'score_type'
+        'score_type',
+        'completed_missions_count',
+        'completed_modules_count'
     ];
 
     public function user(): BelongsTo

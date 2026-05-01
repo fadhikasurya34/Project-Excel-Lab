@@ -42,7 +42,6 @@
         position: relative; 
         width: 100%; 
         min-height: calc(100vh - 160px); 
-        /* Izinkan scroll vertikal tapi matikan gesture bawaan browser */
         touch-action: pan-y; 
     }
     .main-scroller { 

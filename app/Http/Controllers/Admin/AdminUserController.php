@@ -67,7 +67,6 @@ class AdminUserController extends Controller
         return DB::transaction(function () use ($id) {
             $user = User::findOrFail($id);
             
-            // Bersihkan semua data terkait sebelum hapus user (Manual Cascade)
             Progress::where('user_id', $user->id)->delete();
             ScoresAndRanking::where('user_id', $user->id)->delete();
             RetryTicket::where('user_id', $user->id)->delete();

@@ -8,7 +8,6 @@ use App\Models\Mission;
 use App\Models\Task;   
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 
 class AdminClassroomController extends Controller
 {
@@ -43,11 +42,10 @@ class AdminClassroomController extends Controller
     public function show($id)
     {
         try {
-            // Eager Loading relasi yang benar agar data tersedia untuk pemetaan Alpine.js
             $classroom = Classroom::with([
-                'users.ranking',          // Mengambil data dari tabel scores_and_rankings
-                'users.progress',         // Mengambil riwayat misi (untuk hitung manual jika ranking 0)
-                'users.completedMaterials', // Nama yang benar sesuai Model User kamu
+                'users.ranking',        
+                'users.progress',     
+                'users.completedMaterials', 
                 'tasks.missions' 
             ])
             ->withCount(['users']) 
@@ -152,14 +150,13 @@ class AdminClassroomController extends Controller
             "Expires"             => "0"
         ];
 
-        // Gunakan titik koma (;) sebagai delimiter agar Excel Indonesia langsung rapi
+
         $callback = function() use($task, $missionIds, $maxScore) {
             $file = fopen('php://output', 'w');
             
-            // Tambahkan BOM (Byte Order Mark) agar Excel mengenali UTF-8
+
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Header Tabel
             fputcsv($file, ['Nama Praktikan', 'Email', 'Total XP', 'Skor Akhir (1-100)'], ';');
 
             foreach ($task->classroom->users as $user) {
@@ -168,7 +165,6 @@ class AdminClassroomController extends Controller
                 // Hitung nilai skala 100
                 $finalGrade = $maxScore > 0 ? round(($userScore / $maxScore) * 100, 2) : 0;
 
-                // Isi baris data dengan pemisah titik koma
                 fputcsv($file, [
                     $user->name, 
                     $user->email, 

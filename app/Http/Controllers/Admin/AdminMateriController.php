@@ -9,8 +9,8 @@ use App\Models\Hotspot;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Cloudinary\Configuration\Configuration; // Import Native Config
-use Cloudinary\Api\Upload\UploadApi; // Import Native Upload
+use Cloudinary\Configuration\Configuration;
+use Cloudinary\Api\Upload\UploadApi;
 
 class AdminMateriController extends Controller
 {

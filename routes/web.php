@@ -151,16 +151,9 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
         Route::get('/users', 'index')->name('users.index');
         Route::get('/users/{id}', 'show')->name('users.show');
         Route::post('/users/{id}/reset-xp', 'resetXP')->name('users.reset-xp');
-        
-        // //* NEW: Rute untuk mereset tiket remedial harian siswa
         Route::post('/users/{id}/reset-tickets', 'resetRetryTickets')->name('users.reset-tickets');
-        
         Route::delete('/users/{id}', 'destroy')->name('users.destroy');
-        
-        // Rute hapus pengerjaan MISI
         Route::delete('/users/progress/{id}', 'destroyMissionProgress')->name('users.destroy-progress');
-        
-        // Rute hapus pengerjaan MATERI
         Route::delete('/users/material-progress/{id}', 'destroyMaterialProgress')->name('users.destroy-material-progress');
     });
     

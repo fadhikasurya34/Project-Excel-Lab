@@ -15,7 +15,6 @@ class RoleManager
             return redirect('login');
         }
 
-        // Jika role user tidak sesuai, kembalikan ke dashboard siswa
         if (Auth::user()->role !== $role) {
             return redirect('/dashboard');
         }
