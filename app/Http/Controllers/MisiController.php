@@ -241,27 +241,31 @@ class MisiController extends Controller
         });
     }
 
-    /** * //* (Helper) Standarisasi rumus Excel 
+/** * //* (Helper) Standarisasi rumus Excel - Perbaikan: Kompatibilitas & Safety
      */
     private function normalizeFormula(?string $formula) {
         if (!$formula) return "";
         $search  = ["'", '“', '”', '‘', '’', ' '];
         $replace = ['"', '"', '"', '"', '"', ''];
-        $clean = strtoupper(trim(str_replace($search, $replace, $formula)));
-        if (str_starts_with($clean, '=')) $clean = substr($clean, 1);
+        $clean = strtoupper(trim(str_replace($search, $replace, (string)$formula)));
+        
+        // Ganti str_starts_with dengan substr untuk kompatibilitas versi PHP
+        if (substr($clean, 0, 1) === '=') $clean = substr($clean, 1);
         return $clean;
     }
 
-    /** * //* (Helper) Hierarki Feedback (Nudge) 
+/** * //* (Helper) Hierarki Feedback (Nudge) - Perbaikan: Logic & PHP Version Compatibility
      */
     private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
         if (empty($userAnswer)) return "Kotak rakitan masih kosong.";
 
-        // Feedback: Fungsi Utama
-        preg_match('/^[A-Z]+/', $correctAnswer, $matches);
+        // Perbaikan Regex: Menghapus '^' agar fungsi terdeteksi meskipun diawali kurung '('
+        preg_match('/[A-Z]{2,}/', $correctAnswer, $matches);
         $mainFunc = $matches[0] ?? null;
-        if ($mainFunc && !str_contains($userAnswer, $mainFunc)) {
+
+        // Ganti str_contains dengan strpos untuk kompatibilitas & cegah error jika null
+        if ($mainFunc && strpos($userAnswer, $mainFunc) === false) {
             return "Gunakan fungsi kalkulasi yang tepat untuk skenario ini.";
         }
 
