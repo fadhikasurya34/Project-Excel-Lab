@@ -126,40 +126,50 @@ class MisiController extends Controller
         });
     }
 
-    /** * //* (Process) Validasi jawaban siswa via AJAX 
+/** * //* (Process) Validasi jawaban siswa via AJAX 
      */
     public function checkAnswer(Request $request, string $id)
     {
-        $mission = Mission::with('level')->findOrFail($id);
-        $userId = Auth::id();
+        try {
+            $mission = Mission::with('level')->findOrFail($id);
+            $userId = Auth::id();
 
-        $progress = Progress::firstOrCreate(
-            ['user_id' => $userId, 'mission_id' => $mission->id],
-            ['attempts' => 0, 'status' => 'in_progress']
-        );
+            $progress = Progress::firstOrCreate(
+                ['user_id' => $userId, 'mission_id' => $mission->id],
+                ['attempts' => 0, 'status' => 'in_progress']
+            );
 
-        if ($mission->mission_type === 'Point & Click') {
-            $frontendAttempts = $request->attempts ?? 0;
-            $finalScore = $this->calculateFinalScore((int)$mission->max_score, (int)$frontendAttempts);
-            return $this->handleSuccess($mission, (float)$finalScore);
+            if ($mission->mission_type === 'Point & Click') {
+                $frontendAttempts = $request->attempts ?? 0;
+                $finalScore = $this->calculateFinalScore((int)$mission->max_score, (int)$frontendAttempts);
+                return $this->handleSuccess($mission, (float)$finalScore);
+            }
+
+            $userAnswer = $this->normalizeFormula($request->answer);
+            $correctAnswer = $this->normalizeFormula($mission->key_answer);
+
+            if ($userAnswer === $correctAnswer) {
+                $finalScore = $this->calculateFinalScore((int)$mission->max_score, (int)$progress->attempts);
+                return $this->handleSuccess($mission, (float)$finalScore);
+            }
+
+            $progress->attempts += 1;
+            $progress->save();
+
+            return response()->json([
+                'status' => 'error', 
+                'message' => $this->generateFeedback((string)$userAnswer, (string)$correctAnswer),
+                'attempts' => $progress->attempts,
+            ]);
+
+        } catch (\Exception $e) {
+            // Ini akan memaksa error aslinya tampil di alert/toast merah aplikasi
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sistem Error: ' . $e->getMessage() . ' (Baris ' . $e->getLine() . ')',
+                'attempts' => 0
+            ]);
         }
-
-        $userAnswer = $this->normalizeFormula($request->answer);
-        $correctAnswer = $this->normalizeFormula($mission->key_answer);
-
-        if ($userAnswer === $correctAnswer) {
-            $finalScore = $this->calculateFinalScore((int)$mission->max_score, (int)$progress->attempts);
-            return $this->handleSuccess($mission, (float)$finalScore);
-        }
-
-        $progress->attempts += 1;
-        $progress->save();
-
-        return response()->json([
-            'status' => 'error', 
-            'message' => $this->generateFeedback((string)$userAnswer, (string)$correctAnswer),
-            'attempts' => $progress->attempts,
-        ]);
     }
 
     /** * //* (Helper) Kalkulasi skor dengan penalti 5% setelah percobaan ke-3 
