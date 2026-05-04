@@ -146,7 +146,7 @@
                                 <p class="text-sm font-bold text-slate-700 capitalize leading-tight truncate w-32">
                                     {{ explode(' ', $ranking->user->name)[0] }}
                                 </p>
-                                <p class="text-[10px] font-medium text-slate-400 uppercase tracking-tight truncate">
+                                <p class="text-[10px] font-medium text-slate-400 tracking-tight truncate">
                                     {{ $ranking->user->classrooms->first()->name ?? 'Tanpa Squad' }}
                                 </p>
                             </div>
@@ -174,7 +174,7 @@
                 </div>
                 <div>
                     <h4 class="font-bold text-slate-900 text-sm">Editor Materi</h4>
-                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">Kelola Konten Belajar</p>
+                    <p class="text-[10px] text-slate-400 font-medium tracking-widest mt-1">Kelola Konten Belajar</p>
                 </div>
             </a>
 
@@ -184,7 +184,7 @@
                 </div>
                 <div>
                     <h4 class="font-bold text-slate-900 text-sm">Engine Misi</h4>
-                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">Logika & Simulasi Lab</p>
+                    <p class="text-[10px] text-slate-400 font-medium  tracking-widest mt-1">Logika & Simulasi Lab</p>
                 </div>
             </a>
 
@@ -194,7 +194,7 @@
                 </div>
                 <div>
                     <h4 class="font-bold text-slate-900 text-sm">Squad Management</h4>
-                    <p class="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">Kontrol Akses Kelas</p>
+                    <p class="text-[10px] text-slate-400 font-medium tracking-widest mt-1">Kontrol Akses Kelas</p>
                 </div>
             </a>
         </div>

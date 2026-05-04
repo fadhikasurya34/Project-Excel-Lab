@@ -205,15 +205,6 @@
         </div>
     </div>
 
-    {{-- Footer --}}
-    <footer class="mt-20 py-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between opacity-50 px-2">
-        <div class="text-left leading-tight">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2026 UNNES Informatics Education</p>
-            <p class="text-[9px] font-medium text-slate-400 uppercase mt-1">Virtual Lab Excel Procedure Builder</p>
-        </div>
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Cloud Storage Enabled</span>
-    </footer>
-
     {{-- (Logic) Sortable JS --}}
     <script>
         const el = document.getElementById('sortable-mission-steps');

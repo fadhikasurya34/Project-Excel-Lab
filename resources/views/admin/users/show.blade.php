@@ -38,10 +38,10 @@
     </style>
 
     {{-- (Process) Inisialisasi State Tab & Filter Pencarian Aktif --}}
-    <div class="min-h-screen bg-admin p-6 sm:p-10" x-data="{ tab: 'misi', search: '' }">
+    <div class="min-h-screen bg-admin p-4 sm:p-10" x-data="{ tab: 'misi', search: '' }">
         <div class="max-w-7xl mx-auto relative">
             
-            {{-- (Notification) Toast System: Feedback sinkronisasi data --}}
+            {{-- (Notification) Toast System --}}
             @if(session('success') || session('error') || session('status'))
                 <div x-data="{ show: true, progress: 100 }"
                     x-show="show"
@@ -50,9 +50,9 @@
                     x-transition:enter-start="translate-y-10 opacity-0 scale-90"
                     x-transition:enter-end="translate-y-0 opacity-100 scale-100"
                     x-transition:leave="transition ease-in duration-300"
-                    class="fixed bottom-10 right-10 z-[200]">
+                    class="fixed bottom-6 right-4 sm:bottom-10 sm:right-10 z-[200]">
                     
-                    <div class="bg-slate-900 border {{ session('error') ? 'border-red-500/30' : 'border-orange-500/30' }} p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center space-x-4 min-w-[320px] overflow-hidden relative">
+                    <div class="bg-slate-900 border {{ session('error') ? 'border-red-500/30' : 'border-orange-500/30' }} p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center space-x-4 min-w-[280px] sm:min-w-[320px] overflow-hidden relative">
                         <div class="absolute -top-10 -right-10 w-24 h-24 {{ session('error') ? 'bg-red-600/20' : 'bg-orange-600/20' }} blur-3xl"></div>
                         
                         <div class="flex-shrink-0 w-10 h-10 {{ session('error') ? 'bg-red-600' : 'bg-orange-600' }} rounded-xl flex items-center justify-center shadow-lg">
@@ -77,8 +77,8 @@
                 </div>
             @endif
 
-            {{-- (Section) Header: Navigasi & Search Bar Universal --}}
-            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+            {{-- (Section) Header --}}
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-6">
                 <div>
                     <a href="{{ route('admin.users.index') }}" class="group inline-flex items-center text-orange-600 font-bold text-[10px] tracking-widest uppercase hover:text-orange-700 transition-colors mb-4">
                         <svg class="w-4 h-4 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
@@ -86,8 +86,8 @@
                         </svg>
                         Kembali ke monitoring
                     </a>
-                    <h1 class="text-3xl font-extrabold text-slate-900 text-header tracking-tight">Profil <span class="text-orange-600">Praktikan</span></h1>
-                    <p class="text-slate-500 font-medium text-sm mt-1">Kelola progres pengerjaan dan detail aktivitas individu.</p>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 text-header tracking-tight">Profil <span class="text-orange-600">Praktikan</span></h1>
+                    <p class="text-slate-500 font-medium text-xs sm:text-sm mt-1">Kelola progres pengerjaan dan detail aktivitas individu.</p>
                 </div>
 
                 <div class="relative w-full md:w-80 group">
@@ -99,16 +99,16 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
                 
                 {{-- (Section) Kolom Kiri: Ringkasan Identitas --}}
                 <div class="lg:col-span-1 space-y-6">
-                    <div class="admin-card p-8 flex flex-col items-center">
+                    <div class="admin-card p-6 sm:p-8 flex flex-col items-center">
                         <div class="w-24 h-24 rounded-[2rem] border-4 border-slate-50 shadow-md overflow-hidden mb-6" style="background-color: #{{ $student->profile_color ?? 'f97316' }}">
                             <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $student->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full pt-2">
                         </div>
                         <h2 class="text-xl font-black text-slate-800 text-center leading-tight capitalize">{{ $student->name }}</h2>
-                        <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wider mt-2 mb-8">{{ $student->email }}</p>
+                        <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wider mt-2 mb-8 truncate w-full text-center">{{ $student->email }}</p>
 
                         @php
                             $usedTickets = \App\Models\RetryTicket::where('user_id', $student->id)->where('date', now()->toDateString())->value('used_count') ?? 0;
@@ -143,9 +143,9 @@
 
                     {{-- (Action) Tombol Administrator --}}
                     <div class="space-y-3 pt-2">
-                        <form action="{{ route('admin.users.reset-tickets', $student->id) }}" method="POST" onsubmit="return confirm('Kembalikan 3 tiket remedial untuk siswa ini hari ini?')">
+                        <form action="{{ route('admin.users.reset-tickets', $student->id) }}" method="POST" onsubmit="return confirm('Kembalikan 3 tiket remedial?')">
                             @csrf
-                            <button type="submit" class="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-orange-500 hover:shadow-md transition-all group">
+                            <button type="submit" class="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-orange-500 transition-all group">
                                 <div class="flex items-center space-x-3">
                                     <div class="w-8 h-8 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center text-lg">🎟️</div>
                                     <span class="text-xs font-bold text-slate-700">Pulihkan Tiket</span>
@@ -154,7 +154,7 @@
                             </button>
                         </form>
 
-                        <form action="{{ route('admin.users.reset-xp', $student->id) }}" method="POST" onsubmit="return confirm('Aksi ini akan menghapus semua XP dan riwayat misi. Lanjutkan?')">
+                        <form action="{{ route('admin.users.reset-xp', $student->id) }}" method="POST" onsubmit="return confirm('Reset seluruh XP?')">
                             @csrf
                             <button type="submit" class="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-red-500 transition-all group">
                                 <div class="flex items-center space-x-3">
@@ -169,36 +169,38 @@
                     </div>
                 </div>
 
-                {{-- (Section) Kolom Kanan: Riwayat Aktivitas --}}
+                {{-- (Section) Kolom Kanan: Riwayat Aktivitas - FIXED NO SCROLL --}}
                 <div class="lg:col-span-3">
                     <div class="admin-card overflow-hidden min-h-[600px] flex flex-col">
                         
                         {{-- Tab Misi --}}
                         <div x-show="tab === 'misi'" x-transition class="flex flex-col h-full">
-                            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Riwayat Penyelesaian Misi</h3>
-                                <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ $completedMissions->count() }} Data</span>
+                            <div class="px-6 sm:px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Misi Selesai</h3>
+                                <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ $completedMissions->count() }}</span>
                             </div>
-                            <div class="p-8 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                            <div class="p-4 sm:p-8 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                 @forelse($completedMissions as $progress)
                                     <div x-show="search === '' || '{{ strtolower($progress->mission->title) }}'.includes(search.toLowerCase())" 
-                                        class="p-5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between hover:border-orange-200 transition-all shadow-sm">
-                                        <div class="flex items-center space-x-5 min-w-0">
+                                        class="p-4 sm:p-5 bg-white border border-slate-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between hover:border-orange-200 transition-all shadow-sm gap-4">
+                                        
+                                        <div class="flex items-center space-x-4 min-w-0 flex-1">
                                             <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                             </div>
-                                            <div class="truncate">
+                                            <div class="min-w-0">
                                                 <p class="font-bold text-slate-800 text-sm truncate capitalize leading-tight">{{ $progress->mission->title }}</p>
-                                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 truncate">
                                                     {{ $progress->mission->level->category }} • {{ $progress->completion_time->diffForHumans() }}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center space-x-4">
-                                            <div class="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 font-black text-xs">
+
+                                        <div class="flex items-center justify-between sm:justify-end space-x-4 border-t sm:border-t-0 border-slate-50 pt-3 sm:pt-0 shrink-0">
+                                            <div class="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 font-black text-xs whitespace-nowrap">
                                                 +{{ $progress->score }} XP
                                             </div>
-                                            <form action="{{ route('admin.users.destroy-progress', $progress->id) }}" method="POST" class="m-0 flex items-center" onsubmit="return confirm('Hapus riwayat ini?')">
+                                            <form action="{{ route('admin.users.destroy-progress', $progress->id) }}" method="POST" class="m-0 flex items-center" onsubmit="return confirm('Hapus riwayat?')">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="btn-action text-slate-300 hover:text-red-500 hover:bg-red-50">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -216,27 +218,29 @@
 
                         {{-- Tab Materi --}}
                         <div x-show="tab === 'materi'" x-cloak x-transition class="flex flex-col h-full">
-                            <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Riwayat Eksplorasi Materi</h3>
-                                <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ $completedMaterials->count() }} Data</span>
+                            <div class="px-6 sm:px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Materi Dibaca</h3>
+                                <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ $completedMaterials->count() }}</span>
                             </div>
-                            <div class="p-8 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                            <div class="p-4 sm:p-8 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                                 @forelse($completedMaterials as $mProg)
                                     <div x-show="search === '' || '{{ strtolower($mProg->material->title ?? 'materi') }}'.includes(search.toLowerCase())"
-                                        class="p-5 bg-white border border-slate-100 rounded-2xl flex items-center justify-between hover:border-orange-200 transition-all shadow-sm">
-                                        <div class="flex items-center space-x-5 min-w-0">
+                                        class="p-4 sm:p-5 bg-white border border-slate-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between hover:border-orange-200 transition-all shadow-sm gap-4">
+                                        
+                                        <div class="flex items-center space-x-4 min-w-0 flex-1">
                                             <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                                             </div>
-                                            <div class="truncate">
+                                            <div class="min-w-0">
                                                 <p class="font-bold text-slate-800 text-sm truncate capitalize leading-tight">{{ $mProg->material->title ?? 'Materi Tidak Ditemukan' }}</p>
-                                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1 truncate">
                                                     Selesai dibaca pada {{ $mProg->created_at->format('d M Y') }}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center space-x-4">
-                                            <form action="{{ route('admin.users.destroy-material-progress', $mProg->id) }}" method="POST" class="m-0 flex items-center" onsubmit="return confirm('Hapus riwayat baca materi ini?')">
+
+                                        <div class="flex items-center justify-between sm:justify-end space-x-4 border-t sm:border-t-0 border-slate-50 pt-3 sm:pt-0 shrink-0">
+                                            <form action="{{ route('admin.users.destroy-material-progress', $mProg->id) }}" method="POST" class="m-0 flex items-center" onsubmit="return confirm('Hapus riwayat baca?')">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="btn-action text-slate-300 hover:text-red-500 hover:bg-red-50">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -253,16 +257,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-                {{-- Footer Terminal --}}
-                <footer class="mt-20 py-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between opacity-50 px-2">
-                    <div class="text-left leading-tight">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">© 2026 UNNES Informatics Education</p>
-                        <p class="text-[9px] font-medium text-slate-400 uppercase mt-1">Penelitian Pengembangan Virtual Lab Excel</p>
-                    </div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Production v1.0</span>
-                </footer>
             </div>
         </div>
     </div>

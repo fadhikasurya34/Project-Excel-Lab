@@ -167,15 +167,6 @@
                 @endforelse
             </div>
         </div>
-
-        {{-- Footer Terminal Rapi --}}
-        <footer class="mt-16 py-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between opacity-50 px-2 gap-4">
-            <div class="text-center md:text-left leading-tight">
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">© 2026 UNNES Informatics Education</p>
-                <p class="text-[8px] font-medium text-slate-400 uppercase mt-1">Virtual Lab Excel Storyboard Engine</p>
-            </div>
-            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Production v1.0</span>
-        </footer>
     </div>
 
     {{-- Sortable JS Logic --}}
