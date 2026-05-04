@@ -163,7 +163,6 @@ class MisiController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            // Ini akan memaksa error aslinya tampil di alert/toast merah aplikasi
             return response()->json([
                 'status' => 'error',
                 'message' => 'Sistem Error: ' . $e->getMessage() . ' (Baris ' . $e->getLine() . ')',
@@ -264,34 +263,62 @@ class MisiController extends Controller
         return $clean;
     }
 
-/** * //* (Helper) Hierarki Feedback (Nudge) - Perbaikan: Logic & PHP Version Compatibility
+    /**
+     * //* (Helper) Hierarki Feedback (Nudge) - Versi Clue / Petunjuk Halus
      */
     private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
-        if (empty($userAnswer)) return "Kotak rakitan masih kosong.";
+        if (empty($userAnswer)) return "KOTAK RAKITAN MASIH KOSONG. MULAI RAKIT RUMUSMU!";
 
-        // Perbaikan Regex: Menghapus '^' agar fungsi terdeteksi meskipun diawali kurung '('
-        preg_match('/[A-Z]{2,}/', $correctAnswer, $matches);
-        $mainFunc = $matches[0] ?? null;
+        // Tokenisasi Dasar
+        $pattern = '/([A-Z]+(?=\())|([A-Z0-9]+)|(".+?")|([=\>\<\,\;\:\+\-\*\/])|([\(\)])/';
+        preg_match_all($pattern, $correctAnswer, $matchesCorrect);
+        preg_match_all($pattern, $userAnswer, $matchesUser);
 
-        // Ganti str_contains dengan strpos untuk kompatibilitas & cegah error jika null
-        if ($mainFunc && strpos($userAnswer, $mainFunc) === false) {
-            return "Gunakan fungsi kalkulasi yang tepat untuk skenario ini.";
+        $tokensCorrect = $matchesCorrect[0];
+        $tokensUser = $matchesUser[0];
+
+        // 1. PRIORITAS 1: Deteksi Komponen "Penyusup" (Salah/Asing)
+        $countsCorrect = array_count_values($tokensCorrect);
+        $countsUser = array_count_values($tokensUser);
+
+        foreach ($countsUser as $token => $count) {
+            if (!isset($countsCorrect[$token])) {
+                return "ADA KOMPONEN 'PENYUSUP' YANG TIDAK COCOK UNTUK RUMUS INI.";
+            }
+            
+            if ($count > $countsCorrect[$token]) {
+                return "TERDETEKSI PEMAKAIAN BLOK YANG BERLEBIHAN. PERIKSA EFISIENSI RUMUSMU.";
+            }
         }
 
-        // Feedback: Referensi Sel
-        if (preg_match('/[A-Z]+\$?[0-9]+/', $correctAnswer) && !preg_match('/[A-Z]+\$?[0-9]+/', $userAnswer)) {
-            return "Rumus ini membutuhkan referensi sel (misal: A1, B2).";
-        }
-
-        // Feedback: Kurung
+        // 2. PRIORITAS 2: Cek Keseimbangan Kurung
         if (substr_count($userAnswer, '(') !== substr_count($userAnswer, ')')) {
-            return "Struktur kurung belum seimbang.";
+            return "ADA MASALAH PADA PASANGAN KURUNG. COBA CEK LAGI KESEIMBANGANNYA.";
         }
 
-        return "Komponen sudah lengkap, periksa kembali urutan logikanya.";
-    }
+        // 3. PRIORITAS 3: Deteksi Komponen yang Belum Dimasukkan (Missing)
+        if (count($tokensUser) < count($tokensCorrect)) {
+            // Cek apakah yang kurang itu fungsi atau sel (secara umum)
+            $diff = array_diff($tokensCorrect, $tokensUser);
+            $firstMissing = reset($diff);
 
+            if (preg_match('/^[A-Z]{2,}$/', $firstMissing)) {
+                return "LOGIKA RUMUS INI BUTUH SATU FUNGSI KALKULASI LAGI.";
+            }
+            return "INVENTARIS KOMPONENMU MASIH ADA YANG KURANG LENGKAP.";
+        }
+
+        // 4. PRIORITAS 4: Deteksi Kesalahan Urutan (Sequence Error)
+        for ($i = 0; $i < count($tokensCorrect); $i++) {
+            if (isset($tokensUser[$i]) && $tokensUser[$i] !== $tokensCorrect[$i]) {
+                if ($i === 0) return "AWALI RAKITAN DENGAN LANGKAH YANG LEBIH TEPAT.";
+                return "KOMPONEN SUDAH BENAR, TAPI URUTAN LOGIKANYA MASIH PERLU DIPERBAIKI.";
+            }
+        }
+
+        return "KOMPONEN SUDAH LENGKAP, PERIKSA KEMBALI POSISI DETAILNYA.";
+    }
     /**
      * //* (Admin Sync) Opsional: Jalankan ini jika Admin mengubah max_score misi 
      */

@@ -84,16 +84,27 @@
     }
     .marker-done { background: #10b981; border-color: transparent; opacity: 0.8; cursor: default; }
 
-    /* //* (Notification) Original Toast Style */
+    /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
     .toast-top {
-        position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
-        z-index: 1000; background: white; border-radius: 1.5rem;
-        border: 2px solid #3b82f6; border-bottom: 6px solid #1d4ed8;
-        min-width: 260px; padding: 0.8rem 1.2rem; text-align: center;
+        position: fixed; 
+        top: 4.5rem; /* Menurunkan posisi agar tidak tertutup notch/status bar */
+        left: 50%; 
+        transform: translateX(-50%);
+        z-index: 1000; 
+        background: white; 
+        border-radius: 1.2rem; /* Diperkecil dari 1.5rem */
+        border: 2px solid #3b82f6; 
+        border-bottom: 4px solid #1d4ed8; /* Diperkecil dari 6px */
+        min-width: 220px; /* Diperkecil dari 260px */
+        padding: 0.5rem 1rem; /* Diperkecil dari 0.8rem 1.2rem */
+        text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .dark .toast-top { background: #1e293b; border-color: #3b82f6; border-bottom-color: #1e40af; }
-    @keyframes toast-down { from { transform: translate(-50%, -100%) scale(0.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+    @keyframes toast-down { 
+        from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
+        to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
+    }
     .font-game { font-family: 'Bangers', cursive; }
 </style>
 @endpush
@@ -140,14 +151,14 @@
         <div class="flash-error"></div>
     </template>
 
-    {{-- Toast --}}
+    {{-- Toast (FIXED SIZE) --}}
     <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-slate-900/50">
-            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-7 h-7 object-contain animate-bounce">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0"> {{-- w-10 h-10 -> w-8 h-8 --}}
+            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain animate-bounce"> {{-- w-7 -> w-5 --}}
         </div>
         <div class="text-left flex-1">
             <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1" x-text="toast.message"></p>
+            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
         </div>
     </div>
 
@@ -278,7 +289,6 @@
                 });
 
                 // --- FIX: PAKSA UPDATE UI SAAT REFRESH ---
-                // Baris ini memastikan saat refresh, angka 200 langsung berubah ke 180 (sesuai storage)
                 document.getElementById('header-xp-display').innerText = this.currentPotentialXP;
                 document.getElementById('header-step-current').innerText = this.currentStep + 1;
             },
@@ -340,7 +350,7 @@
                     this.currentPotentialXP = Math.max(this.currentPotentialXP - penalty, Math.floor({{ $mission->max_score }} * 0.4));
                     this.showToast('Klik Salah', 'Point XP berkurang sedikit.', 'alert.png');
                 } else {
-                    this.showToast('Klik Salah', this.isReview ? 'Mode Review: XP aman.' : 'Hati-hati dalam melangkah.', 'alert.png');
+                    this.showToast('Klik Salah', this.isReview ? 'Mode Review: XP aman.' : 'Perhatikan instruksi.', 'alert.png');
                 }
 
                 this.saveToLocal();

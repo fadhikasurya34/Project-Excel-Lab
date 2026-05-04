@@ -43,7 +43,7 @@
         position: relative; 
         width: 100%; 
         min-height: calc(100vh - 160px); 
-        touch-action: pan-y; /* 'pan-y' memungkinkan scroll HP jalan kembali */
+        touch-action: pan-y; 
     }
     .main-scroller { 
         overflow-y: auto !important; 
@@ -121,20 +121,31 @@
     }
     .video-window-small { width: 100%; max-width: 450px; }
 
-    /* //* (Notification) Original Toast */
+    /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
     .toast-top {
-        position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
-        z-index: 1000; background: white; border-radius: 1.5rem;
-        border: 2px solid #3b82f6; border-bottom: 6px solid #1d4ed8;
-        min-width: 260px; padding: 0.8rem 1.2rem; text-align: center;
+        position: fixed; 
+        top: 4.5rem; 
+        left: 50%; 
+        transform: translateX(-50%);
+        z-index: 1000; 
+        background: white; 
+        border-radius: 1.2rem; 
+        border: 2px solid #3b82f6; 
+        border-bottom: 4px solid #1d4ed8; 
+        min-width: 220px; 
+        padding: 0.5rem 1rem; 
+        text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    @keyframes toast-down { from { transform: translate(-50%, -100%) scale(0.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+    .dark .toast-top { background: #1e293b; border-color: #3b82f6; border-bottom-color: #1e40af; }
+    @keyframes toast-down { 
+        from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
+        to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
+    }
 </style>
 @endpush
 
 @section('header_left')
-        {{-- //* (Nav) Kembali ke Dashboard --}}
     <a href="{{ route('materi.index') }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
             <path d="M15 19l-7-7 7-7" />
@@ -164,14 +175,14 @@
         <p class="text-slate-400 text-[9px] uppercase tracking-widest">Mode Landscape diperlukan untuk simulasi interaktif.</p>
     </div>
 
-    {{-- Toast System --}}
+    {{-- Toast System (FIXED SIZE) --}}
     <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-slate-900/50">
-            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-7 h-7 object-contain animate-bounce">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0">
+            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain animate-bounce">
         </div>
         <div class="text-left flex-1">
             <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1" x-text="toast.message"></p>
+            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
         </div>
     </div>
 
@@ -230,18 +241,22 @@
         </div>
     </div>
 
-    {{-- Video Window Preview --}}
+    {{-- Video Window Preview (FIXED CLOSE BUTTON AT BOTTOM RIGHT) --}}
     <div x-show="showVideo" x-cloak class="video-overlay" x-transition.fade>
-        <div class="glass-ui-shared video-window-small shadow-2xl">
-            <div class="p-3 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
-                <span class="text-[8px] font-black text-blue-400 uppercase">Video Player</span>
-                <button @click="showVideo = false" class="p-1.5 bg-red-500 text-white rounded-lg active:scale-90 transition-all">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+        <div class="relative w-full max-w-[450px]">
+            <div class="glass-ui-shared video-window-small shadow-2xl w-full">
+                <div class="p-3 border-b border-white/10 flex items-center bg-blue-500/10">
+                    <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest ml-2">Video Player</span>
+                </div>
+                <div class="bg-black overflow-hidden">
+                    <video :key="activeHotspot?.video" :src="activeHotspot?.video" controls autoplay class="w-full aspect-video object-contain"></video>
+                </div>
             </div>
-            <div class="bg-black">
-                <video :key="activeHotspot?.video" :src="activeHotspot?.video" controls autoplay class="w-full aspect-video object-contain"></video>
-            </div>
+            
+            {{-- Tombol Close di Kanan Bawah (Kecil & Aman) --}}
+            <button @click="showVideo = false" class="absolute -bottom-5 -right-2 p-2 bg-red-600 text-white rounded-xl shadow-lg active:scale-90 transition-all z-[310] border-2 border-red-400">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
         </div>
     </div>
 
@@ -270,44 +285,26 @@
 <script>
     function labInteraction() {
         return {
-            // --- STATE ASLI ---
-            currentStep: 0, 
-            currentOrder: 0, 
-            clickedHotspots: [],
-            activeHotspot: null, 
-            isExpanded: true, 
-            showModal: false, 
-            showVideo: false,
-            boxX: 20, 
-            boxY: 80, 
-            isDragging: false, 
-            offX: 0, 
-            offY: 0,
+            currentStep: 0, currentOrder: 0, clickedHotspots: [],
+            activeHotspot: null, isExpanded: true, showModal: false, showVideo: false,
+            boxX: 20, boxY: 80, isDragging: false, offX: 0, offY: 0,
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
-
-            // --- STORAGE LOGIC ---
             storageKey: 'material_{{ $material->id }}_progress',
 
             init() {
-                // 1. Muat data dari LocalStorage saat halaman pertama kali dimuat
                 const savedData = localStorage.getItem(this.storageKey);
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
                     this.currentStep = parsed.currentStep ?? 0;
                     this.currentOrder = parsed.currentOrder ?? 0;
                     this.clickedHotspots = parsed.clickedHotspots ?? [];
-                    
-                    // Kembalikan status activeHotspot jika user refresh saat sedang membaca penjelasan
                     if (this.currentOrder > 0) {
                         this.activeHotspot = this.steps[this.currentStep].hotspots[this.currentOrder - 1];
                     }
                 }
-
-                // 2. Sinkronisasi Header atau Watcher jika diperlukan (Tetap menjaga struktur asli)
             },
 
-            // Fungsi Helper untuk menyimpan progres
             saveProgress() {
                 const payload = {
                     currentStep: this.currentStep,
@@ -328,8 +325,6 @@
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots.push(hs.id);
                         this.currentOrder++;
-                        
-                        // SIMPAN PROGRES setiap kali ada klik hotspot baru
                         this.saveProgress();
                     }
                 }
@@ -347,14 +342,10 @@
                     this.clickedHotspots = [];
                     this.activeHotspot = null;
                     this.showModal = false;
-                    
-                    // SIMPAN PROGRES saat pindah langkah (step)
                     this.saveProgress();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
-                    // BERSIHKAN STORAGE saat materi benar-benar selesai
                     localStorage.removeItem(this.storageKey);
-                    
                     this.showToast('Misi Selesai', 'Seluruh materi simulasi telah dipelajari.', 'bintang.png');
                     setTimeout(() => { window.location.href = "{{ route('materi.index') }}"; }, 4000);
                 }
@@ -372,21 +363,14 @@
                 let cY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
                 this.offX = cX - this.boxX;
                 this.offY = cY - this.boxY;
-
                 const move = (e) => {
                     if (!this.isDragging) return;
-                    e.preventDefault(); 
                     let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                     let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
                     this.boxX = x - this.offX;
                     this.boxY = y - this.offY;
                 };
-
-                const stop = () => { 
-                    this.isDragging = false; 
-                    // Tidak ada perubahan pada logika stop dragging
-                };
-
+                const stop = () => { this.isDragging = false; };
                 document.addEventListener('mousemove', move);
                 document.addEventListener('touchmove', move, { passive: false });
                 document.addEventListener('mouseup', stop);

@@ -37,13 +37,11 @@
         border-bottom-width: 4px !important;
         user-select: none; 
         touch-action: none;
-        /* Default Mobile Portrait (Compact) */
         padding: 0.5rem 0.7rem;
         font-size: 11px;
         border-radius: 0.8rem;
     }
     
-    /* Desktop & Landscape Size */
     @media (min-width: 768px) {
         .token-block {
             padding: 0.7rem 1.1rem;
@@ -95,18 +93,28 @@
     }
     .font-game { font-family: 'Bangers', cursive; }
 
-    /* //* (Notification) Original Style */
+    /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
     .toast-top {
-        position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
-        z-index: 1000; background: white; border-radius: 1.5rem;
-        border: 2px solid #6366f1; border-bottom: 6px solid #4f46e5;
-        min-width: 260px; padding: 1rem 1.5rem; text-align: center;
+        position: fixed; 
+        top: 4.5rem; 
+        left: 50%; 
+        transform: translateX(-50%);
+        z-index: 1000; 
+        background: white; 
+        border-radius: 1.2rem; 
+        border: 2px solid #6366f1; 
+        border-bottom: 4px solid #4f46e5; 
+        min-width: 220px; 
+        padding: 0.5rem 1rem; 
+        text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .dark .toast-top { background: #1e293b; border-color: #3b82f6; border-bottom-color: #1e40af;}
-    @keyframes toast-down { from { transform: translate(-50%, -100%) scale(0.8); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+    @keyframes toast-down { 
+        from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
+        to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
+    }
 
-    /* Custom dropzone for better space management */
     .compact-dropzone {
         display: flex;
         flex-wrap: wrap;
@@ -141,27 +149,28 @@
 @endsection
 
 @section('content')
-<div x-data="missionEngine()" class="relative h-full">
+<div x-data="missionEngine()" x-init="initSortable()" class="relative h-full">
     
-    {{-- Toast Notification --}}
+    {{-- Toast Notification (COMPACT) --}}
     <div x-show="toast.show" x-cloak x-transition.opacity 
         class="toast-top shadow-xl flex items-center space-x-3" 
         :style="toast.type === 'error' ? 'border-color: #ef4444; border-bottom-color: #b91c1c;' : 'border-color: #10b981; border-bottom-color: #047857;'">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center animate-bounce bg-slate-50 dark:bg-slate-900/50 shadow-inner">
-            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-7 h-7 object-contain">
+        
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center animate-bounce bg-slate-50 dark:bg-slate-900/50 shadow-inner shrink-0">
+            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain">
         </div>
         <div class="text-left flex-1">
             <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1" x-text="toast.message"></p>
+            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
         </div>
     </div>
 
-    {{-- Scenario Modal --}}
+    {{-- Scenario Modal (FIXED CLOSE BUTTON) --}}
     <div x-show="scenarioMaximized" x-transition.opacity x-cloak class="scenario-modal" @click="scenarioMaximized = false">
-        <button class="absolute top-8 right-8 p-3 bg-white/10 hover:bg-red-500 text-white rounded-2xl transition-colors">
+        <button class="absolute top-8 right-8 mt-8 p-3 bg-white/10 hover:bg-red-500 text-white rounded-2xl transition-colors z-50">
             <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
-        <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $mission->mission_image) }}" class="max-w-full max-h-full object-contain rounded-3xl shadow-2xl">
+        <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $mission->mission_image) }}" class="max-w-full max-h-full object-contain rounded-3xl shadow-2xl relative z-40">
     </div>
 
     <template x-if="status === 'wrong'">
@@ -169,7 +178,6 @@
     </template>
 
     <div class="split-grid max-w-7xl mx-auto"> 
-        
         {{-- Monitor & Instruksi --}}
         <div class="scroll-column space-y-4 md:space-y-6">
             <div class="bg-white dark:bg-slate-900 p-3 md:p-4 rounded-[2rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px] relative group">
@@ -201,27 +209,14 @@
 
                 <div class="flex items-start gap-2 md:gap-3 bg-slate-50 dark:bg-slate-950 rounded-[1.8rem] md:rounded-[2.2rem] p-4 md:p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 shadow-inner min-h-[120px] md:min-h-[140px] z-10">
                     <span class="text-3xl md:text-4xl font-mono font-black text-emerald-500 mt-1 select-none">=</span>
-                    <div id="dropzone" class="compact-dropzone flex-grow"
-                        x-init="new Sortable($el, { 
-                            animation: 200, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag',
-                            onEnd: (evt) => {
-                                if (evt.oldIndex === evt.newIndex) return;
-                                const list = [...answerBox];
-                                const [movedItem] = list.splice(evt.oldIndex, 1);
-                                list.splice(evt.newIndex, 0, movedItem);
-                                answerBox = []; $nextTick(() => { answerBox = list; });
-                            }
-                        })">
-                        <template x-for="(item, index) in answerBox" :key="index + '-' + item">
-                            <div @click="removeFromAnswer(index)" :class="typeof item !== 'undefined' ? getBlockClass(item) : ''"
-                                 class="token-block font-mono font-black shadow-md border-2 cursor-grab active:cursor-grabbing">
-                                <span x-text="item"></span>
-                            </div>
-                        </template>
+                    
+                    {{-- FIXED SORTABLE DOM --}}
+                    <div id="dropzone" class="compact-dropzone flex-grow" x-ref="dropzone">
                     </div>
                 </div>
 
-                <div x-show="hint" x-transition class="mt-5 p-3 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-100 dark:border-amber-800 rounded-xl text-[9px] font-bold text-amber-700 dark:text-amber-400 text-center uppercase">
+                {{-- Hint Bantuan (Sesuai output Controller Baru) --}}
+                <div x-show="hint" x-transition class="mt-5 p-3 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-100 dark:border-amber-800 rounded-xl text-[10px] font-extrabold text-amber-700 dark:text-amber-400 text-center uppercase leading-snug">
                     <span x-text="hint"></span>
                 </div>
 
@@ -259,18 +254,11 @@
             currentPotentialXP: {{ $mission->max_score }},
             rawAvailableBlocks: @js($availableBlocks), 
             attempts: 0,
-            
-            // FIX: Beri default icon 'bintang.png' agar browser tidak memanggil URL kosong
             toast: { show: false, message: '', title: '', icon: 'bintang.png', type: 'info' }, 
-
-            // --- STORAGE & REVIEW LOGIC ---
             storageKey: 'mission_{{ $mission->id }}_syntax_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
             init() {
-                console.log("=== SYNTAX ENGINE START ===");
-
-                // 1. Load data dari LocalStorage jika bukan mode Review
                 if (!this.isReview) {
                     const saved = localStorage.getItem(this.storageKey);
                     if (saved) {
@@ -278,23 +266,56 @@
                         this.answerBox = data.answerBox ?? [];
                         this.attempts = data.attempts ?? 0;
                         this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
-                        console.log("Progress dimuat.");
                     }
                 }
 
-                // 2. Watcher untuk UI Header
                 this.$watch('currentPotentialXP', v => { 
                     const el = document.getElementById('header-xp-display');
                     if(el) el.innerText = v;
                 });
 
-                // 3. Force Sync UI Header saat pertama kali muat (Refresh)
+                this.$watch('answerBox', () => {
+                    this.renderBox(); 
+                });
+
                 const headerXp = document.getElementById('header-xp-display');
                 if(headerXp) headerXp.innerText = this.currentPotentialXP;
 
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
                 }
+            },
+
+            // FIXED: Manual DOM Render untuk menghindari error 'item is not defined'
+            renderBox() {
+                const dropzone = this.$refs.dropzone;
+                dropzone.innerHTML = ''; 
+                
+                this.answerBox.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = this.getBlockClass(item) + ' token-block font-mono font-black shadow-md border-2 cursor-grab active:cursor-grabbing';
+                    div.innerText = item;
+                    div.onclick = () => this.removeFromAnswer(index);
+                    dropzone.appendChild(div);
+                });
+            },
+
+            initSortable() {
+                new Sortable(this.$refs.dropzone, {
+                    animation: 200, 
+                    ghostClass: 'sortable-ghost', 
+                    dragClass: 'sortable-drag',
+                    onEnd: (evt) => {
+                        if (evt.oldIndex === evt.newIndex) return;
+                        const list = [...this.answerBox];
+                        const [movedItem] = list.splice(evt.oldIndex, 1);
+                        list.splice(evt.newIndex, 0, movedItem);
+                        this.answerBox = list; 
+                        this.saveToLocal();
+                        this.status = 'idle';
+                    }
+                });
+                this.renderBox();
             },
 
             saveToLocal() {
@@ -331,14 +352,10 @@
                 const stringRegex = /^".*"$/;
                 const digitRegex = /^[0-9]+%?$/;
 
-                if (funcRegex.test(block)) 
-                    return 'bg-blue-50 text-blue-700 border-blue-200 border-b-blue-300 dark:bg-blue-900/60 dark:text-blue-300 dark:border-blue-800 dark:border-b-blue-500 shadow-blue-100/50 dark:shadow-none';
-                if (cellRegex.test(block)) 
-                    return 'bg-emerald-50 text-emerald-700 border-emerald-200 border-b-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-800 dark:border-b-emerald-500 shadow-emerald-100/50 dark:shadow-none';
-                if (stringRegex.test(block) || digitRegex.test(block)) 
-                    return 'bg-amber-50 text-amber-700 border-amber-200 border-b-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 dark:border-b-amber-500 shadow-amber-100/50 dark:shadow-none';
-                
-                return 'bg-slate-50 text-slate-500 border-slate-200 border-b-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:border-b-slate-500 shadow-slate-100/50 dark:shadow-none';
+                if (funcRegex.test(block)) return 'bg-blue-50 text-blue-700 border-blue-200 border-b-blue-300 dark:bg-blue-900/60 dark:text-blue-300 dark:border-blue-800 dark:border-b-blue-500 shadow-blue-100/50';
+                if (cellRegex.test(block)) return 'bg-emerald-50 text-emerald-700 border-emerald-200 border-b-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-800 dark:border-b-emerald-500 shadow-emerald-100/50';
+                if (stringRegex.test(block) || digitRegex.test(block)) return 'bg-amber-50 text-amber-700 border-amber-200 border-b-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 dark:border-b-amber-500 shadow-amber-100/50';
+                return 'bg-slate-50 text-slate-500 border-slate-200 border-b-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:border-b-slate-500 shadow-slate-100/50';
             },
 
             addToAnswer(block) { 
@@ -374,6 +391,7 @@
                         setTimeout(() => { window.location.href = data.next_url; }, 1500);
                     } else {
                         this.status = 'wrong'; 
+                        // SYNC: Hint sekarang menampilkan logic token dari controller baru
                         this.hint = data.message; 
                         this.attempts = data.attempts;
                         this.triggerToast('Periksa Lagi!', 'Rumus belum tepat.', 'find.png', 'error');
@@ -382,7 +400,6 @@
                             let penalty = (this.attempts - 3) * ({{ $mission->max_score }} * 0.05);
                             this.currentPotentialXP = Math.max(Math.floor({{ $mission->max_score }} - penalty), Math.floor({{ $mission->max_score }} * 0.4));
                         }
-                        
                         this.saveToLocal();
                         setTimeout(() => { this.status = 'idle'; }, 500);
                     }
