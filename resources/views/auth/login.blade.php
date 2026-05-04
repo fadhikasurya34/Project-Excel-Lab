@@ -24,23 +24,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emerald Terminal - Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Panggil CSS dan JS via Vite -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-                    colors: { 
-                        excel: { light: '#10b981', dark: '#059669', deep: '#035a41' } 
-                    }
-                }
-            }
-        }
-    </script>
 
     <style>
         [x-cloak] { display: none !important; }
@@ -88,7 +77,7 @@
 
         /* --- MODE 2: MOBILE HORIZONTAL (Landscape HP) --- */
         @media (orientation: landscape) and (max-height: 500px) {
-            .main-container { flex-direction: row !important; max-width: 580px !important; } /* Kontainer dipersempit */
+            .main-container { flex-direction: row !important; max-width: 580px !important; } 
             .panel-logo { width: 35% !important; padding: 1rem !important; border-right: 2px solid #e2e8f0; border-bottom: 0 !important; }
             .panel-form { width: 65% !important; padding: 1rem 1.25rem !important; }
             
