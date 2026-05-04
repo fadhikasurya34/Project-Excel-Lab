@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use App\Models\MaterialCompletion;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MateriController extends Controller
@@ -17,7 +16,7 @@ class MateriController extends Controller
     }
 
     /** (View) Menampilkan detail simulasi interaktif dan mencatat riwayat pengerjaan siswa */
-    public function show($id)
+    public function show(string $id)
     {
         $material = Material::with('activities.hotspots')->findOrFail($id);
 

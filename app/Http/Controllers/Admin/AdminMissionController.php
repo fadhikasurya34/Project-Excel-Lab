@@ -45,7 +45,7 @@ class AdminMissionController extends Controller
     /**
      * (View) Daftar misi per topik + Auto-repair urutan level
      */
-    public function listByTopic($category) {
+    public function listByTopic(string $category) {
         $rawMissions = Mission::with('level')
             ->join('levels', 'missions.level_id', '=', 'levels.id')
             ->where('levels.category', $category)
@@ -80,7 +80,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Update Data Topik (Nama Kategori & Deskripsi)
      */
-    public function updateTopic(Request $request, $old_category) {
+    public function updateTopic(Request $request, string $old_category) {
         $request->validate([
             'new_category' => 'required|string',
             'description' => 'nullable'
@@ -97,7 +97,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Menghapus seluruh topik beserta level dan misinya (Cloudinary Sync)
      */
-    public function destroyTopic($category) {
+    public function destroyTopic(string $category) {
         DB::transaction(function () use ($category) {
             $levels = Level::where('category', $category)->get();
             foreach ($levels as $level) {
@@ -145,7 +145,7 @@ class AdminMissionController extends Controller
     /**
      * (View) Wizard Step 2: Form Isi Soal Misi
      */
-    public function createDetail($level_id) {
+    public function createDetail(string $level_id) {
         $level = Level::findOrFail($level_id);
         $category = $level->category;
 
@@ -202,7 +202,7 @@ class AdminMissionController extends Controller
     /**
      * (View) Form Edit Misi
      */
-    public function edit($id) {
+    public function edit(string $id) {
         $mission = Mission::with('level')->findOrFail($id);
         $allTopics = Level::select('category')->distinct()->pluck('category');
         return view('admin.missions.edit', compact('mission', 'allTopics'));
@@ -211,7 +211,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Update Informasi Dasar Misi
      */
-    public function update(Request $request, $id) {
+    public function update(Request $request, string $id) {
         $mission = Mission::findOrFail($id);
         $oldMaxScore = $mission->max_score;
 
@@ -227,7 +227,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Hapus Misi Satuan (Cloudinary Sync)
      */
-    public function destroy($id) {
+    public function destroy(string $id) {
         DB::transaction(function () use ($id) {
             $mission = Mission::with('level', 'steps.hotspots')->findOrFail($id);
             $affectedUserIds = Progress::where('mission_id', $id)->pluck('user_id');
@@ -245,7 +245,7 @@ class AdminMissionController extends Controller
     /**
      * (View) Tampilkan Storyboard Langkah Misi
      */
-    public function showSteps($id) {
+    public function showSteps(string $id) {
         $mission = Mission::with(['steps' => fn($q) => $q->orderBy('step_order', 'asc')])->findOrFail($id);
         return view('admin.missions.steps', compact('mission'));
     }
@@ -253,7 +253,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Simpan Langkah Misi Baru (Upload Cloudinary)
      */
-    public function storeStep(Request $request, $id) {
+    public function storeStep(Request $request, string $id) {
         if (!env('CLOUDINARY_URL')) {
         abort(500, 'Woi Lan, CLOUDINARY_URL belum ada di Vercel!');
     }
@@ -276,7 +276,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Hapus Langkah Misi (Clean Cloudinary)
      */
-    public function destroyStep($id) {
+    public function destroyStep(string $id) {
         $step = MissionStep::findOrFail($id);
         if ($step->step_image) {
             $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
@@ -314,7 +314,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Update Konten Soal & Gambar Utama Misi (Cloudinary Sync)
      */
-    public function updateContent(Request $request, $id) {
+    public function updateContent(Request $request, string $id) {
         $mission = Mission::findOrFail($id);
         $data = $request->validate([
             'question' => 'required', 'key_answer' => 'required', 
@@ -337,7 +337,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Konten misi diperbarui.');
     }
 
-    public function builder($stepId) {
+    public function builder(string $stepId) {
         $step = MissionStep::with('hotspots')->findOrFail($stepId);
         $mission = Mission::findOrFail($step->mission_id);
         return view('admin.missions.builder', compact('step', 'mission'));
@@ -384,7 +384,7 @@ class AdminMissionController extends Controller
     /**
      * (Action) Hapus Hotspot (Hapus Video di Awan)
      */
-    public function destroyHotspot($id) { 
+    public function destroyHotspot(string $id) { 
         $hs = MissionHotspot::findOrFail($id);
         if ($hs->video_path) {
             $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
@@ -405,19 +405,19 @@ class AdminMissionController extends Controller
 
     // --- LOGIKA HELPER ---
 
-    private function syncUserXpForMission($missionId) {
+    private function syncUserXpForMission(string $missionId) {
         $mission = Mission::findOrFail($missionId);
         Progress::where('mission_id', $missionId)->where('score', '>', $mission->max_score)->update(['score' => $mission->max_score]);
         $userIds = Progress::where('mission_id', $missionId)->pluck('user_id');
         foreach ($userIds as $userId) { $this->recalculateUserTotalXp($userId); }
     }
 
-    private function recalculateUserTotalXp($userId) {
+    private function recalculateUserTotalXp(string $userId) {
         $totalXp = Progress::where('user_id', $userId)->where('status', 'completed')->sum('score');
         ScoresAndRanking::updateOrCreate(['user_id' => $userId], ['total_xp' => $totalXp]);
     }
 
-    private function deleteMissionAssets($mission) {
+    private function deleteMissionAssets(object $mission) {
         $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
 
         if ($mission->mission_image) {
@@ -436,7 +436,7 @@ class AdminMissionController extends Controller
         } 
     }
 
-    private function getPublicId($url) {
+    private function getPublicId(string $url) {
         $path = parse_url($url, PHP_URL_PATH);
         $segments = explode('/', $path);
         $filename = end($segments);

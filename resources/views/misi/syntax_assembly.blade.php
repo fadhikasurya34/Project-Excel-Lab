@@ -252,16 +252,59 @@
 <script>
     function missionEngine() {
         return {
-            answerBox: [], status: 'idle', hint: '', scenarioMaximized: false,
+            answerBox: [], 
+            status: 'idle', 
+            hint: '', 
+            scenarioMaximized: false,
             currentPotentialXP: {{ $mission->max_score }},
-            rawAvailableBlocks: @js($availableBlocks), attempts: 0,
-            toast: { show: false, message: '', title: '', icon: '', type: 'info' }, 
+            rawAvailableBlocks: @js($availableBlocks), 
+            attempts: 0,
+            
+            // FIX: Beri default icon 'bintang.png' agar browser tidak memanggil URL kosong
+            toast: { show: false, message: '', title: '', icon: 'bintang.png', type: 'info' }, 
+
+            // --- STORAGE & REVIEW LOGIC ---
+            storageKey: 'mission_{{ $mission->id }}_syntax_progress',
+            isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
             init() {
+                console.log("=== SYNTAX ENGINE START ===");
+
+                // 1. Load data dari LocalStorage jika bukan mode Review
+                if (!this.isReview) {
+                    const saved = localStorage.getItem(this.storageKey);
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        this.answerBox = data.answerBox ?? [];
+                        this.attempts = data.attempts ?? 0;
+                        this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
+                        console.log("Progress dimuat.");
+                    }
+                }
+
+                // 2. Watcher untuk UI Header
                 this.$watch('currentPotentialXP', v => { 
                     const el = document.getElementById('header-xp-display');
                     if(el) el.innerText = v;
                 });
+
+                // 3. Force Sync UI Header saat pertama kali muat (Refresh)
+                const headerXp = document.getElementById('header-xp-display');
+                if(headerXp) headerXp.innerText = this.currentPotentialXP;
+
+                if (this.isReview) {
+                    this.currentPotentialXP = {{ $mission->max_score }};
+                }
+            },
+
+            saveToLocal() {
+                if (this.isReview) return;
+                const payload = {
+                    answerBox: this.answerBox,
+                    attempts: this.attempts,
+                    currentPotentialXP: this.currentPotentialXP
+                };
+                localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
 
             triggerToast(title, message, icon = 'bintang.png', type = 'info') {
@@ -298,8 +341,17 @@
                 return 'bg-slate-50 text-slate-500 border-slate-200 border-b-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:border-b-slate-500 shadow-slate-100/50 dark:shadow-none';
             },
 
-            addToAnswer(block) { this.answerBox.push(block); this.status = 'idle'; this.hint = ''; },
-            removeFromAnswer(index) { this.answerBox.splice(index, 1); },
+            addToAnswer(block) { 
+                this.answerBox.push(block); 
+                this.status = 'idle'; 
+                this.hint = ''; 
+                this.saveToLocal();
+            },
+
+            removeFromAnswer(index) { 
+                this.answerBox.splice(index, 1); 
+                this.saveToLocal();
+            },
             
             submitSyntax() {
                 if(this.answerBox.length === 0) { 
@@ -317,6 +369,7 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'success') {
+                        localStorage.removeItem(this.storageKey);
                         this.triggerToast('Berhasil!', data.message, 'bintang.png', 'info');
                         setTimeout(() => { window.location.href = data.next_url; }, 1500);
                     } else {
@@ -325,10 +378,12 @@
                         this.attempts = data.attempts;
                         this.triggerToast('Periksa Lagi!', 'Rumus belum tepat.', 'find.png', 'error');
                         
-                        if (this.attempts > 3) {
+                        if (!this.isReview && this.attempts > 3) {
                             let penalty = (this.attempts - 3) * ({{ $mission->max_score }} * 0.05);
                             this.currentPotentialXP = Math.max(Math.floor({{ $mission->max_score }} - penalty), Math.floor({{ $mission->max_score }} * 0.4));
                         }
+                        
+                        this.saveToLocal();
                         setTimeout(() => { this.status = 'idle'; }, 500);
                     }
                 });

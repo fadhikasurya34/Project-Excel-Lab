@@ -22,7 +22,7 @@ class KelasController extends Controller
     }
 
     /** (View) Menampilkan leaderboard internal kelas dan daftar Task */
-    public function show($id)
+    public function show(string $id)
     {
         // PEMBARUAN: Tambahkan users.progress dan users.completedMaterials ke dalam with()
         $classroom = Classroom::with([
@@ -44,7 +44,7 @@ class KelasController extends Controller
     }
 
     /** * (NEW View) Menampilkan detail isi Task (Daftar Misi Pilihan Admin) */
-    public function showTask($id)
+    public function showTask(string $id)
     {
         $task = Task::with(['missions.level', 'classroom'])->findOrFail($id);
         

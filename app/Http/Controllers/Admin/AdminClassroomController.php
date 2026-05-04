@@ -32,14 +32,14 @@ class AdminClassroomController extends Controller
             'name' => $request->name,
             'teacher_name' => $request->teacher_name,
             'class_code' => $code,
-            'icon' => '🏛️' 
+            'icon' => 'kelas.png' 
         ]);
 
         return back()->with('success', 'Squad baru berhasil dibuat.');
     }
 
     /** (View) Detail Kelas & Pengambilan Nilai */
-    public function show($id)
+    public function show(string $id)
     {
         try {
             $classroom = Classroom::with([
@@ -65,7 +65,7 @@ class AdminClassroomController extends Controller
     }
 
     /** (Action) Menyimpan Checklist Misi menjadi Task Permanen */
-    public function storeTask(Request $request, $id)
+    public function storeTask(Request $request, string $id)
     {
         $request->validate([
             'task_name' => 'required|string|max:255',
@@ -89,7 +89,7 @@ class AdminClassroomController extends Controller
     }
 
     /** (Action) Update kelas */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -103,21 +103,22 @@ class AdminClassroomController extends Controller
     }
 
     /** (Action) Hapus kelas */
-    public function destroy($id)
+    public function destroy(string $id)
     {
         Classroom::findOrFail($id)->delete();
         return back()->with('success', 'Squad kelas telah dihapus.');
     }
 
     /** (Action) Kick siswa */
-    public function kick($id, $userId)
+    public function kick(string $id, string $userId)
     {
         $classroom = Classroom::findOrFail($id);
         $classroom->users()->detach($userId);
         return back()->with('success', 'Siswa berhasil dikeluarkan.');
     }
+
     /** (Action) Update Nama Task */
-    public function updateTask(Request $request, $id)
+    public function updateTask(Request $request, string $id)
     {
         $task = Task::findOrFail($id);
         $task->update(['name' => $request->task_name]);
@@ -125,7 +126,7 @@ class AdminClassroomController extends Controller
     }
 
     /** (Action) Hapus Task */
-    public function destroyTask($id)
+    public function destroyTask(string $id)
     {
         $task = Task::findOrFail($id);
         $task->missions()->detach(); // Hapus relasi di pivot
@@ -134,7 +135,7 @@ class AdminClassroomController extends Controller
     }
 
     /** (Action) Export Nilai Task ke Excel/CSV */
-    public function exportTask($id)
+    public function exportTask(string $id)
     {
         $task = Task::with(['missions', 'classroom.users.progress'])->findOrFail($id);
         $missionIds = $task->missions->pluck('id');
@@ -169,7 +170,7 @@ class AdminClassroomController extends Controller
                     $user->name, 
                     $user->email, 
                     $userScore, 
-                    str_replace('.', ',', $finalGrade)
+                    str_replace('.', ',', (string)$finalGrade)
                 ], ';');
             }
             fclose($file);

@@ -57,13 +57,13 @@ class AdminMateriController extends Controller
     }
 
     /** (View) Form edit identitas modul materi */
-    public function edit($id) {
+    public function edit(string $id) {
         $material = Material::findOrFail($id);
         return view('admin.materials.edit', compact('material'));
     }
 
     /** (Action) Memperbarui informasi dasar modul */
-    public function update(Request $request, $id) {
+    public function update(Request $request, string $id) {
         $request->validate([
             'title'       => 'required|string|max:255', 
             'description' => 'required',
@@ -77,7 +77,7 @@ class AdminMateriController extends Controller
     }
 
     /** (Action) Menghapus modul secara total */
-    public function destroy($id) {
+    public function destroy(string $id) {
         DB::transaction(function () use ($id) {
             $material = Material::with('activities.hotspots')->findOrFail($id);
             $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
@@ -94,13 +94,13 @@ class AdminMateriController extends Controller
     }
 
     /** (View) Menampilkan urutan storyboard*/
-    public function showSteps($id) {
+    public function showSteps(string $id) {
         $material = Material::with(['activities' => fn($q) => $q->orderBy('step_order', 'asc')])->findOrFail($id);
         return view('admin.materials.steps', compact('material'));
     }
 
     /** (Action) Unggah gambar ke Cloudinary menggunakan Native SDK */
-    public function storeStep(Request $request, $id) {
+    public function storeStep(Request $request, string $id) {
         $request->validate([
             'image'       => 'required|image|max:2048',
             'instruction' => 'nullable'
@@ -137,7 +137,7 @@ class AdminMateriController extends Controller
     }
 
     /** (Action) Menghapus satu langkah materi */
-    public function destroyStep($id) {
+    public function destroyStep(string $id) {
         $step = MaterialActivity::with('hotspots')->findOrFail($id);
         $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
 
@@ -151,7 +151,7 @@ class AdminMateriController extends Controller
     }
 
     /** (View) Editor visual untuk menempatkan titik hotspot interaktif */
-    public function builder($stepId) {
+    public function builder(string $stepId) {
         $step = MaterialActivity::with(['hotspots' => fn($q) => $q->orderBy('order', 'asc')])->findOrFail($stepId);
         $material = Material::findOrFail($step->material_id);
         return view('admin.materials.builder', compact('step', 'material'));
@@ -219,7 +219,7 @@ class AdminMateriController extends Controller
     }
 
     /** (Action) Menghapus titik hotspot */
-    public function destroyHotspot($id) {
+    public function destroyHotspot(string $id) {
         $hotspot = Hotspot::findOrFail($id);
         if ($hotspot->video_path) {
             $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
@@ -230,7 +230,7 @@ class AdminMateriController extends Controller
     }
 
     /** (Helper) Mengambil Public ID dari URL Cloudinary untuk proses hapus */
-    private function getPublicId($url) {
+    private function getPublicId(string $url) {
         $path = parse_url($url, PHP_URL_PATH);
         $segments = explode('/', $path);
         $filename = end($segments);

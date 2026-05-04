@@ -270,11 +270,52 @@
 <script>
     function labInteraction() {
         return {
-            currentStep: 0, currentOrder: 0, clickedHotspots: [],
-            activeHotspot: null, isExpanded: true, showModal: false, showVideo: false,
-            boxX: 20, boxY: 80, isDragging: false, offX: 0, offY: 0,
+            // --- STATE ASLI ---
+            currentStep: 0, 
+            currentOrder: 0, 
+            clickedHotspots: [],
+            activeHotspot: null, 
+            isExpanded: true, 
+            showModal: false, 
+            showVideo: false,
+            boxX: 20, 
+            boxY: 80, 
+            isDragging: false, 
+            offX: 0, 
+            offY: 0,
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
+
+            // --- STORAGE LOGIC ---
+            storageKey: 'material_{{ $material->id }}_progress',
+
+            init() {
+                // 1. Muat data dari LocalStorage saat halaman pertama kali dimuat
+                const savedData = localStorage.getItem(this.storageKey);
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    this.currentStep = parsed.currentStep ?? 0;
+                    this.currentOrder = parsed.currentOrder ?? 0;
+                    this.clickedHotspots = parsed.clickedHotspots ?? [];
+                    
+                    // Kembalikan status activeHotspot jika user refresh saat sedang membaca penjelasan
+                    if (this.currentOrder > 0) {
+                        this.activeHotspot = this.steps[this.currentStep].hotspots[this.currentOrder - 1];
+                    }
+                }
+
+                // 2. Sinkronisasi Header atau Watcher jika diperlukan (Tetap menjaga struktur asli)
+            },
+
+            // Fungsi Helper untuk menyimpan progres
+            saveProgress() {
+                const payload = {
+                    currentStep: this.currentStep,
+                    currentOrder: this.currentOrder,
+                    clickedHotspots: this.clickedHotspots
+                };
+                localStorage.setItem(this.storageKey, JSON.stringify(payload));
+            },
 
             get allHotspotsInStepDone() {
                 let currentStepData = this.steps[this.currentStep];
@@ -287,6 +328,9 @@
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots.push(hs.id);
                         this.currentOrder++;
+                        
+                        // SIMPAN PROGRES setiap kali ada klik hotspot baru
+                        this.saveProgress();
                     }
                 }
             },
@@ -303,8 +347,14 @@
                     this.clickedHotspots = [];
                     this.activeHotspot = null;
                     this.showModal = false;
+                    
+                    // SIMPAN PROGRES saat pindah langkah (step)
+                    this.saveProgress();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
+                    // BERSIHKAN STORAGE saat materi benar-benar selesai
+                    localStorage.removeItem(this.storageKey);
+                    
                     this.showToast('Misi Selesai', 'Seluruh materi simulasi telah dipelajari.', 'bintang.png');
                     setTimeout(() => { window.location.href = "{{ route('materi.index') }}"; }, 4000);
                 }
@@ -323,20 +373,22 @@
                 this.offX = cX - this.boxX;
                 this.offY = cY - this.boxY;
 
-            const move = (e) => {
-                if (!this.isDragging) return;
+                const move = (e) => {
+                    if (!this.isDragging) return;
+                    e.preventDefault(); 
+                    let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+                    let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
+                    this.boxX = x - this.offX;
+                    this.boxY = y - this.offY;
+                };
 
-                e.preventDefault(); 
+                const stop = () => { 
+                    this.isDragging = false; 
+                    // Tidak ada perubahan pada logika stop dragging
+                };
 
-                let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
-                let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
-                this.boxX = x - this.offX;
-                this.boxY = y - this.offY;
-            };
-
-                const stop = () => { this.isDragging = false; document.addEventListener('touchmove', move, { passive: false }); };
                 document.addEventListener('mousemove', move);
-                document.addEventListener('touchmove', move, { passive: true });
+                document.addEventListener('touchmove', move, { passive: false });
                 document.addEventListener('mouseup', stop);
                 document.addEventListener('touchend', stop);
             }

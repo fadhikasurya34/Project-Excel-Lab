@@ -10,7 +10,7 @@ define('LARAVEL_START', microtime(true));
 require __DIR__ . '/../vendor/autoload.php';
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// 2. KUNCI UTAMA: Paksa Laravel melihat folder public yang benar
+// 2. Deteksi folder public untuk laravel
 $app->instance('path.public', __DIR__ . '/../public');
 
 $app->useStoragePath('/tmp');

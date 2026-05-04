@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Progress;
 use App\Models\ScoresAndRanking;
 use App\Models\RetryTicket;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AdminUserController extends Controller
@@ -25,7 +24,7 @@ class AdminUserController extends Controller
     }
 
     /** (Action) Reset total XP, progres misi, dan mengembalikan tiket remedial hari ini */
-    public function resetXP($id)
+    public function resetXP(string $id)
     {
         return DB::transaction(function () use ($id) {
             $user = User::findOrFail($id);
@@ -49,7 +48,7 @@ class AdminUserController extends Controller
     }
 
     /** (Action) Mereset kuota tiket retry harian untuk siswa spesifik (Tanpa menghapus XP) */
-    public function resetRetryTickets($id)
+    public function resetRetryTickets(string $id)
     {
         $today = now()->toDateString();
         
@@ -62,7 +61,7 @@ class AdminUserController extends Controller
     }
 
     /** (Action) Menghapus akun siswa secara total beserta data terkait */
-    public function destroy($id)
+    public function destroy(string $id)
     {
         return DB::transaction(function () use ($id) {
             $user = User::findOrFail($id);
@@ -78,7 +77,7 @@ class AdminUserController extends Controller
     }
 
     /** (View) Menampilkan profil detail, riwayat misi, dan progres materi siswa */
-    public function show($id)
+    public function show(string $id)
     {
         $student = User::with(['ranking', 'classrooms'])->findOrFail($id);
 
@@ -99,7 +98,7 @@ class AdminUserController extends Controller
     }
 
     /** (Action) Menghapus progres satu misi dan Recalculate XP secara otomatis */
-    public function destroyMissionProgress($id)
+    public function destroyMissionProgress(string $id)
     {
         return DB::transaction(function () use ($id) {
             $progress = Progress::findOrFail($id);
@@ -114,7 +113,7 @@ class AdminUserController extends Controller
                 ->sum('score');
 
             // 3. Timpa tabel ranking dengan hasil perhitungan baru
-            ScoresAndRanking::updateOrCreate(
+             ScoresAndRanking::updateOrCreate(
                 ['user_id' => $userId],
                 ['total_xp' => $totalXpNow]
             );
@@ -124,7 +123,7 @@ class AdminUserController extends Controller
     }
 
     /** (Action) Menghapus riwayat pengerjaan materi individu */
-    public function destroyMaterialProgress($id)
+    public function destroyMaterialProgress(string $id)
     {
         $progress = \App\Models\MaterialCompletion::findOrFail($id);
         $progress->delete();

@@ -27,7 +27,7 @@ class MisiController extends Controller
 
     /** * //* (View) Menampilkan peta level dan sisa tiket remedial harian 
      */
-    public function showLevels($category) 
+    public function showLevels(string $category) 
     {
         $levels = Level::where('category', $category)
             ->where('level_order', '>', 0) 
@@ -55,7 +55,7 @@ class MisiController extends Controller
 
     /** * //* (View) Menampilkan simulasi lab interaktif 
      */
-    public function show($id)
+    public function show(string $id)
     {
         $mission = Mission::with(['level', 'steps.hotspots' => function($q) {
             $q->orderBy('order', 'asc');
@@ -95,7 +95,7 @@ class MisiController extends Controller
 
     /** * //* (Action) Proses penukaran tiket remedial 
      */
-    public function retryMission($id)
+    public function retryMission(string $id)
     {
         $userId = Auth::id();
         $today = now()->toDateString();
@@ -128,7 +128,7 @@ class MisiController extends Controller
 
     /** * //* (Process) Validasi jawaban siswa via AJAX 
      */
-    public function checkAnswer(Request $request, $id)
+    public function checkAnswer(Request $request, string $id)
     {
         $mission = Mission::with('level')->findOrFail($id);
         $userId = Auth::id();
@@ -140,16 +140,16 @@ class MisiController extends Controller
 
         if ($mission->mission_type === 'Point & Click') {
             $frontendAttempts = $request->attempts ?? 0;
-            $finalScore = $this->calculateFinalScore($mission->max_score, $frontendAttempts);
-            return $this->handleSuccess($mission, $finalScore);
+            $finalScore = $this->calculateFinalScore((int)$mission->max_score, (int)$frontendAttempts);
+            return $this->handleSuccess($mission, (float)$finalScore);
         }
 
         $userAnswer = $this->normalizeFormula($request->answer);
         $correctAnswer = $this->normalizeFormula($mission->key_answer);
 
         if ($userAnswer === $correctAnswer) {
-            $finalScore = $this->calculateFinalScore($mission->max_score, $progress->attempts);
-            return $this->handleSuccess($mission, $finalScore);
+            $finalScore = $this->calculateFinalScore((int)$mission->max_score, (int)$progress->attempts);
+            return $this->handleSuccess($mission, (float)$finalScore);
         }
 
         $progress->attempts += 1;
@@ -157,14 +157,14 @@ class MisiController extends Controller
 
         return response()->json([
             'status' => 'error', 
-            'message' => $this->generateFeedback($userAnswer, $correctAnswer),
+            'message' => $this->generateFeedback((string)$userAnswer, (string)$correctAnswer),
             'attempts' => $progress->attempts,
         ]);
     }
 
     /** * //* (Helper) Kalkulasi skor dengan penalti 5% setelah percobaan ke-3 
      */
-    private function calculateFinalScore($maxScore, $attempts)
+    private function calculateFinalScore(int $maxScore, int $attempts)
     {
         if ($attempts <= 3) return $maxScore;
         $penalty = ($attempts - 3) * ($maxScore * 0.05);
@@ -173,7 +173,7 @@ class MisiController extends Controller
 
     /** * //* (Action) KUNCI UTAMA: Penanganan sukses & Sinkronisasi XP absolut + Statistik
      */
-    private function handleSuccess($mission, $earnedScore) {
+    private function handleSuccess(Mission $mission, float $earnedScore) {
         return DB::transaction(function () use ($mission, $earnedScore) {
             $userId = Auth::id();
             $currentMax = $mission->max_score;
@@ -243,7 +243,7 @@ class MisiController extends Controller
 
     /** * //* (Helper) Standarisasi rumus Excel 
      */
-    private function normalizeFormula($formula) {
+    private function normalizeFormula(?string $formula) {
         if (!$formula) return "";
         $search  = ["'", '“', '”', '‘', '’', ' '];
         $replace = ['"', '"', '"', '"', '"', ''];
@@ -254,7 +254,7 @@ class MisiController extends Controller
 
     /** * //* (Helper) Hierarki Feedback (Nudge) 
      */
-    private function generateFeedback($userAnswer, $correctAnswer)
+    private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
         if (empty($userAnswer)) return "Kotak rakitan masih kosong.";
 
@@ -281,7 +281,7 @@ class MisiController extends Controller
     /**
      * //* (Admin Sync) Opsional: Jalankan ini jika Admin mengubah max_score misi 
      */
-    public function syncGlobalXpAfterAdminChange($missionId)
+    public function syncGlobalXpAfterAdminChange(string $missionId)
     {
         $mission = Mission::findOrFail($missionId);
         $newMax = $mission->max_score;

@@ -225,6 +225,7 @@
 <script>
     function missionEngine() {
         return {
+            // --- STATE ASLI ---
             currentStep: 0, 
             currentHotspotIndex: 0, 
             clickedHotspots: [], 
@@ -236,15 +237,66 @@
             boxX: 20, boxY: 80, 
             isDragging: false, 
             offX: 0, offY: 0,
-            
             attempts: 0,
             currentPotentialXP: {{ $mission->max_score }},
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
 
+            // --- STORAGE & REVIEW ---
+            storageKey: 'mission_{{ $mission->id }}_progress',
+            isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
+
             init() {
-                this.$watch('currentPotentialXP', v => { document.getElementById('header-xp-display').innerText = v; });
-                this.$watch('currentStep', v => { document.getElementById('header-step-current').innerText = v + 1; });
+                console.log("=== MISSION ENGINE START ===");
+                
+                if (this.isReview) {
+                    console.log("Mode Review Aktif.");
+                    this.currentPotentialXP = {{ $mission->max_score }};
+                } else {
+                    const saved = localStorage.getItem(this.storageKey);
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        this.currentStep = data.currentStep ?? 0;
+                        this.currentHotspotIndex = data.currentHotspotIndex ?? 0;
+                        this.clickedHotspots = data.clickedHotspots ?? [];
+                        this.attempts = data.attempts ?? 0;
+                        this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
+                        console.log("Progress dimuat dari storage.");
+                    } else {
+                        this.saveToLocal();
+                    }
+                }
+
+                // --- PENENTUAN WATCHER ---
+                this.$watch('currentPotentialXP', v => { 
+                    const el = document.getElementById('header-xp-display');
+                    if (el) el.innerText = v; 
+                });
+                this.$watch('currentStep', v => { 
+                    const el = document.getElementById('header-step-current');
+                    if (el) el.innerText = v + 1; 
+                });
+
+                // --- FIX: PAKSA UPDATE UI SAAT REFRESH ---
+                // Baris ini memastikan saat refresh, angka 200 langsung berubah ke 180 (sesuai storage)
+                document.getElementById('header-xp-display').innerText = this.currentPotentialXP;
+                document.getElementById('header-step-current').innerText = this.currentStep + 1;
+            },
+
+            saveToLocal() {
+                if (this.isReview) return;
+                try {
+                    const payload = {
+                        currentStep: this.currentStep,
+                        currentHotspotIndex: this.currentHotspotIndex,
+                        clickedHotspots: this.clickedHotspots,
+                        attempts: this.attempts,
+                        currentPotentialXP: this.currentPotentialXP
+                    };
+                    localStorage.setItem(this.storageKey, JSON.stringify(payload));
+                } catch (e) {
+                    console.error("Gagal menyimpan ke LocalStorage:", e);
+                }
             },
 
             get allHotspotsInStepDone() {
@@ -252,17 +304,22 @@
                 return step && this.clickedHotspots.length === step.hotspots.length;
             },
 
+            handleBackgroundClick(e) {
+                if (this.allHotspotsInStepDone) return;
+                this.triggerError();
+            },
+
             handleHotspotClick(hs, index) {
-                // LOGIKA WAJIB URUT
                 if (index === this.currentHotspotIndex) {
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots.push(hs.id);
                         this.currentHotspotIndex++;
                         this.showErrorEffect = false;
                         this.showHintButton = false; 
-                        
+                        this.saveToLocal();
+
                         if (this.allHotspotsInStepDone) {
-                            this.showToast('Langkah Berhasil', 'Target ditemukan, lanjut ke skenario berikutnya.', 'checklist.png');
+                            this.showToast('Langkah Berhasil', 'Target ditemukan.', 'checklist.png');
                         }
                     }
                 } else {
@@ -270,27 +327,23 @@
                 }
             },
 
-            handleBackgroundClick(e) {
-                if (this.allHotspotsInStepDone) return;
-                this.triggerError();
-            },
-
             triggerError() {
                 if (this.showErrorEffect) return;
                 this.showErrorEffect = true;
                 this.attempts++;
-                
                 this.showHintButton = true;
                 let correctHotspot = this.steps[this.currentStep].hotspots[this.currentHotspotIndex];
                 this.currentHint = correctHotspot ? correctHotspot.content : 'Perhatikan instruksi misi.';
 
-                // Logika Pengurangan XP (Penalty)
-                if (this.attempts > 3) {
+                if (!this.isReview && this.attempts > 3) {
                     let penalty = Math.floor({{ $mission->max_score }} * 0.05);
                     this.currentPotentialXP = Math.max(this.currentPotentialXP - penalty, Math.floor({{ $mission->max_score }} * 0.4));
+                    this.showToast('Klik Salah', 'Point XP berkurang sedikit.', 'alert.png');
+                } else {
+                    this.showToast('Klik Salah', this.isReview ? 'Mode Review: XP aman.' : 'Hati-hati dalam melangkah.', 'alert.png');
                 }
 
-                this.showToast('Klik Salah', 'Point XP berkurang sedikit.', 'alert.png');
+                this.saveToLocal();
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
 
@@ -305,14 +358,19 @@
                     this.currentHotspotIndex = 0;
                     this.clickedHotspots = [];
                     this.showHintButton = false;
+                    this.saveToLocal();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
+                    if (this.isReview) {
+                        window.location.href = "{{ route('misi.category.levels', $mission->level->category) }}";
+                        return;
+                    }
                     axios.post("{{ route('misi.check', $mission->id) }}", { 
                         answer: 'MISSION_COMPLETED', 
                         attempts: this.attempts 
                     }).then(res => {
-                        this.showToast('Misi Berhasil', 'Seluruh XP telah dikumpulkan.', 'bintang.png');
-                        setTimeout(() => { window.location.href = res.data.next_url; }, 2000);
+                        localStorage.removeItem(this.storageKey);
+                        window.location.href = res.data.next_url;
                     });
                 }
             },
@@ -326,14 +384,17 @@
 
                 const move = (e) => {
                     if (!this.isDragging) return;
-                    // Mencegah scroll hanya jika benar-benar sedang drag HUD
                     let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                     let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
                     this.boxX = x - this.offX;
                     this.boxY = y - this.offY;
                 };
 
-                const stop = () => { this.isDragging = false; document.removeEventListener('mousemove', move); document.removeEventListener('touchmove', move); };
+                const stop = () => { 
+                    this.isDragging = false; 
+                    document.removeEventListener('mousemove', move); 
+                    document.removeEventListener('touchmove', move); 
+                };
                 document.addEventListener('mousemove', move);
                 document.addEventListener('touchmove', move, { passive: true });
                 document.addEventListener('mouseup', stop);

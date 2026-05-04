@@ -33,6 +33,9 @@
         })();
     </script>
 
+    {{-- REVISI: Tambahkan plugin Collapse Alpine.js di sini agar animasi x-collapse aktif --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Bangers&display=swap" rel="stylesheet">
     
