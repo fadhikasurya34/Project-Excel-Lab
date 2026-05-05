@@ -87,16 +87,16 @@
     /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
     .toast-top {
         position: fixed; 
-        top: 4.5rem; /* Menurunkan posisi agar tidak tertutup notch/status bar */
+        top: 4.5rem; 
         left: 50%; 
         transform: translateX(-50%);
         z-index: 1000; 
         background: white; 
-        border-radius: 1.2rem; /* Diperkecil dari 1.5rem */
+        border-radius: 1.2rem; 
         border: 2px solid #3b82f6; 
-        border-bottom: 4px solid #1d4ed8; /* Diperkecil dari 6px */
-        min-width: 220px; /* Diperkecil dari 260px */
-        padding: 0.5rem 1rem; /* Diperkecil dari 0.8rem 1.2rem */
+        border-bottom: 4px solid #1d4ed8; 
+        min-width: 220px; 
+        padding: 0.5rem 1rem; 
         text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
@@ -153,8 +153,8 @@
 
     {{-- Toast (FIXED SIZE) --}}
     <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0"> {{-- w-10 h-10 -> w-8 h-8 --}}
-            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain animate-bounce"> {{-- w-7 -> w-5 --}}
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0">
+            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain animate-bounce">
         </div>
         <div class="text-left flex-1">
             <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
@@ -179,15 +179,17 @@
             </div>
 
             <div class="p-5" x-show="isExpanded" x-collapse>
-                <p class="text-white text-[11px] font-extrabold uppercase leading-tight mb-4" x-text="steps[currentStep].instruction"></p>
+                {{-- FIX: Hapus uppercase --}}
+                <p class="text-white text-[11px] font-extrabold leading-tight mb-4" x-text="steps[currentStep].instruction"></p>
 
                 <div class="flex flex-row gap-2">
+                    {{-- FIX: Hapus uppercase pada tombol --}}
                     <button x-show="showHintButton" @click="showModal = true" 
-                            class="flex-1 py-3 btn-pegas-blue text-white rounded-xl font-black text-[9px] uppercase shadow-lg transition-all">
+                            class="flex-1 py-3 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg transition-all">
                         Hint Bantuan
                     </button>
                     <button x-show="allHotspotsInStepDone" @click="nextStep()" 
-                            class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] uppercase shadow-lg animate-pulse transition-all">
+                            class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg animate-pulse transition-all">
                         Lanjut Skenario
                     </button>
                 </div>
@@ -204,12 +206,13 @@
                     <span class="text-[9px] font-black text-amber-400 uppercase tracking-widest">Petunjuk Hint</span>
                 </div>
                 <button @click="showModal = false" class="p-2 bg-red-500/20 text-red-400 rounded-xl active:scale-90 transition-all">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="p-8 text-center scrollbar-hide overflow-y-auto max-h-[50vh]">
                 <p class="text-slate-100 font-bold text-sm leading-relaxed" x-text="currentHint"></p>
-                <button @click="showModal = false" class="mt-6 w-full py-3 bg-slate-800 text-slate-300 rounded-xl font-black text-[10px] uppercase">Mengerti</button>
+                {{-- FIX: Hapus uppercase --}}
+                <button @click="showModal = false" class="mt-6 w-full py-3 bg-slate-800 text-slate-300 rounded-xl font-black text-[10px]">Mengerti</button>
             </div>
         </div>
     </div>

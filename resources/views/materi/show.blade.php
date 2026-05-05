@@ -203,13 +203,16 @@
             </div>
 
             <div class="p-5" x-show="isExpanded" x-collapse>
-                <p class="text-white text-[11px] font-extrabold uppercase leading-tight mb-4" x-text="steps[currentStep].instruction"></p>
+                {{-- FIX: Hilangkan 'uppercase' agar teks instruksi lebih rapi --}}
+                <p class="text-white text-[11px] font-extrabold leading-tight mb-4" x-text="steps[currentStep].instruction"></p>
 
                 <div class="flex flex-row gap-2" x-show="activeHotspot" x-transition.scale.origin.top>
-                    <button @click="showModal = true" class="flex-1 py-3 btn-pegas-blue text-white rounded-xl font-black text-[9px] uppercase shadow-lg">
+                    {{-- FIX: Hilangkan 'uppercase' pada tombol penjelasan --}}
+                    <button @click="showModal = true" class="flex-1 py-3 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg">
                         Penjelasan
                     </button>
-                    <button x-show="allHotspotsInStepDone" @click="nextStep()" class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] uppercase shadow-lg animate-pulse">
+                    {{-- FIX: Hilangkan 'uppercase' pada tombol lanjut --}}
+                    <button x-show="allHotspotsInStepDone" @click="nextStep()" class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg animate-pulse">
                         Lanjut Skenario
                     </button>
                 </div>
@@ -231,9 +234,11 @@
             </div>
             
             <div class="modal-scroll scrollbar-hide text-center">
+                {{-- Deskripsi sudah tidak uppercase secara default --}}
                 <p class="text-slate-100 font-bold text-sm leading-relaxed" x-text="activeHotspot?.content"></p>
                 <template x-if="activeHotspot?.video">
-                    <button @click="showVideo = true" class="mt-6 w-full py-4 bg-slate-800/50 text-blue-400 rounded-2xl font-black text-[10px] uppercase border-2 border-blue-500/30 border-b-4">
+                    {{-- FIX: Hilangkan 'uppercase' --}}
+                    <button @click="showVideo = true" class="mt-6 w-full py-4 bg-slate-800/50 text-blue-400 rounded-2xl font-black text-[10px] border-2 border-blue-500/30 border-b-4">
                         Putar Tutorial Video
                     </button>
                 </template>
@@ -241,7 +246,7 @@
         </div>
     </div>
 
-    {{-- Video Window Preview (FIXED CLOSE BUTTON AT BOTTOM RIGHT) --}}
+    {{-- Video Window Preview --}}
     <div x-show="showVideo" x-cloak class="video-overlay" x-transition.fade>
         <div class="relative w-full max-w-[450px]">
             <div class="glass-ui-shared video-window-small shadow-2xl w-full">
@@ -253,7 +258,6 @@
                 </div>
             </div>
             
-            {{-- Tombol Close di Kanan Bawah (Kecil & Aman) --}}
             <button @click="showVideo = false" class="absolute -bottom-5 -right-2 p-2 bg-red-600 text-white rounded-xl shadow-lg active:scale-90 transition-all z-[310] border-2 border-red-400">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -295,12 +299,18 @@
             init() {
                 const savedData = localStorage.getItem(this.storageKey);
                 if (savedData) {
-                    const parsed = JSON.parse(savedData);
-                    this.currentStep = parsed.currentStep ?? 0;
-                    this.currentOrder = parsed.currentOrder ?? 0;
-                    this.clickedHotspots = parsed.clickedHotspots ?? [];
-                    if (this.currentOrder > 0) {
-                        this.activeHotspot = this.steps[this.currentStep].hotspots[this.currentOrder - 1];
+                    try {
+                        const parsed = JSON.parse(savedData);
+                        this.currentStep = parsed.currentStep ?? 0;
+                        this.currentOrder = parsed.currentOrder ?? 0;
+                        this.clickedHotspots = parsed.clickedHotspots ?? [];
+                        
+                        // FIX: Tambahkan pengecekan bounds agar tidak error saat memuat activeHotspot
+                        if (this.currentOrder > 0 && this.steps[this.currentStep] && this.steps[this.currentStep].hotspots[this.currentOrder - 1]) {
+                            this.activeHotspot = this.steps[this.currentStep].hotspots[this.currentOrder - 1];
+                        }
+                    } catch (e) {
+                        console.error("Gagal memuat progres:", e);
                     }
                 }
             },
@@ -320,6 +330,7 @@
             },
 
             handleInteraction(hs, index) {
+                // Pastikan hotspot yang diklik sesuai urutan
                 if (index === this.currentOrder) {
                     this.activeHotspot = hs;
                     if (!this.clickedHotspots.includes(hs.id)) {
