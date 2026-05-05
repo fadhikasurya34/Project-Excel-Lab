@@ -340,7 +340,8 @@
             get availableBlocks() {
                 let result = [];
                 this.rawAvailableBlocks.forEach(block => {
-                    let tokens = block.match(/[A-Z0-9]+|[\(\)\,\;\:\=\"\>\<\$]/g);
+                    // Menambahkan \% ke dalam daftar simbol agar tidak hilang saat dipecah menjadi blok
+                    let tokens = block.match(/[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\%]/g);
                     if (tokens) { result.push(...tokens); } else { result.push(block); }
                 });
                 return [...new Set(result)].sort();

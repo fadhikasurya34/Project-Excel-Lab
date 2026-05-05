@@ -73,7 +73,8 @@ class MisiController extends Controller
         $availableBlocks = collect([]);
 
         if ($mission->mission_type === 'Syntax Assembly') {
-            preg_match_all('/[A-Z0-9]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?]/', strtoupper($mission->key_answer), $matches);
+            // FIX: Menambahkan % ke dalam Regex pemecah blok
+            preg_match_all('/[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?\%]/', strtoupper($mission->key_answer), $matches);
             $blocks = $matches[0];
             $distractors = $mission->distractors ? explode(',', $mission->distractors) : [];
             
@@ -126,7 +127,7 @@ class MisiController extends Controller
         });
     }
 
-/** * //* (Process) Validasi jawaban siswa via AJAX 
+    /** * //* (Process) Validasi jawaban siswa via AJAX 
      */
     public function checkAnswer(Request $request, string $id)
     {
@@ -221,7 +222,6 @@ class MisiController extends Controller
                 ->count();
 
             // C. Jumlah Modul (Level) Selesai
-            // Modul dianggap selesai jika semua misi di dalam level tersebut berstatus 'completed'
             $modulesCount = Level::where('level_order', '>', 0)
                 ->whereDoesntHave('missions', function($query) use ($userId) {
                     $query->whereNotIn('id', function($sub) use ($userId) {
@@ -250,7 +250,7 @@ class MisiController extends Controller
         });
     }
 
-/** * //* (Helper) Standarisasi rumus Excel - Perbaikan: Kompatibilitas & Safety
+    /** * //* (Helper) Standarisasi rumus Excel - Perbaikan: Kompatibilitas & Safety
      */
     private function normalizeFormula(?string $formula) {
         if (!$formula) return "";
@@ -264,21 +264,21 @@ class MisiController extends Controller
     }
 
     /**
-     * //* (Helper) Hierarki Feedback (Nudge) - Versi Clue / Petunjuk Halus
+     * //* (Helper) Hierarki Feedback (Nudge) - Versi Sinkronisasi Akurat
      */
     private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
         if (empty($userAnswer)) return "KOTAK RAKITAN MASIH KOSONG. MULAI RAKIT RUMUSMU!";
 
-        // Tokenisasi Dasar
-        $pattern = '/([A-Z]+(?=\())|([A-Z0-9]+)|(".+?")|([=\>\<\,\;\:\+\-\*\/])|([\(\)])/';
+        // FIX: Regex pendeteksi token yang lebih inklusif (Mendukung %)
+        $pattern = '/([A-Z]+(?=\())|([A-Z0-9\%]+)|(".+?")|([=\>\<\,\;\:\+\-\*\/\%])|([\(\)])/';
         preg_match_all($pattern, $correctAnswer, $matchesCorrect);
         preg_match_all($pattern, $userAnswer, $matchesUser);
 
         $tokensCorrect = $matchesCorrect[0];
         $tokensUser = $matchesUser[0];
 
-        // 1. PRIORITAS 1: Deteksi Komponen "Penyusup" (Salah/Asing)
+        // 1. PRIORITAS 1: Deteksi Komponen "Penyusup" atau "Berlebihan"
         $countsCorrect = array_count_values($tokensCorrect);
         $countsUser = array_count_values($tokensUser);
 
@@ -292,21 +292,20 @@ class MisiController extends Controller
             }
         }
 
-        // 2. PRIORITAS 2: Cek Keseimbangan Kurung
+        // 2. PRIORITAS 2: Cek Keseimbangan Kurung (Sering terlewat oleh siswa)
         if (substr_count($userAnswer, '(') !== substr_count($userAnswer, ')')) {
             return "ADA MASALAH PADA PASANGAN KURUNG. COBA CEK LAGI KESEIMBANGANNYA.";
         }
 
-        // 3. PRIORITAS 3: Deteksi Komponen yang Belum Dimasukkan (Missing)
-        if (count($tokensUser) < count($tokensCorrect)) {
-            // Cek apakah yang kurang itu fungsi atau sel (secara umum)
-            $diff = array_diff($tokensCorrect, $tokensUser);
-            $firstMissing = reset($diff);
-
-            if (preg_match('/^[A-Z]{2,}$/', $firstMissing)) {
-                return "LOGIKA RUMUS INI BUTUH SATU FUNGSI KALKULASI LAGI.";
+        // 3. PRIORITAS 3: Deteksi Komponen yang Kurang (Missing)
+        // Perbaikan: Menggunakan perbandingan jumlah token agar tidak "sticky"
+        foreach ($countsCorrect as $token => $count) {
+            if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
+                if (preg_match('/^[A-Z]{2,}$/', $token)) {
+                    return "LOGIKA RUMUS INI BUTUH SATU FUNGSI KALKULASI LAGI.";
+                }
+                return "INVENTARIS KOMPONENMU MASIH ADA YANG KURANG LENGKAP.";
             }
-            return "INVENTARIS KOMPONENMU MASIH ADA YANG KURANG LENGKAP.";
         }
 
         // 4. PRIORITAS 4: Deteksi Kesalahan Urutan (Sequence Error)
@@ -319,6 +318,7 @@ class MisiController extends Controller
 
         return "KOMPONEN SUDAH LENGKAP, PERIKSA KEMBALI POSISI DETAILNYA.";
     }
+
     /**
      * //* (Admin Sync) Opsional: Jalankan ini jika Admin mengubah max_score misi 
      */
