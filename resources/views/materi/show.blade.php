@@ -24,6 +24,9 @@
 @section('title', $material->title . ' - Simulasi')
 
 @push('styles')
+{{-- FIX: Menghilangkan error favicon 404 di konsol --}}
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
 <style>
     /* //* (Guard) Mode Landscape Mobile - WAJIB */
     #landscape-notice { display: none; }
@@ -207,14 +210,15 @@
                 <p class="text-white text-[11px] font-extrabold leading-tight mb-4" x-text="steps[currentStep].instruction"></p>
 
                 <div class="flex flex-row gap-2" x-show="activeHotspot" x-transition.scale.origin.top>
-                    {{-- FIX: Hilangkan 'uppercase' pada tombol penjelasan --}}
                     <button @click="showModal = true" class="flex-1 py-3 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg">
                         Penjelasan
                     </button>
-                    {{-- FIX: Hilangkan 'uppercase' pada tombol lanjut --}}
-                    <button x-show="allHotspotsInStepDone" @click="nextStep()" class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg animate-pulse">
-                        Lanjut Skenario
-                    </button>
+                    {{-- FIX: Menggunakan x-if agar reaktivitas lebih tajam saat syarat terpenuhi --}}
+                    <template x-if="allHotspotsInStepDone">
+                        <button @click="nextStep()" class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg animate-pulse">
+                            Lanjut Skenario
+                        </button>
+                    </template>
                 </div>
             </div>
         </div>
@@ -234,10 +238,9 @@
             </div>
             
             <div class="modal-scroll scrollbar-hide text-center">
-                {{-- Deskripsi sudah tidak uppercase secara default --}}
+                {{-- FIX: Deskripsi sudah tidak uppercase secara default --}}
                 <p class="text-slate-100 font-bold text-sm leading-relaxed" x-text="activeHotspot?.content"></p>
                 <template x-if="activeHotspot?.video">
-                    {{-- FIX: Hilangkan 'uppercase' --}}
                     <button @click="showVideo = true" class="mt-6 w-full py-4 bg-slate-800/50 text-blue-400 rounded-2xl font-black text-[10px] border-2 border-blue-500/30 border-b-4">
                         Putar Tutorial Video
                     </button>
@@ -326,6 +329,7 @@
 
             get allHotspotsInStepDone() {
                 let currentStepData = this.steps[this.currentStep];
+                // FIX: Memastikan perbandingan array reaktif
                 return currentStepData && this.clickedHotspots.length === currentStepData.hotspots.length;
             },
 
@@ -334,7 +338,8 @@
                 if (index === this.currentOrder) {
                     this.activeHotspot = hs;
                     if (!this.clickedHotspots.includes(hs.id)) {
-                        this.clickedHotspots.push(hs.id);
+                        // FIX: Gunakan spread operator agar Alpine mendeteksi perubahan array secara instan
+                        this.clickedHotspots = [...this.clickedHotspots, hs.id];
                         this.currentOrder++;
                         this.saveProgress();
                     }
