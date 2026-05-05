@@ -123,6 +123,40 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Langkah materi ditambahkan.');
     }
 
+    /**
+     * (Action) Update Langkah Materi (Edit Gambar & Instruksi)
+     * FITUR BARU: Sinkron dengan Modal Edit di Blade
+     */
+    public function updateStep(Request $request, string $id) {
+        $step = MaterialActivity::findOrFail($id);
+        
+        $request->validate([
+            'image'       => 'nullable|image|max:2048',
+            'instruction' => 'required'
+        ]);
+
+        if ($request->hasFile('image')) {
+            $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+            
+            // Hapus aset lama dari Cloudinary
+            if ($step->step_image) {
+                $uploadApi->destroy($this->getPublicId($step->step_image));
+            }
+
+            // Upload aset baru ke folder yang sama
+            $upload = $uploadApi->upload($request->file('image')->getRealPath(), [
+                'folder' => 'materials/steps'
+            ]);
+            
+            $step->step_image = $upload['secure_url'];
+        }
+
+        $step->instruction = $request->instruction;
+        $step->save();
+
+        return back()->with('success', 'Langkah materi berhasil diperbarui.');
+    }
+
     /** (Process) Sinkronisasi urutan langkah (AJAX) via Drag & Drop */
     public function reorderSteps(Request $request) {
         try {

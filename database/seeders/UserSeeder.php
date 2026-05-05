@@ -30,13 +30,13 @@ class UserSeeder extends Seeder
                 'email' => 'supervisor@mail.com',
                 'password' => 'unnes2026'
             ],
-            // Kamu bisa tambah data admin lain di sini...
+            // tambah data admin lain di sini...
         ];
 
         // 2. Loop data tersebut ke database
         foreach ($admins as $data) {
             $user = User::updateOrCreate(
-                ['email' => $data['email']], // Identifier unik
+                ['email' => $data['email']],
                 [
                     'name' => $data['name'],
                     'password' => Hash::make($data['password']),
@@ -46,7 +46,6 @@ class UserSeeder extends Seeder
             );
 
             // 3. Proteksi ekstra: Pastikan role tetap 'admin'
-            // (Kadang Model Boot di Laravel otomatis mengubah role ke 'siswa')
             if ($user->role !== 'admin') {
                 $user->role = 'admin';
                 $user->save();

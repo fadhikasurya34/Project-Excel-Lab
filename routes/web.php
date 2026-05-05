@@ -88,6 +88,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
         Route::post('/materials/{id}/steps', 'storeStep')->name('materials.store-step');
         Route::delete('/materials/steps/{id}', 'destroyStep')->name('materials.steps.destroy');
         Route::post('/materials/steps/reorder', 'reorderSteps')->name('materials.reorder-steps');
+        Route::patch('/materials/steps/{id}/update', 'updateStep')->name('materials.update-step');
 
         // Hotspot Management (Visual Builder)
         Route::get('/materials/steps/{stepId}/builder', 'builder')->name('materials.builder');
@@ -124,6 +125,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
         Route::post('/missions/{id}/steps', 'storeStep')->name('missions.store-step');
         Route::delete('/missions/steps/{id}', 'destroyStep')->name('missions.destroy-step');
         Route::post('/missions/steps/reorder', 'reorderSteps')->name('missions.reorder-steps'); 
+        Route::patch('/missions/steps/{id}/update', 'updateStep')->name('missions.update-step');
         
         // Visual Builder Misi
         Route::get('/missions/steps/{stepId}/builder', 'builder')->name('missions.builder');

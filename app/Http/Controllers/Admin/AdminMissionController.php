@@ -109,7 +109,7 @@ class AdminMissionController extends Controller
                 $level->delete();
             }
         });
-        return redirect()->route('admin.missions.index')->with('success', 'Topik dan seluruh aset awan berhasil dihapus.');
+        return redirect()->route('admin.missions.index')->with('success', 'Topik dan seluruh aset cloud berhasil dihapus.');
     }
 
     /**
@@ -251,13 +251,48 @@ class AdminMissionController extends Controller
     }
 
     /**
-     * (Action) Simpan Langkah Misi Baru (Upload Cloudinary)
+     * (Action) Update Langkah Misi (Edit Gambar & Instruksi)
+     */
+    public function updateStep(Request $request, string $id) {
+        $step = MissionStep::findOrFail($id);
+        
+        $request->validate([
+            'image' => 'nullable|image|max:2048',
+            'instruction' => 'required'
+        ]);
+
+        if ($request->hasFile('image')) {
+            $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
+            
+            if ($step->step_image) {
+                $uploadApi->destroy($this->getPublicId($step->step_image));
+            }
+
+            $upload = $uploadApi->upload($request->file('image')->getRealPath(), [
+                'folder' => 'mission_steps'
+            ]);
+            
+            $step->step_image = $upload['secure_url'];
+        }
+
+        $step->instruction = $request->instruction;
+        $step->save();
+
+        return back()->with('success', 'Langkah prosedur berhasil diperbarui.');
+    }
+
+    /**
+     * (Action) Simpan Langkah Misi Baru (Sudah Disederhanakan)
      */
     public function storeStep(Request $request, string $id) {
         if (!env('CLOUDINARY_URL')) {
-        abort(500, 'Woi Lan, CLOUDINARY_URL belum ada di Vercel!');
-    }
-        $request->validate(['image' => 'required|image|max:2048', 'instruction' => 'required']);
+            abort(500, 'Woi Lan, CLOUDINARY_URL belum ada di Vercel!');
+        }
+
+        $request->validate([
+            'image' => 'required|image|max:2048', 
+            'instruction' => 'required'
+        ]);
         
         $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
         $upload = $uploadApi->upload($request->file('image')->getRealPath(), ['folder' => 'mission_steps']);
@@ -266,11 +301,13 @@ class AdminMissionController extends Controller
             'mission_id' => $id, 
             'step_image' => $upload['secure_url'], 
             'instruction' => $request->instruction,
-            'key_answer_cell' => $request->key_answer_cell ?? '-', 
+            'key_answer_cell' => '-', 
             'step_order' => MissionStep::where('mission_id', $id)->count() + 1,
-            'target_x' => 0, 'target_y' => 0,
+            'target_x' => 0, 
+            'target_y' => 0,
         ]);
-        return back()->with('success', 'Langkah berhasil diunggah ke awan.');
+
+        return back()->with('success', 'Langkah berhasil diunggah ke cloud.');
     }
 
     /**
@@ -283,7 +320,7 @@ class AdminMissionController extends Controller
             $uploadApi->destroy($this->getPublicId($step->step_image));
         }
         $step->delete();
-        return back()->with('success', 'Langkah dan gambar di awan dihapus.');
+        return back()->with('success', 'Langkah dan gambar di cloud dihapus.');
     }
 
     public function reorderSteps(Request $request) {
@@ -352,7 +389,7 @@ class AdminMissionController extends Controller
             'x_percent' => 'required', 
             'y_percent' => 'required', 
             'content' => 'required',
-            'video' => 'nullable|mimes:mp4,mov,avi|max:10240' // Diperketat 10MB biar gak timeout
+            'video' => 'nullable|mimes:mp4,mov,avi|max:10240' 
         ]);
         
         $videoPath = null;
@@ -382,7 +419,7 @@ class AdminMissionController extends Controller
     }
 
     /**
-     * (Action) Hapus Hotspot (Hapus Video di Awan)
+     * (Action) Hapus Hotspot (Hapus Video di cloud)
      */
     public function destroyHotspot(string $id) { 
         $hs = MissionHotspot::findOrFail($id);
