@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 
 class UserSeeder extends Seeder
 {
@@ -14,28 +13,44 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Bersihkan data user lama agar tidak duplikat saat seeding ulang
-        // DB::table('users')->truncate(); // Opsional: gunakan jika ingin reset total
-
-        // 2. Membuat akun Admin Utama
-        // Kita menggunakan updateOrCreate agar jika seeder dijalankan ulang, 
-        // akun ini tidak error (Unique constraint email)
-        User::updateOrCreate(
-            ['email' => 'admin@gmail.com'], // Identifier
+        // 1. Daftar data Admin yang ingin dibuat
+        $admins = [
             [
-                'name' => 'Administrator Lab',
-                'password' => Hash::make('password'),
-                'role' => 'admin', // Ini akan tetap 'admin' jika mass assignment benar
-                'email_verified_at' => now(), // Tambahkan ini agar lolos middleware 'verified'
-            ]
-        );
+                'name'  => 'Administrator Lab Utama',
+                'email' => 'admin@gmail.com',
+                'password' => 'password'
+            ],
+            [
+                'name'  => 'Petugas Lab 1',
+                'email' => 'petugas1@gmail.com',
+                'password' => 'passwordlab123'
+            ],
+            [
+                'name'  => 'Supervisor UNNES',
+                'email' => 'supervisor@mail.com',
+                'password' => 'unnes2026'
+            ],
+            // Kamu bisa tambah data admin lain di sini...
+        ];
 
-        // Tips: Jika kamu ingin memastikan role tidak berubah oleh Model Boot, 
-        // kamu bisa memaksa update role setelah create:
-        $admin = User::where('email', 'admin@gmail.com')->first();
-        if ($admin->role !== 'admin') {
-            $admin->role = 'admin';
-            $admin->save();
+        // 2. Loop data tersebut ke database
+        foreach ($admins as $data) {
+            $user = User::updateOrCreate(
+                ['email' => $data['email']], // Identifier unik
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make($data['password']),
+                    'role' => 'admin',
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            // 3. Proteksi ekstra: Pastikan role tetap 'admin'
+            // (Kadang Model Boot di Laravel otomatis mengubah role ke 'siswa')
+            if ($user->role !== 'admin') {
+                $user->role = 'admin';
+                $user->save();
+            }
         }
     }
 }
