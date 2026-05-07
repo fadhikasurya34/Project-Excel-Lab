@@ -46,7 +46,7 @@
         position: relative; 
         width: 100%; 
         min-height: calc(100vh - 160px); 
-        touch-action: pan-y; 
+        touch-action: none; 
     }
     .main-scroller { 
         overflow-y: auto !important; 
@@ -55,14 +55,20 @@
         height: 100%;
     }
 
+    /* //* (Fix) Navigasi Lock saat Dragging */
+    body.is-dragging a, body.is-dragging button:not(.hud-btn) { 
+        pointer-events: none !important; 
+    }
+
     /* //* (Visual) Glassmorphism Theme */
     .glass-ui-shared {
-        background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px);
-        border: 2px solid #3b82f6; border-bottom: 6px solid #1d4ed8;
+        background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
+        border: 2px solid #3b82f6; 
         border-radius: 1.8rem; overflow: hidden;
     }
 
-    .hud-controller { position: fixed; z-index: 90; width: 320px; pointer-events: auto; }
+    /* //* (Visual Update) Compact HUD container */
+    .hud-controller { position: fixed; z-index: 90; width: 280px; pointer-events: auto; }
     
     .modal-overlay {
         position: fixed; inset: 0; z-index: 200; background: rgba(15, 23, 42, 0.85);
@@ -81,6 +87,25 @@
     .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
     .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
     
+
+    /* //* (Visual Update) TEBAL Neon Smooth effect (Biru/Ungu) */
+    @keyframes neon-materi-smooth {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.5));
+        }
+        50% {
+            box-shadow: 0 0 50px rgba(59, 130, 246, 0.9), 0 0 25px rgba(168, 85, 247, 0.8), inset 0 0 30px rgba(168, 85, 247, 0.5);
+            border-color: #ffffff;
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.9));
+            transform: scale(1.02);
+        }
+    }
+
+    .neon-attention-container {
+        animation: neon-materi-smooth 2.5s infinite ease-in-out;
+    }
 
     /* //* (Hotspot) Marker Ring */
     .marker-ring {
@@ -113,18 +138,17 @@
     }
 
     @keyframes pulse-border { 
-    0% { box-shadow: 0 0 0 0px rgba(245, 158, 11, 0.4); } 
-    70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 
-    100% { box-shadow: 0 0 0 0px rgba(245, 158, 11, 0); } 
+        0% { box-shadow: 0 0 0 0px rgba(245, 158, 11, 0.4); } 
+        70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 
+        100% { box-shadow: 0 0 0 0px rgba(245, 158, 11, 0); } 
     }
-    /* //* (Video) Small Preview Style */
+
     .video-overlay {
         position: fixed; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.7);
         display: flex; align-items: center; justify-content: center; padding: 1rem;
     }
     .video-window-small { width: 100%; max-width: 450px; }
 
-    /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
     .toast-top {
         position: fixed; 
         top: 4.5rem; 
@@ -134,13 +158,12 @@
         background: white; 
         border-radius: 1.2rem; 
         border: 2px solid #3b82f6; 
-        border-bottom: 4px solid #1d4ed8; 
-        min-width: 220px; 
-        padding: 0.5rem 1rem; 
+        min-width: 250px; 
+        padding: 0.6rem 1.2rem; 
         text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .dark .toast-top { background: #1e293b; border-color: #3b82f6; border-bottom-color: #1e40af; }
+    .dark .toast-top { background: #1e293b; border-color: #3b82f6; }
     @keyframes toast-down { 
         from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
@@ -178,14 +201,14 @@
         <p class="text-slate-400 text-[9px] uppercase tracking-widest">Mode Landscape diperlukan untuk simulasi interaktif.</p>
     </div>
 
-    {{-- Toast System (FIXED SIZE) --}}
-    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3">
+    {{-- Toast System --}}
+    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3 neon-attention-container">
         <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0">
             <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain animate-bounce">
         </div>
         <div class="text-left flex-1">
-            <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
+            <p class="text-[12px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
+            <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
         </div>
     </div>
 
@@ -193,30 +216,35 @@
     <div class="hud-controller" :style="`top: ${boxY}px; left: ${boxX}px;`"
          @mousedown.stop="startDragging($event)" @touchstart.stop="startDragging($event)">
         
-        <div class="glass-ui-shared">
-            <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
+        <div class="glass-ui-shared neon-attention-container">
+            <div class="p-3 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
                 <div class="flex items-center space-x-2">
-                    <img src="{{ asset('images/misi.png') }}" class="w-4 h-4">
-                    <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest">Misi Aktif</span>
+                    <img src="{{ asset('images/misi.png') }}" class="w-3.5 h-3.5">
+                    <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest">Instruksi</span>
                 </div>
-                <button @click="isExpanded = !isExpanded" class="text-white">
+                <button @click="isExpanded = !isExpanded" class="text-white hud-btn" @mousedown.stop @touchstart.stop>
                     <svg x-show="isExpanded" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7" /></svg>
                     <svg x-show="!isExpanded" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 15l7-7 7 7" /></svg>
                 </button>
             </div>
 
-            <div class="p-5" x-show="isExpanded" x-collapse>
-                {{-- FIX: Hilangkan 'uppercase' agar teks instruksi lebih rapi --}}
-                <p class="text-white text-[11px] font-extrabold leading-tight mb-4" x-text="steps[currentStep].instruction"></p>
+            <div class="p-4" x-show="isExpanded" x-collapse>
+                {{-- FIX: Kembalikan Teks Instruksi yang hilang --}}
+                <p class="text-white text-[15px] font-black leading-tight mb-4 tracking-tight" x-text="steps[currentStep] ? steps[currentStep].instruction : ''"></p>
 
                 <div class="flex flex-row gap-2" x-show="activeHotspot" x-transition.scale.origin.top>
-                    <button @click="showModal = true" class="flex-1 py-3 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg">
+                    {{-- FIX: Tambahkan @mousedown.stop agar tombol bisa diklik tanpa memicu drag --}}
+                    <button @click="showModal = true" 
+                            @mousedown.stop @touchstart.stop
+                            class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg">
                         Penjelasan
                     </button>
-                    {{-- FIX: Menggunakan x-if agar reaktivitas lebih tajam saat syarat terpenuhi --}}
+                    
                     <template x-if="allHotspotsInStepDone">
-                        <button @click="nextStep()" class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg animate-pulse">
-                            Lanjut Skenario
+                        <button @click="nextStep()" 
+                                @mousedown.stop @touchstart.stop
+                                class="hud-btn flex-1 py-2.5 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg">
+                            Lanjut
                         </button>
                     </template>
                 </div>
@@ -224,7 +252,7 @@
         </div>
     </div>
 
-    {{-- Modal Penjelasan --}}
+    {{-- Sisanya tetap sesuai kode asli (Modal, Video, Canvas) --}}
     <div x-show="showModal" x-cloak class="modal-overlay" x-transition.opacity>
         <div class="glass-ui-shared w-full max-w-[550px] max-h-[80vh] flex flex-col shadow-2xl">
             <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
@@ -236,9 +264,7 @@
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            
             <div class="modal-scroll scrollbar-hide text-center">
-                {{-- FIX: Deskripsi sudah tidak uppercase secara default --}}
                 <p class="text-slate-100 font-bold text-sm leading-relaxed" x-text="activeHotspot?.content"></p>
                 <template x-if="activeHotspot?.video">
                     <button @click="showVideo = true" class="mt-6 w-full py-4 bg-slate-800/50 text-blue-400 rounded-2xl font-black text-[10px] border-2 border-blue-500/30 border-b-4">
@@ -249,7 +275,6 @@
         </div>
     </div>
 
-    {{-- Video Window Preview --}}
     <div x-show="showVideo" x-cloak class="video-overlay" x-transition.fade>
         <div class="relative w-full max-w-[450px]">
             <div class="glass-ui-shared video-window-small shadow-2xl w-full">
@@ -260,26 +285,21 @@
                     <video :key="activeHotspot?.video" :src="activeHotspot?.video" controls autoplay class="w-full aspect-video object-contain"></video>
                 </div>
             </div>
-            
             <button @click="showVideo = false" class="absolute -bottom-5 -right-2 p-2 bg-red-600 text-white rounded-xl shadow-lg active:scale-90 transition-all z-[310] border-2 border-red-400">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
     </div>
 
-    {{-- Canvas Simulasi --}}
     <div class="simulation-wrapper !p-0">
         <div class="relative w-full inline-block">
-            <img :src="steps[currentStep].image" class="w-full h-auto block select-none shadow-2xl">
-            
-            <template x-for="(hs, index) in steps[currentStep].hotspots" :key="hs.id">
+            <img :src="steps[currentStep] ? steps[currentStep].image : ''" class="w-full h-auto block select-none shadow-2xl">
+            <template x-for="(hs, index) in (steps[currentStep] ? steps[currentStep].hotspots : [])" :key="hs.id">
                 <div class="marker-ring" 
                     :class="getMarkerClass(hs, index)"
                     :style="`top: ${hs.y}%; left: ${hs.x}%;`"
                     @click="handleInteraction(hs, index)">
-                    
                     <span class="text-amber-500" x-show="!clickedHotspots.includes(hs.id)" x-text="index + 1"></span>
-                    
                     <span class="text-emerald-500" x-show="clickedHotspots.includes(hs.id)">✔</span>
                 </div>
             </template>
@@ -307,8 +327,6 @@
                         this.currentStep = parsed.currentStep ?? 0;
                         this.currentOrder = parsed.currentOrder ?? 0;
                         this.clickedHotspots = parsed.clickedHotspots ?? [];
-                        
-                        // FIX: Tambahkan pengecekan bounds agar tidak error saat memuat activeHotspot
                         if (this.currentOrder > 0 && this.steps[this.currentStep] && this.steps[this.currentStep].hotspots[this.currentOrder - 1]) {
                             this.activeHotspot = this.steps[this.currentStep].hotspots[this.currentOrder - 1];
                         }
@@ -317,7 +335,6 @@
                     }
                 }
             },
-
             saveProgress() {
                 const payload = {
                     currentStep: this.currentStep,
@@ -326,31 +343,24 @@
                 };
                 localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
-
             get allHotspotsInStepDone() {
                 let currentStepData = this.steps[this.currentStep];
-                // FIX: Memastikan perbandingan array reaktif
                 return currentStepData && this.clickedHotspots.length === currentStepData.hotspots.length;
             },
-
             handleInteraction(hs, index) {
-                // Pastikan hotspot yang diklik sesuai urutan
                 if (index === this.currentOrder) {
                     this.activeHotspot = hs;
                     if (!this.clickedHotspots.includes(hs.id)) {
-                        // FIX: Gunakan spread operator agar Alpine mendeteksi perubahan array secara instan
                         this.clickedHotspots = [...this.clickedHotspots, hs.id];
                         this.currentOrder++;
                         this.saveProgress();
                     }
                 }
             },
-
             showToast(title, message, icon = 'bintang.png') {
                 this.toast = { show: true, title, message, icon };
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
-
             nextStep() {
                 if (this.currentStep < this.steps.length - 1) {
                     this.currentStep++;
@@ -366,15 +376,19 @@
                     setTimeout(() => { window.location.href = "{{ route('materi.index') }}"; }, 4000);
                 }
             },
-
             getMarkerClass(hs, index) {
                 if (this.clickedHotspots.includes(hs.id)) return 'marker-done';
                 if (index === this.currentOrder) return 'marker-active';
                 return 'opacity-0 pointer-events-none';
             },
-
             startDragging(e) {
+                // FIX: Cek apakah yang diklik adalah tombol. Jika YA, jangan jalankan drag.
+                if (e.target.closest('button')) return;
+
+                e.preventDefault(); 
                 this.isDragging = true;
+                document.body.classList.add('is-dragging');
+
                 let cX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
                 let cY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
                 this.offX = cX - this.boxX;
@@ -386,7 +400,14 @@
                     this.boxX = x - this.offX;
                     this.boxY = y - this.offY;
                 };
-                const stop = () => { this.isDragging = false; };
+                const stop = () => { 
+                    setTimeout(() => { 
+                        this.isDragging = false; 
+                        document.body.classList.remove('is-dragging');
+                    }, 100);
+                    document.removeEventListener('mousemove', move); 
+                    document.removeEventListener('touchmove', move); 
+                };
                 document.addEventListener('mousemove', move);
                 document.addEventListener('touchmove', move, { passive: false });
                 document.addEventListener('mouseup', stop);

@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
     
     // Eksplorasi Materi
     Route::get('/materi', [MateriController::class, 'index'])->name('materi.index');
+    // --- BARU: Menampilkan daftar materi di kategori tertentu ---
+    Route::get('/materi/topik/{category}', [MateriController::class, 'showByCategory'])->name('materi.category.list');
     Route::get('/materi/{id}', [MateriController::class, 'show'])->name('materi.show');
     
     // Petualangan Misi
@@ -77,6 +79,16 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
     // A. MANAJEMEN MATERI (AdminMateriController)
     Route::controller(AdminMateriController::class)->group(function () {
         Route::get('/materials', 'index')->name('materials.index');
+        
+        // --- UPDATE & TAMBAHAN CRUD FOLDER (TOPIC) ---
+        Route::get('/materials/topic/{id}', 'listByTopic')->name('materials.topic');
+        Route::post('/materials/topic', 'storeTopic')->name('materials.store-topic');
+        Route::patch('/materials/topic/{id}', 'updateTopic')->name('materials.update-topic');
+        Route::delete('/materials/topic/{id}', 'destroyTopic')->name('materials.destroy-topic');
+        
+        Route::post('/materials/store-quick', 'storeQuick')->name('materials.store-quick');
+        // ----------------------------------------------
+
         Route::get('/materials/create', 'create')->name('materials.create');
         Route::post('/materials', 'store')->name('materials.store');
         Route::get('/materials/{id}/edit', 'edit')->name('materials.edit');

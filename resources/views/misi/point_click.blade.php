@@ -42,7 +42,7 @@
         position: relative; 
         width: 100%; 
         min-height: calc(100vh - 160px); 
-        touch-action: pan-y; 
+        touch-action: none; 
     }
     .main-scroller { 
         overflow-y: auto !important; 
@@ -54,12 +54,36 @@
     /* //* (Visual) Glassmorphism Theme - Blue */
     .glass-ui-shared {
         background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
-        border: 2px solid #3b82f6; border-bottom: 6px solid #1d4ed8;
+        border: 2px solid #3b82f6; 
         border-radius: 1.8rem; overflow: hidden;
     }
 
-    .hud-controller { position: fixed; z-index: 90; width: 320px; pointer-events: auto; }
+    /* //* (Fix) Proteksi tombol saat Dragging */
+    body.is-dragging a, body.is-dragging button:not(.hud-btn) { 
+        pointer-events: none !important; 
+    }
+
+    /* Update: HUD lebih compact (280px) */
+    .hud-controller { position: fixed; z-index: 90; width: 280px; pointer-events: auto; }
     
+    /* //* (Animation) Update: Efek Cahaya Neon TEBAL & Smooth (Blue-Emerald) */
+    @keyframes neon-misi-smooth {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(16, 185, 129, 0.3);
+            border-color: #3b82f6;
+            filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.5));
+        }
+        50% {
+            box-shadow: 0 0 50px rgba(59, 130, 246, 0.9), 0 0 25px rgba(16, 185, 129, 0.8), inset 0 0 30px rgba(16, 185, 129, 0.5);
+            border-color: #ffffff;
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.9));
+            transform: scale(1.02);
+        }
+    }
+    .neon-attention-misi {
+        animation: neon-misi-smooth 2.5s infinite ease-in-out;
+    }
+
     /* //* (Buttons) Gamified Pegas */
     .btn-pegas-blue { background: #2563eb; border-bottom: 4px solid #1e3a8a; transition: all 0.1s; }
     .btn-pegas-blue:active { transform: translateY(2px); border-bottom-width: 1px; }
@@ -84,7 +108,7 @@
     }
     .marker-done { background: #10b981; border-color: transparent; opacity: 0.8; cursor: default; }
 
-    /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
+    /* //* (Notification) FIXED Toast */
     .toast-top {
         position: fixed; 
         top: 4.5rem; 
@@ -94,13 +118,12 @@
         background: white; 
         border-radius: 1.2rem; 
         border: 2px solid #3b82f6; 
-        border-bottom: 4px solid #1d4ed8; 
-        min-width: 220px; 
-        padding: 0.5rem 1rem; 
+        min-width: 250px; 
+        padding: 0.6rem 1.2rem; 
         text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .dark .toast-top { background: #1e293b; border-color: #3b82f6; border-bottom-color: #1e40af; }
+    .dark .toast-top { background: #1e293b; border-color: #3b82f6; }
     @keyframes toast-down { 
         from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
@@ -151,45 +174,47 @@
         <div class="flash-error"></div>
     </template>
 
-    {{-- Toast (FIXED SIZE) --}}
-    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0">
-            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain animate-bounce">
+    {{-- Toast (EFEK NEON KONTAINER) --}}
+    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-4 neon-attention-misi">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0">
+            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-6 h-6 object-contain animate-bounce">
         </div>
         <div class="text-left flex-1">
-            <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
+            <p class="text-[12px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
+            <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
         </div>
     </div>
 
-    {{-- HUD Instruksi (Draggable) --}}
+    {{-- HUD Instruksi (Draggable, Compact, & BIG TEXT + NEON GLOW) --}}
     <div class="hud-controller" :style="`top: ${boxY}px; left: ${boxX}px;`"
-         @mousedown.stop="startDragging($event, 'box')" @touchstart.stop="startDragging($event, 'box')">
+         @mousedown.stop="startDragging($event, 'box')" @touchstart.stop="startDragging($event, 'box')"
+         @click.stop="">
         
-        <div class="glass-ui-shared" :class="showErrorEffect ? 'shake border-red-500' : ''">
-            <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
+        <div class="glass-ui-shared neon-attention-misi" :class="showErrorEffect ? 'shake border-red-500' : ''">
+            <div class="p-3 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
                 <div class="flex items-center space-x-2">
-                    <img :src="showErrorEffect ? '{{ asset('images/alert.png') }}' : '{{ asset('images/misi.png') }}'" class="w-4 h-4">
-                    <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest" x-text="showErrorEffect ? 'Analisis Salah' : 'Tujuan Misi'"></span>
+                    <img :src="showErrorEffect ? '{{ asset('images/alert.png') }}' : '{{ asset('images/misi.png') }}'" class="w-3.5 h-3.5">
+                    <span class="text-[8px] font-black text-blue-400 uppercase tracking-widest" x-text="showErrorEffect ? 'Salah Klik' : 'Tujuan Misi'"></span>
                 </div>
-                <button @click="isExpanded = !isExpanded" class="text-white">
+                <button @click="isExpanded = !isExpanded" class="text-white hud-btn" @mousedown.stop @touchstart.stop>
                     <svg x-show="isExpanded" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M19 9l-7 7-7-7" /></svg>
                     <svg x-show="!isExpanded" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 15l7-7 7 7" /></svg>
                 </button>
             </div>
 
-            <div class="p-5" x-show="isExpanded" x-collapse>
-                {{-- FIX: Hapus uppercase --}}
-                <p class="text-white text-[11px] font-extrabold leading-tight mb-4" x-text="steps[currentStep].instruction"></p>
+            <div class="p-4" x-show="isExpanded" x-collapse>
+                {{-- Update: Teks Instruksi Lebih Gede (15px) & Font Hitam --}}
+                <p class="text-white text-[15px] font-black leading-tight mb-4 tracking-tight" x-text="steps[currentStep] ? steps[currentStep].instruction : ''"></p>
 
                 <div class="flex flex-row gap-2">
-                    {{-- FIX: Hapus uppercase pada tombol --}}
                     <button x-show="showHintButton" @click="showModal = true" 
-                            class="flex-1 py-3 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg transition-all">
+                            @mousedown.stop @touchstart.stop
+                            class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg transition-all">
                         Hint Bantuan
                     </button>
                     <button x-show="allHotspotsInStepDone" @click="nextStep()" 
-                            class="flex-1 py-3 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg animate-pulse transition-all">
+                            @mousedown.stop @touchstart.stop
+                            class="hud-btn flex-1 py-2.5 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg transition-all">
                         Lanjut Skenario
                     </button>
                 </div>
@@ -197,7 +222,23 @@
         </div>
     </div>
 
-    {{-- Modal Hint --}}
+    {{-- Area Simulasi --}}
+    <div class="simulation-wrapper !p-0" @click="handleBackgroundClick($event)">
+        <div class="relative w-full inline-block">
+            <img :src="steps[currentStep] ? steps[currentStep].image : ''" class="w-full h-auto block select-none shadow-2xl">
+            
+            <template x-for="(hs, index) in (steps[currentStep] ? steps[currentStep].hotspots : [])" :key="hs.id">
+                <div class="marker-ring" 
+                     :class="clickedHotspots.includes(hs.id) ? 'marker-done' : 'opacity-0'"
+                     :style="`top: ${hs.y_percent}%; left: ${hs.x_percent}%;`"
+                     @click.stop="handleHotspotClick(hs, index)">
+                    <span class="text-white text-xs font-black">✔</span>
+                </div>
+            </template>
+        </div>
+    </div>
+    
+    {{-- Sisanya Tetap Sesuai Kode Asli (Modal Hint, dsb) --}}
     <div x-show="showModal" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm">
         <div class="glass-ui-shared w-full max-w-[500px] flex flex-col shadow-2xl">
             <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
@@ -211,25 +252,8 @@
             </div>
             <div class="p-8 text-center scrollbar-hide overflow-y-auto max-h-[50vh]">
                 <p class="text-slate-100 font-bold text-sm leading-relaxed" x-text="currentHint"></p>
-                {{-- FIX: Hapus uppercase --}}
                 <button @click="showModal = false" class="mt-6 w-full py-3 bg-slate-800 text-slate-300 rounded-xl font-black text-[10px]">Mengerti</button>
             </div>
-        </div>
-    </div>
-
-    {{-- Area Simulasi --}}
-    <div class="simulation-wrapper !p-0" @click="handleBackgroundClick($event)">
-        <div class="relative w-full inline-block">
-            <img :src="steps[currentStep]?.image" class="w-full h-auto block select-none shadow-2xl">
-            
-            <template x-for="(hs, index) in steps[currentStep]?.hotspots" :key="hs.id">
-                <div class="marker-ring" 
-                     :class="clickedHotspots.includes(hs.id) ? 'marker-done' : 'opacity-0'"
-                     :style="`top: ${hs.y_percent}%; left: ${hs.x_percent}%;`"
-                     @click.stop="handleHotspotClick(hs, index)">
-                    <span class="text-white text-xs font-black">✔</span>
-                </div>
-            </template>
         </div>
     </div>
 </div>
@@ -239,32 +263,17 @@
 <script>
     function missionEngine() {
         return {
-            // --- STATE ASLI ---
-            currentStep: 0, 
-            currentHotspotIndex: 0, 
-            clickedHotspots: [], 
-            isExpanded: true, 
-            showModal: false, 
-            showErrorEffect: false, 
-            showHintButton: false,
-            currentHint: '', 
-            boxX: 20, boxY: 80, 
-            isDragging: false, 
-            offX: 0, offY: 0,
-            attempts: 0,
-            currentPotentialXP: {{ $mission->max_score }},
+            currentStep: 0, currentHotspotIndex: 0, clickedHotspots: [], isExpanded: true, 
+            showModal: false, showErrorEffect: false, showHintButton: false,
+            currentHint: '', boxX: 20, boxY: 80, isDragging: false, offX: 0, offY: 0,
+            attempts: 0, currentPotentialXP: {{ $mission->max_score }},
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
-
-            // --- STORAGE & REVIEW ---
             storageKey: 'mission_{{ $mission->id }}_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
             init() {
-                console.log("=== MISSION ENGINE START ===");
-                
                 if (this.isReview) {
-                    console.log("Mode Review Aktif.");
                     this.currentPotentialXP = {{ $mission->max_score }};
                 } else {
                     const saved = localStorage.getItem(this.storageKey);
@@ -275,13 +284,10 @@
                         this.clickedHotspots = data.clickedHotspots ?? [];
                         this.attempts = data.attempts ?? 0;
                         this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
-                        console.log("Progress dimuat dari storage.");
                     } else {
                         this.saveToLocal();
                     }
                 }
-
-                // --- PENENTUAN WATCHER ---
                 this.$watch('currentPotentialXP', v => { 
                     const el = document.getElementById('header-xp-display');
                     if (el) el.innerText = v; 
@@ -290,8 +296,6 @@
                     const el = document.getElementById('header-step-current');
                     if (el) el.innerText = v + 1; 
                 });
-
-                // --- FIX: PAKSA UPDATE UI SAAT REFRESH ---
                 document.getElementById('header-xp-display').innerText = this.currentPotentialXP;
                 document.getElementById('header-step-current').innerText = this.currentStep + 1;
             },
@@ -300,16 +304,12 @@
                 if (this.isReview) return;
                 try {
                     const payload = {
-                        currentStep: this.currentStep,
-                        currentHotspotIndex: this.currentHotspotIndex,
-                        clickedHotspots: this.clickedHotspots,
-                        attempts: this.attempts,
+                        currentStep: this.currentStep, currentHotspotIndex: this.currentHotspotIndex,
+                        clickedHotspots: this.clickedHotspots, attempts: this.attempts,
                         currentPotentialXP: this.currentPotentialXP
                     };
                     localStorage.setItem(this.storageKey, JSON.stringify(payload));
-                } catch (e) {
-                    console.error("Gagal menyimpan ke LocalStorage:", e);
-                }
+                } catch (e) { console.error("Gagal menyimpan ke LocalStorage:", e); }
             },
 
             get allHotspotsInStepDone() {
@@ -318,11 +318,12 @@
             },
 
             handleBackgroundClick(e) {
-                if (this.allHotspotsInStepDone) return;
+                if (this.allHotspotsInStepDone || this.isDragging) return;
                 this.triggerError();
             },
 
             handleHotspotClick(hs, index) {
+                if (this.isDragging) return;
                 if (index === this.currentHotspotIndex) {
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots.push(hs.id);
@@ -330,24 +331,21 @@
                         this.showErrorEffect = false;
                         this.showHintButton = false; 
                         this.saveToLocal();
-
                         if (this.allHotspotsInStepDone) {
                             this.showToast('Langkah Berhasil', 'Target ditemukan.', 'checklist.png');
                         }
                     }
-                } else {
-                    this.triggerError();
-                }
+                } else { this.triggerError(); }
             },
 
             triggerError() {
-                if (this.showErrorEffect) return;
+                if (this.showErrorEffect || this.isDragging) return;
                 this.showErrorEffect = true;
                 this.attempts++;
                 this.showHintButton = true;
-                let correctHotspot = this.steps[this.currentStep].hotspots[this.currentHotspotIndex];
+                let stepData = this.steps[this.currentStep];
+                let correctHotspot = stepData ? stepData.hotspots[this.currentHotspotIndex] : null;
                 this.currentHint = correctHotspot ? correctHotspot.content : 'Perhatikan instruksi misi.';
-
                 if (!this.isReview && this.attempts > 3) {
                     let penalty = Math.floor({{ $mission->max_score }} * 0.05);
                     this.currentPotentialXP = Math.max(this.currentPotentialXP - penalty, Math.floor({{ $mission->max_score }} * 0.4));
@@ -355,7 +353,6 @@
                 } else {
                     this.showToast('Klik Salah', this.isReview ? 'Mode Review: XP aman.' : 'Perhatikan instruksi.', 'alert.png');
                 }
-
                 this.saveToLocal();
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
@@ -379,8 +376,7 @@
                         return;
                     }
                     axios.post("{{ route('misi.check', $mission->id) }}", { 
-                        answer: 'MISSION_COMPLETED', 
-                        attempts: this.attempts 
+                        answer: 'MISSION_COMPLETED', attempts: this.attempts 
                     }).then(res => {
                         localStorage.removeItem(this.storageKey);
                         window.location.href = res.data.next_url;
@@ -389,12 +385,16 @@
             },
 
             startDragging(e, target) {
+                // FIX: Jangan aktifkan drag jika yang ditekan adalah tombol
+                if (e.target.closest('button')) return;
+
+                e.preventDefault(); 
                 this.isDragging = true;
+                document.body.classList.add('is-dragging');
                 let cX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
                 let cY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
                 this.offX = cX - this.boxX;
                 this.offY = cY - this.boxY;
-
                 const move = (e) => {
                     if (!this.isDragging) return;
                     let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
@@ -402,14 +402,16 @@
                     this.boxX = x - this.offX;
                     this.boxY = y - this.offY;
                 };
-
                 const stop = () => { 
-                    this.isDragging = false; 
+                    setTimeout(() => { 
+                        this.isDragging = false; 
+                        document.body.classList.remove('is-dragging');
+                    }, 100);
                     document.removeEventListener('mousemove', move); 
                     document.removeEventListener('touchmove', move); 
                 };
                 document.addEventListener('mousemove', move);
-                document.addEventListener('touchmove', move, { passive: true });
+                document.addEventListener('touchmove', move, { passive: false });
                 document.addEventListener('mouseup', stop);
                 document.addEventListener('touchend', stop);
             }

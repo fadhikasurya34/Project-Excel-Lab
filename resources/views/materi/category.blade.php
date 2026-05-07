@@ -1,8 +1,8 @@
-{{-- //* (View) Daftar Topik Laboratorium (Folder) --}}
+{{-- //* (View) Daftar Modul di Dalam Folder (Sisi Siswa) --}}
 
 @extends('layouts.siswa')
 
-@section('title', 'Eksplorasi Materi')
+@section('title', 'Daftar Modul - ' . $category->name)
 
 @push('styles')
 <style>
@@ -64,17 +64,17 @@
 @endpush
 
 @section('header_left')
-    {{-- //* (Nav) Kembali ke Dashboard --}}
-    <a href="{{ route('dashboard') }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
+    {{-- //* (Nav) Kembali ke Daftar Folder --}}
+    <a href="{{ route('materi.index') }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
             <path d="M15 19l-7-7 7-7" />
         </svg>
     </a>
     <div class="flex flex-col text-left ml-3 leading-none">
-        <span class="text-base font-extrabold tracking-tight dark:text-white uppercase leading-none">Eksplorasi Materi</span>
+        <span class="text-base font-extrabold tracking-tight dark:text-white uppercase leading-none">{{ $category->name }}</span>
         <div class="flex items-center space-x-1.5 mt-1.5">
             <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-            <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Katalog Topik Aktif</span>
+            <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Isi Folder Materi</span>
         </div>
     </div>
 @endsection
@@ -84,51 +84,67 @@
     
     <div class="w-full max-w-md sm:max-w-3xl lg:max-w-5xl mx-auto transition-all duration-500">
         
-        {{-- //* (Header) Informasi daftar topik --}}
+        {{-- //* (Header) Deskripsi Folder --}}
         <div class="mb-10 text-left px-2">
-            <h1 class="text-2xl lg:text-2xl font-black text-slate-900 dark:text-white leading-tight">Pusat Pembelajaran Excel</h1>
-            <p class="text-sm lg:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Pilih kategori materi untuk mulai mengeksplorasi modul laboratorium.</p>
+            <h1 class="text-2xl lg:text-2xl font-black text-slate-900 dark:text-white leading-tight capitalize">Daftar Modul: {{ strtolower($category->name) }}</h1>
+            <p class="text-sm lg:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">{{ $category->description }}</p>
         </div>
 
         {{-- //* (Grid) Layout kartu adaptif --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 mb-16">
             
-            {{-- //* (Data) Loop daftar folder kategori materi --}}
-            @foreach($categories as $cat)
+            @forelse($materials as $item)
+            
+            @php
+                $isCompleted = in_array($item->id, $userProgress);
+            @endphp
             
             <div class="glass-card bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 lg:p-8 border-b-[8px] flex flex-col items-start relative overflow-hidden h-full shadow-sm hover:-translate-y-2 active:scale-[0.98]">
                 
-                <div class="card-silhouette">TOPIK</div>
+                <div class="card-silhouette">MODUL</div>
 
-                {{-- //* (Badge) Indikator Jumlah Modul --}}
-                <div class="absolute top-6 right-6 lg:top-8 lg:right-8 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-800 text-[9px] font-black uppercase tracking-widest z-20 flex items-center">
-                    {{ $cat->materials_count }} Modul
-                </div>
+                {{-- //* (Badge) Status Selesai --}}
+                @if($isCompleted)
+                    <div class="absolute top-6 right-6 lg:top-8 lg:right-8 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-800 text-[9px] font-black uppercase tracking-widest z-20 flex items-center">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"></path></svg>
+                        Selesai
+                    </div>
+                @endif
 
                 <div class="flex-1 flex flex-col items-start gap-4 lg:gap-5 z-10">
+                    {{-- //* (Icon) Full Blue Theme --}}
                     <div class="w-14 h-14 lg:w-16 lg:h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center shadow-inner border border-blue-100 dark:border-blue-800 transition-transform hover:scale-105">
-                        <img src="{{ asset('images/pembelajaran.png') }}" 
-                             alt="Icon Topik" 
+                        <img src="{{ asset('images/' . ($item->material_type == 'praktikum' ? 'pembelajaran.png' : 'explore.png')) }}" 
+                             alt="Icon Modul" 
                              class="w-10 h-10 lg:w-12 lg:h-12 object-contain drop-shadow-[0_4px_6px_rgba(37,99,235,0.3)]">
                     </div>
                     
                     <div class="pr-16">
                         <h3 class="text-lg lg:text-xl font-bold text-slate-900 dark:text-white capitalize leading-tight">
-                            {{ strtolower($cat->name) }}
+                            {{ strtolower($item->title) }}
                         </h3>
+                        <div class="flex items-center space-x-2 mt-2">
+                             <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded text-[8px] font-black uppercase tracking-tighter border border-slate-200 dark:border-slate-700">
+                                {{ $item->material_type }}
+                            </span>
+                        </div>
                         <p class="text-[11px] lg:text-[12px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed font-medium">
-                            {{ $cat->description }}
+                            {{ $item->description }}
                         </p>
                     </div>
                 </div>
 
-                {{-- //* (Action) Buka daftar materi di dalam topik --}}
-                <a href="{{ route('materi.category.list', $cat->id) }}" 
+                {{-- //* (Action) Full Blue Pegas Button --}}
+                <a href="{{ route('materi.show', $item->id) }}" 
                     class="btn-menu-pegas w-36 lg:w-40 mt-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl text-[9px] lg:text-[10px] tracking-widest border-blue-800 uppercase text-center z-10 shadow-lg shadow-blue-100">
-                    Buka Folder
+                    Buka Modul
                 </a>
             </div>
-            @endforeach
+            @empty
+                <div class="col-span-full py-20 text-center">
+                    <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">Folder ini masih kosong...</p>
+                </div>
+            @endforelse
 
         </div>
     </div>

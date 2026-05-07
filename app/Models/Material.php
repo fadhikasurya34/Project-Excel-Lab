@@ -9,8 +9,15 @@ class Material extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'category'];
+    protected $fillable = ['title', 'description', 'category_id', 'material_type'];
 
+    // TAMBAHKAN INI: Relasi balik ke folder (kategori)
+    public function category()
+    {
+        return $this->belongsTo(MaterialCategory::class, 'category_id');
+    }
+
+    // Fungsi activities yang sudah ada tetap biarkan
     public function activities()
     {
         return $this->hasMany(MaterialActivity::class)->orderBy('step_order');
