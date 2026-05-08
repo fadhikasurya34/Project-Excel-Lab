@@ -122,10 +122,12 @@
                     <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
                 </div>
             </div>
+
+            {{-- UPDATE: Kartu Total Modul sekarang menggunakan count dari relasi kategori yang diload di halaman ini --}}
             <div class="admin-card p-5 sm:p-6 flex items-center justify-between">
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Total Modul</p>
-                    <h3 class="text-2xl sm:text-3xl font-black text-slate-900">{{ $stats['total_materi'] }}</h3>
+                    <h3 class="text-2xl sm:text-3xl font-black text-slate-900">{{ $categories->sum('materials_count') }}</h3>
                 </div>
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"></path></svg>
