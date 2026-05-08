@@ -6,7 +6,7 @@
 
 @push('styles')
 <style>
-    /* //* (UI) Kontainer Iframe Responsif */
+    /* //* (UI) Kontainer Iframe Responsif Asli Anda */
     .video-container {
         position: relative;
         padding-bottom: 56.25%; /* Ratio 16:9 */
@@ -24,14 +24,68 @@
         width: 100%;
         height: 100%;
         border: 0;
+        z-index: 10;
     }
 
-    /* //* (Card) Glass Effect untuk Deskripsi */
+    /* Penyesuaian Kontainer saat Masuk Fullscreen Lewat Tombol Kita */
+    .video-container:fullscreen, .video-container:-webkit-full-screen {
+        padding-bottom: 0;
+        height: 100dvh;
+        width: 100vw;
+        border-radius: 0;
+        border: none;
+        background: #000;
+    }
+
+    /* //* Tombol Keluar (Tengah Atas) */
+    .btn-exit-fs {
+        display: none; /* Default disembunyikan */
+        position: absolute;
+        top: 16px; /* Jarak dari atas */
+        left: 50%; /* Posisikan di tengah horizontal */
+        transform: translateX(-50%); /* Geser agar benar-benar di tengah */
+        z-index: 2147483647; /* Z-index maksimal absolut di CSS */
+        background: rgba(220, 38, 38, 0.95);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 9999px; /* Bentuk pill */
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border: 1.5px solid rgba(255,255,255,0.4);
+        backdrop-filter: blur(8px);
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        
+        /* FIX: Agar bisa di-tap di mobile (iOS/Android) */
+        pointer-events: auto !important;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .btn-exit-fs:active {
+        background: rgba(185, 28, 28, 1);
+        transform: translateX(-50%) scale(0.95); /* Tetap di tengah saat ditekan */
+    }
+
+    .video-container:fullscreen .btn-exit-fs, .video-container:-webkit-full-screen .btn-exit-fs {
+        display: flex; /* Munculkan saat fullscreen */
+    }
+
+    /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
     .description-card {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(10px);
         border: 2px solid #e2e8f0;
         border-radius: 2rem;
+    }
+    
+    /* Perbaikan Kontras Warna Dark Mode Secara Manual */
+    :is(.dark .description-card) {
+        background: rgba(30, 41, 59, 0.8); /* slate-800 */
+        border-color: #334155; /* slate-700 */
     }
 
     .btn-back-pegas {
@@ -60,7 +114,7 @@
     {{-- //* (Nav) Kembali ke Daftar Modul --}}
     <a href="{{ route('materi.category.list', $material->category_id) }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-            <path d="M15 19l-7-7 7-7" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
     </a>
     <div class="flex flex-col text-left ml-3 leading-none">
@@ -79,17 +133,38 @@
         {{-- //* (Player) Area Konten Utama (PDF/Video) --}}
         <div class="mb-8">
             @php
-                // Mengambil URL dari aktivitas pertama (asumsi materi teori simpan URL di activity)
                 $contentUrl = $material->activities->first()->step_image ?? null;
             @endphp
 
             @if($contentUrl)
-                <div class="video-container border-4 border-white shadow-2xl">
+                {{-- ID ditambahkan ke kontainer untuk target script --}}
+                <div id="materi-container" class="video-container border-4 border-white dark:border-slate-800 shadow-2xl">
+                    
+                    {{-- Tombol Keluar Darurat (Tengah Atas, Hanya Muncul Saat Fullscreen) --}}
+                    <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Tutup
+                    </button>
+
+                    {{-- iframe TANPA allowfullscreen = Tombol Bawaan Video Mati Sepenuhnya --}}
                     <iframe src="{{ $contentUrl }}" allow="autoplay"></iframe>
+                    
+                </div>
+
+                {{-- Toolbar Bawah Player --}}
+                <div class="mt-4 flex justify-end">
+                    <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                        </svg>
+                        <span>Perbesar Layar</span>
+                    </button>
                 </div>
             @else
-                <div class="bg-slate-200 rounded-[2rem] h-96 flex items-center justify-center border-4 border-dashed border-slate-300">
-                    <p class="text-slate-500 font-bold uppercase tracking-widest text-xs">Konten tidak tersedia</p>
+                <div class="bg-slate-200 dark:bg-slate-800 rounded-[2rem] h-96 flex items-center justify-center border-4 border-dashed border-slate-300 dark:border-slate-700">
+                    <p class="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs">Konten tidak tersedia</p>
                 </div>
             @endif
         </div>
@@ -99,11 +174,11 @@
             <div class="lg:col-span-2">
                 <div class="description-card p-8 lg:p-10 shadow-sm">
                     <div class="flex items-center space-x-3 mb-4">
-                        <span class="px-3 py-1 bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                        <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
                             {{ $material->material_type }}
                         </span>
-                        <span class="text-slate-300">/</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span class="text-slate-300 dark:text-slate-600">/</span>
+                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                             ID Modul: #{{ str_pad($material->id, 4, '0', STR_PAD_LEFT) }}
                         </span>
                     </div>
@@ -112,29 +187,29 @@
                         {{ strtolower($material->title) }}
                     </h1>
                     
-                    <div class="prose prose-slate max-w-none">
+                    <div class="prose prose-slate dark:prose-invert max-w-none">
                         <p class="text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
                             {{ $material->description }}
                         </p>
                     </div>
 
-                    <hr class="my-8 border-slate-100">
+                    <hr class="my-8 border-slate-100 dark:border-slate-700">
 
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-4">
-                            <div class="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center">
-                                <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Instruksi</p>
-                                <p class="text-xs font-bold text-slate-700">Pelajari materi di atas dengan seksama.</p>
+                                <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">Instruksi</p>
+                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Pelajari materi di atas dengan seksama.</p>
                             </div>
                         </div>
 
                         <a href="{{ route('materi.category.list', $material->category_id) }}" 
-                           class="btn-finish-pegas px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border-indigo-800 shadow-lg shadow-indigo-100">
+                           class="btn-finish-pegas px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border-indigo-800 shadow-lg shadow-indigo-100 dark:shadow-none">
                             Selesai Belajar
                         </a>
                     </div>
@@ -143,14 +218,14 @@
 
             {{-- //* (Sidebar) Info Tambahan --}}
             <div class="space-y-6">
-                <div class="bg-white border-2 border-slate-100 p-6 rounded-[2rem] shadow-sm">
-                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Tips Belajar</h4>
+                <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-6 rounded-[2rem] shadow-sm">
+                    <h4 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Tips Belajar</h4>
                     <ul class="space-y-3">
-                        <li class="flex items-start space-x-3 text-xs font-bold text-slate-600">
+                        <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                             <span class="text-indigo-500 mt-0.5">●</span>
                             <span>Gunakan mode fullscreen pada player untuk tampilan lebih jelas.</span>
                         </li>
-                        <li class="flex items-start space-x-3 text-xs font-bold text-slate-600">
+                        <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                             <span class="text-indigo-500 mt-0.5">●</span>
                             <span>Catat poin-poin penting sebelum lanjut ke praktikum.</span>
                         </li>
@@ -162,3 +237,25 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    const container = document.getElementById("materi-container");
+
+    function toggleCustomFullscreen() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            // MASUK FULLSCREEN
+            const reqFS = container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen;
+            if (reqFS) {
+                reqFS.call(container).catch(err => console.error(err));
+            }
+        } else {
+            // KELUAR FULLSCREEN
+            const extFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+            if (extFS) {
+                extFS.call(document);
+            }
+        }
+    }
+</script>
+@endpush

@@ -20,15 +20,13 @@
             grid-template-columns: 1.1fr 1fr; 
             gap: 2rem; 
             padding: 1.5rem;
-            height: calc(100vh - 140px); 
+            /* FIX KONTINER TERPOTONG: Mengubah height tetap menjadi min-height agar bisa merentang natural ke bawah */
+            min-height: calc(100vh - 140px); 
         }
         .scroll-column { 
-            height: 100%; 
-            overflow-y: auto; 
             padding-bottom: 2rem;
-            scrollbar-width: none; 
+            /* Dihapus overflow dan height 100% agar tidak memotong background */
         }
-        .scroll-column::-webkit-scrollbar { display: none; }
     }
 
     /* //* (Tactile) Desain blok sintaks - Responsive Size */
@@ -92,7 +90,6 @@
         backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; padding: 1.5rem;
     }
 
-    /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
     .toast-top {
         position: fixed; 
         top: 4.5rem; 
@@ -125,39 +122,24 @@
         .compact-dropzone { gap: 0.75rem; min-height: 80px; }
     }
 
-    /* //* (GAMIFICATION UPDATE) Elegant Modal Center */
+    /* //* (GAMIFICATION UPDATE) Duolingo Style Bottom Sheet Modal */
     .feedback-modal-wrapper {
         position: fixed; inset: 0; z-index: 10000;
-        display: flex; align-items: center; justify-content: center;
-        pointer-events: none; /* Biar ngga ganggu klik di background */
+        display: flex; align-items: flex-end; justify-content: center;
+        background: rgba(0, 0, 0, 0.4); /* Efek gelap di belakang */
+        backdrop-filter: blur(2px);
     }
     
     .feedback-modal {
-        padding: 2rem 3rem; border-radius: 2rem;
-        text-align: center; color: white;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        animation: popModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        border-bottom: 8px solid rgba(0,0,0,0.2);
+        width: 100%; max-width: 500px; /* Ukuran dirampingkan */
+        background: #ffffff;
+        padding: 1.5rem 1.5rem 2rem 1.5rem; /* Padding dikecilkan */
+        border-radius: 1.5rem 1.5rem 0 0;
+        text-align: left;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+        pointer-events: auto; /* Agar tombol di dalam bisa diklik */
     }
-    
-    .feedback-modal.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-    .feedback-modal.error { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
-
-    .feedback-title {
-        font-size: 2rem; font-weight: 900; text-transform: uppercase;
-        letter-spacing: 0.05em; margin-bottom: 0.5rem;
-    }
-    .feedback-subtitle {
-        font-size: 1rem; font-weight: 600; opacity: 0.9;
-    }
-    @media (min-width: 768px) {
-        .feedback-title { font-size: 2.5rem; }
-        .feedback-subtitle { font-size: 1.1rem; }
-    }
-    @keyframes popModal {
-        0% { transform: scale(0.5) translateY(50px); opacity: 0; }
-        100% { transform: scale(1) translateY(0); opacity: 1; }
-    }
+    .dark .feedback-modal { background: #0f172a; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6); }
 
     /* //* (GAMIFICATION) Floating Text Effect */
     .floating-text {
@@ -176,7 +158,7 @@
     @php
         $backUrl = request('from_task') ? route('kelas.task.show', request('from_task')) : route('misi.category.levels', $mission->level->category);
     @endphp
-    <a href="{{ $backUrl }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-menu-pegas text-slate-600 dark:text-slate-300 shadow-sm active:translate-y-1 transition-all">
+    <a href="{{ $backUrl }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:translate-y-1 transition-all">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path d="M15 19l-7-7 7-7" /></svg>
     </a>
 
@@ -195,11 +177,42 @@
 @section('content')
 <div x-data="missionEngine()" x-init="initEngine()" class="relative h-full">
     
-    {{-- (GAMIFICATION) Elegant Modal Feedback Center --}}
-    <div x-show="feedbackModal.show" x-transition.opacity x-cloak class="feedback-modal-wrapper">
+    {{-- (GAMIFICATION) Duolingo Style Modal Feedback --}}
+    <div x-show="feedbackModal.show" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="translate-y-full opacity-0"
+         x-transition:enter-end="translate-y-0 opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="translate-y-0 opacity-100"
+         x-transition:leave-end="translate-y-full opacity-0"
+         x-cloak class="feedback-modal-wrapper">
+        
         <div class="feedback-modal" :class="feedbackModal.type">
-            <div class="feedback-title" x-text="feedbackModal.title"></div>
-            <div class="feedback-subtitle" x-text="feedbackModal.subtitle"></div>
+            <div class="flex items-center gap-3 md:gap-4 mb-5 md:mb-6">
+                {{-- Icon Alert / Bintang (Ukuran dirampingkan) --}}
+                <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 flex items-center justify-center rounded-full shadow-sm border-[3px]" 
+                     :class="feedbackModal.type === 'error' ? 'bg-red-50 border-red-100 dark:bg-red-900/30 dark:border-red-800' : 'bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800'">
+                    <img x-show="feedbackModal.type === 'error'" src="{{ asset('images/alert.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain drop-shadow-sm">
+                    <img x-show="feedbackModal.type === 'success'" src="{{ asset('images/bintang.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain drop-shadow-sm">
+                </div>
+                
+                {{-- Teks Hasil (Ukuran dirampingkan) --}}
+                <div>
+                    <div class="text-xl md:text-2xl font-black tracking-wide" 
+                         :class="feedbackModal.type === 'error' ? 'text-red-500' : 'text-emerald-500'" 
+                         x-text="feedbackModal.title"></div>
+                    <div class="text-sm md:text-base font-bold opacity-90 mt-0.5" 
+                         :class="feedbackModal.type === 'error' ? 'text-red-400 dark:text-red-300' : 'text-emerald-400 dark:text-emerald-300'" 
+                         x-text="feedbackModal.subtitle"></div>
+                </div>
+            </div>
+            
+            {{-- Tombol OKE / Lanjut (Ukuran dan ketebalan border disesuaikan) --}}
+            <button @click="handleFeedbackButton()" 
+                    class="w-full py-3 md:py-3.5 rounded-xl font-black text-base md:text-lg text-white transition-all active:scale-95 border-b-[4px] active:border-b-0 active:translate-y-[4px]" 
+                    :class="feedbackModal.type === 'error' ? 'bg-red-500 hover:bg-red-600 border-red-700' : 'bg-emerald-500 hover:bg-emerald-600 border-emerald-700'" 
+                    x-text="feedbackModal.type === 'error' ? 'OKE' : 'LANJUT'">
+            </button>
         </div>
     </div>
 
@@ -235,7 +248,7 @@
             <div class="bg-white dark:bg-slate-900 p-3 md:p-4 rounded-[2rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px] relative group">
                 <div class="absolute top-5 left-5 px-3 py-1 bg-slate-900 text-white text-[7px] font-black uppercase rounded-lg z-10">Monitor</div>
                 <button @click="scenarioMaximized = true" class="absolute top-5 right-5 p-2 bg-emerald-500 text-white rounded-lg z-20 hover:scale-110 shadow-lg">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg>
                 </button>
                 <div class="overflow-hidden rounded-[1.5rem] bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800/50 cursor-zoom-in" @click="scenarioMaximized = true">
                     <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $mission->mission_image) }}" 
@@ -272,7 +285,7 @@
                     <span x-text="hint"></span>
                 </div>
 
-                <button @click="submitSyntax()" class="btn-menu-pegas glow-emerald-premium w-full mt-6 py-4 md:py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.5rem] md:rounded-[1.8rem] font-black text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-emerald-800 shadow-lg">
+                <button @click="submitSyntax($event)" class="btn-menu-pegas glow-emerald-premium w-full mt-6 py-4 md:py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.5rem] md:rounded-[1.8rem] font-black text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-emerald-800 shadow-lg">
                     Verifikasi Rakitan
                 </button>
             </div>
@@ -312,7 +325,7 @@
             toast: { show: false, message: '', title: '', icon: 'bintang.png', type: 'info' }, 
             
             // State untuk Gamifikasi Modal & SFX
-            feedbackModal: { show: false, type: '', title: '', subtitle: '' },
+            feedbackModal: { show: false, type: '', title: '', subtitle: '', nextUrl: '' },
             sfxClick: null,
             sfxBenar: null,
             sfxSalah: null,
@@ -321,13 +334,11 @@
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
             initEngine() {
-                // Heningkan error 404 (Abaikan kalau file audio belum ada)
                 try {
                     let audioClick = new Audio('{{ asset("audio/drop.mp3") }}');
                     let audioBenar = new Audio('{{ asset("audio/benar.mp3") }}');
                     let audioSalah = new Audio('{{ asset("audio/salah.mp3") }}');
                     
-                    // Preload dummy agar tidak melempar Uncaught (in promise)
                     audioClick.load(); audioBenar.load(); audioSalah.load();
                     
                     this.sfxClick = audioClick;
@@ -406,7 +417,7 @@
                 localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
 
-            triggerToast(title, message, icon = 'bintang.png', type = 'info') {
+            triggerToast(title, message, icon = 'alert.png', type = 'info') {
                 this.toast.title = title;
                 this.toast.message = message;
                 this.toast.icon = icon; 
@@ -415,19 +426,26 @@
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
 
-            // Fitur Gamifikasi: Elegant Popup Modal
-            triggerFeedbackModal(type, title, subtitle) {
+            // Fitur Gamifikasi: Button handler (Untuk tombol OKE / Lanjut di popup)
+            handleFeedbackButton() {
+                this.feedbackModal.show = false;
+                // Jika sukses, lanjut ke halaman berikutnya saat diklik
+                if (this.feedbackModal.type === 'success' && this.feedbackModal.nextUrl) {
+                    window.location.href = this.feedbackModal.nextUrl;
+                }
+            },
+
+            triggerFeedbackModal(type, title, subtitle, nextUrl = '') {
                 this.feedbackModal.type = type;
                 this.feedbackModal.title = title;
                 this.feedbackModal.subtitle = subtitle;
+                this.feedbackModal.nextUrl = nextUrl;
                 this.feedbackModal.show = true;
-                // Popup hilang otomatis setelah 2 detik
-                setTimeout(() => { this.feedbackModal.show = false; }, 2000);
             },
 
             // Fitur Gamifikasi: Confetti (Sukses)
             fireConfetti() {
-                var duration = 4 * 1000; // 4 detik
+                var duration = 4 * 1000;
                 var end = Date.now() + duration;
                 (function frame() {
                     confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
@@ -436,20 +454,20 @@
                 }());
             },
 
-            // Fitur Gamifikasi: X Particles (Gagal)
+            // Fitur Gamifikasi: Ledakan Merah (Gagal)
             fireCrossParticles() {
-                var defaults = { spread: 360, ticks: 50, gravity: 0, decay: 0.94, startVelocity: 30, colors: ['#ef4444', '#b91c1c'] };
+                var defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.92, startVelocity: 40, colors: ['#ef4444', '#b91c1c', '#fca5a5'] };
+                
                 function fire(particleRatio, opts) {
-                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(40 * particleRatio), shapes: ['star'] }));
+                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(150 * particleRatio), shapes: ['star', 'circle', 'square'] }));
                 }
-                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.25, { spread: 30, startVelocity: 60 });
                 fire(0.2, { spread: 60 });
                 fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-                fire(0.1, { spread: 120, startVelocity: 45 });
+                fire(0.1, { spread: 120, startVelocity: 30, decay: 0.92, scalar: 1.2 });
+                fire(0.1, { spread: 120, startVelocity: 50 });
             },
 
-            // Fitur Gamifikasi: Teks Terbang saat klik (Floating Text)
             spawnFloatingText(e, text, color = '#fbbf24') {
                 if (!e) return;
                 const el = document.createElement('div');
@@ -489,11 +507,11 @@
                 this.hint = ''; 
                 this.saveToLocal();
                 
-                // Panggil SFX & Floating Text
                 if(this.sfxClick && this.sfxClick.readyState >= 2) { 
                     this.sfxClick.currentTime = 0; this.sfxClick.play().catch(()=>{}); 
                 }
-                this.spawnFloatingText(e, '+Pilih', '#10b981');
+                // DITAMBAHKAN EFEK BINTANG
+                this.spawnFloatingText(e, 'Pilih ⭐', '#10b981');
             },
 
             removeFromAnswer(index, e) { 
@@ -503,16 +521,18 @@
                 if(this.sfxClick && this.sfxClick.readyState >= 2) { 
                     this.sfxClick.currentTime = 0; this.sfxClick.play().catch(()=>{}); 
                 }
-                this.spawnFloatingText(e, '-Hapus', '#ef4444');
+                // DITAMBAHKAN EFEK ANGIN
+                this.spawnFloatingText(e, 'Hapus 💥', '#ef4444');
             },
             
-            submitSyntax() {
+            submitSyntax(e) {
                 if(this.answerBox.length === 0) { 
                     this.status = 'wrong'; 
                     this.triggerToast('Gagal!', 'Kotak rakitan masih kosong!', 'alert.png', 'error');
                     if(this.sfxSalah && this.sfxSalah.readyState >= 2) { 
                         this.sfxSalah.currentTime = 0; this.sfxSalah.play().catch(()=>{}); 
                     }
+                    if(e) this.spawnFloatingText(e, 'Kosong! ⚠️', '#ef4444');
                     setTimeout(() => this.status = 'idle', 500); return; 
                 }
 
@@ -527,26 +547,29 @@
                     if (data.status === 'success') {
                         localStorage.removeItem(this.storageKey);
                         
-                        // GAMIFICATION: Sukses Misi
                         if(this.sfxBenar && this.sfxBenar.readyState >= 2) { 
                             this.sfxBenar.currentTime = 0; this.sfxBenar.play().catch(()=>{}); 
                         }
                         this.fireConfetti();
-                        this.triggerFeedbackModal('success', 'Tepat Sekali!', '+ ' + this.currentPotentialXP + ' XP Berhasil Diraih');
                         
-                        // Delay navigasi ke halaman selanjutnya (4 detik) agar user menikmati confetti
-                        setTimeout(() => { window.location.href = data.next_url; }, 4000);
+                        // DITAMBAHKAN EFEK PESTA PADA MODAL SUKSES
+                        this.triggerFeedbackModal('success', 'Tepat Sekali! 🎉', '+ ' + this.currentPotentialXP + ' XP Berhasil Diraih', data.next_url);
+                        
                     } else {
                         this.status = 'wrong'; 
                         this.hint = data.message; 
                         this.attempts = data.attempts;
                         
-                        // GAMIFICATION: Gagal Misi
                         if(this.sfxSalah && this.sfxSalah.readyState >= 2) { 
                             this.sfxSalah.currentTime = 0; this.sfxSalah.play().catch(()=>{}); 
                         }
-                        this.fireCrossParticles(); // Ledakan silang merah
-                        this.triggerFeedbackModal('error', 'Kurang Tepat!', 'Perhatikan lagi instruksi di bawah');
+                        
+                        // Partikel meledak
+                        this.fireCrossParticles(); 
+
+                        // DITAMBAHKAN EMOJI NANGIS SAAT SALAH
+                        if(e) this.spawnFloatingText(e, 'Masih salah! 😭', '#ef4444');
+                        this.triggerFeedbackModal('error', 'Belum berhasil 😭', 'Ayo coba lagi!');
                         
                         if (!this.isReview && this.attempts > 3) {
                             let penalty = (this.attempts - 3) * ({{ $mission->max_score }} * 0.05);
@@ -555,6 +578,8 @@
                         this.saveToLocal();
                         setTimeout(() => { this.status = 'idle'; }, 500);
                     }
+                }).catch(err => {
+                    console.error('Fetch error:', err);
                 });
             }
         }

@@ -62,7 +62,7 @@
         pointer-events: none !important; 
     }
 
-    /* Update: HUD lebih compact (280px) */
+    /* HUD controller */
     .hud-controller { position: fixed; z-index: 90; width: 280px; pointer-events: auto; }
     
     /* //* (Animation) Update: Efek Cahaya Neon TEBAL & Smooth (Blue-Emerald) */
@@ -107,61 +107,26 @@
     }
     .marker-done { background: #10b981; border-color: transparent; opacity: 0.8; cursor: default; }
 
-    /* //* (Notification) FIXED Toast */
-    .toast-top {
-        position: fixed; 
-        top: 4.5rem; 
-        left: 50%; 
-        transform: translateX(-50%);
-        z-index: 1000; 
-        background: white; 
-        border-radius: 1.2rem; 
-        border: 2px solid #3b82f6; 
-        min-width: 250px; 
-        padding: 0.6rem 1.2rem; 
-        text-align: center;
-        animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .dark .toast-top { background: #1e293b; border-color: #3b82f6; }
-    @keyframes toast-down { 
-        from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
-        to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
-    }
     .font-game { font-family: 'Bangers', cursive; }
 
-    /* //* (GAMIFICATION UPDATE) Elegant Modal Center */
+    /* //* (GAMIFICATION - DUOLINGO STYLE) Bottom Sheet Modal */
     .feedback-modal-wrapper {
         position: fixed; inset: 0; z-index: 10000;
-        display: flex; align-items: center; justify-content: center;
-        pointer-events: none; 
+        display: flex; align-items: flex-end; justify-content: center;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
     }
     
     .feedback-modal {
-        padding: 2rem 3rem; border-radius: 2rem;
-        text-align: center; color: white;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        animation: popModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        border-bottom: 8px solid rgba(0,0,0,0.2);
+        width: 100%; max-width: 500px;
+        background: #ffffff;
+        padding: 1.5rem 1.5rem 2rem 1.5rem;
+        border-radius: 1.5rem 1.5rem 0 0;
+        text-align: left;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+        pointer-events: auto;
     }
-    
-    .feedback-modal.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-    .feedback-modal.error { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
-
-    .feedback-title {
-        font-size: 2rem; font-weight: 800; text-transform: uppercase;
-        letter-spacing: 0.02em; margin-bottom: 0.5rem;
-    }
-    .feedback-subtitle {
-        font-size: 1rem; font-weight: 500; opacity: 0.95;
-    }
-    @media (min-width: 768px) {
-        .feedback-title { font-size: 2.5rem; }
-        .feedback-subtitle { font-size: 1.1rem; }
-    }
-    @keyframes popModal {
-        0% { transform: scale(0.8) translateY(20px); opacity: 0; }
-        100% { transform: scale(1) translateY(0); opacity: 1; }
-    }
+    .dark .feedback-modal { background: #0f172a; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6); }
 
     /* //* (GAMIFICATION) Floating Text Effect */
     .floating-text {
@@ -201,11 +166,39 @@
 @section('content')
 <div x-data="missionEngine()" x-init="init()" class="relative w-full min-h-screen main-scroller bg-slate-950">
 
-    {{-- (GAMIFICATION) Elegant Modal Feedback Center --}}
-    <div x-show="feedbackModal.show" x-transition.opacity x-cloak class="feedback-modal-wrapper">
+    {{-- (GAMIFICATION) Duolingo Style Modal Feedback (Hanya Sukses Akhir) --}}
+    <div x-show="feedbackModal.show" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="translate-y-full opacity-0"
+         x-transition:enter-end="translate-y-0 opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="translate-y-0 opacity-100"
+         x-transition:leave-end="translate-y-full opacity-0"
+         x-cloak class="feedback-modal-wrapper">
+        
         <div class="feedback-modal" :class="feedbackModal.type">
-            <div class="feedback-title" x-text="feedbackModal.title"></div>
-            <div class="feedback-subtitle" x-text="feedbackModal.subtitle"></div>
+            <div class="flex items-center gap-3 md:gap-4 mb-5 md:mb-6">
+                <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 flex items-center justify-center rounded-full shadow-sm border-[3px]" 
+                     :class="feedbackModal.type === 'error' ? 'bg-red-50 border-red-100 dark:bg-red-900/30 dark:border-red-800' : 'bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800'">
+                    <img x-show="feedbackModal.type === 'error'" src="{{ asset('images/alert.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain">
+                    <img x-show="feedbackModal.type === 'success'" src="{{ asset('images/bintang.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain">
+                </div>
+                
+                <div>
+                    <div class="text-xl md:text-2xl font-black tracking-wide" 
+                         :class="feedbackModal.type === 'error' ? 'text-red-500' : 'text-emerald-500'" 
+                         x-text="feedbackModal.title"></div>
+                    <div class="text-sm md:text-base font-bold opacity-90 mt-0.5" 
+                         :class="feedbackModal.type === 'error' ? 'text-red-400 dark:text-red-300' : 'text-emerald-400 dark:text-emerald-300'" 
+                         x-text="feedbackModal.subtitle"></div>
+                </div>
+            </div>
+            
+            <button @click="handleFeedbackButton()" 
+                    class="w-full py-3 md:py-3.5 rounded-xl font-black text-base md:text-lg text-white transition-all active:scale-95 border-b-[4px] active:border-b-0 active:translate-y-[4px]" 
+                    :class="feedbackModal.type === 'error' ? 'bg-red-500 hover:bg-red-600 border-red-700' : 'bg-emerald-500 hover:bg-emerald-600 border-emerald-700'" 
+                    x-text="feedbackModal.type === 'error' ? 'OKE' : 'LANJUT'">
+            </button>
         </div>
     </div>
 
@@ -226,18 +219,7 @@
         <div class="flash-error"></div>
     </template>
 
-    {{-- Toast (EFEK NEON KONTAINER) --}}
-    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-4 neon-attention-misi">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0">
-            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-6 h-6 object-contain animate-bounce">
-        </div>
-        <div class="text-left flex-1">
-            <p class="text-[12px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
-        </div>
-    </div>
-
-    {{-- HUD Instruksi (Draggable, Compact, & BIG TEXT + NEON GLOW) --}}
+    {{-- HUD Instruksi (Draggable) --}}
     <div class="hud-controller" :style="`top: ${boxY}px; left: ${boxX}px;`"
          @mousedown.stop="startDragging($event, 'box')" @touchstart.stop="startDragging($event, 'box')"
          @click.stop="">
@@ -311,7 +293,6 @@
 @endsection
 
 @push('scripts')
-{{-- Library Confetti --}}
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
@@ -322,33 +303,22 @@
             currentHint: '', boxX: 20, boxY: 80, isDragging: false, offX: 0, offY: 0,
             attempts: 0, currentPotentialXP: {{ $mission->max_score }},
             steps: @json($jsonData),
-            toast: { show: false, title: '', message: '', icon: 'bintang.png' },
-            feedbackModal: { show: false, type: '', title: '', subtitle: '' },
+            feedbackModal: { show: false, type: '', title: '', subtitle: '', nextUrl: '' },
             
-            // OBJEK AUDIO: Disimpan di sini agar bisa didaur ulang, tidak bikin baru terus
-            audioPlayers: {
-                click: null,
-                benar: null,
-                salah: null
-            },
+            audioPlayers: { click: null, benar: null, salah: null },
 
             storageKey: 'mission_{{ $mission->id }}_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
             init() {
-                // INISIALISASI AUDIO 1 KALI SAJA
                 try {
                     this.audioPlayers.click = new Audio('{{ asset("audio/click.mp3") }}');
                     this.audioPlayers.benar = new Audio('{{ asset("audio/benar.mp3") }}');
                     this.audioPlayers.salah = new Audio('{{ asset("audio/salah.mp3") }}');
-                    
-                    // Paksa browser pre-load filenya
                     this.audioPlayers.click.preload = 'auto';
                     this.audioPlayers.benar.preload = 'auto';
                     this.audioPlayers.salah.preload = 'auto';
-                } catch(e) {
-                    console.log("Audio Engine Error", e);
-                }
+                } catch(e) {}
 
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
@@ -361,49 +331,27 @@
                         this.clickedHotspots = data.clickedHotspots ?? [];
                         this.attempts = data.attempts ?? 0;
                         this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
-                    } else {
-                        this.saveToLocal();
                     }
                 }
-                this.$watch('currentPotentialXP', v => { 
-                    const el = document.getElementById('header-xp-display');
-                    if (el) el.innerText = v; 
-                });
-                this.$watch('currentStep', v => { 
-                    const el = document.getElementById('header-step-current');
-                    if (el) el.innerText = v + 1; 
-                });
-                document.getElementById('header-xp-display').innerText = this.currentPotentialXP;
-                document.getElementById('header-step-current').innerText = this.currentStep + 1;
+                this.$watch('currentPotentialXP', v => { document.getElementById('header-xp-display').innerText = v; });
+                this.$watch('currentStep', v => { document.getElementById('header-step-current').innerText = v + 1; });
             },
 
-            // ENGINE AUDIO YANG SUDAH DIPERBAIKI
             playSound(type) {
                 try {
                     let player = this.audioPlayers[type];
-                    if (player) {
-                        player.currentTime = 0; // Kembalikan ke detik 0
-                        let playPromise = player.play();
-                        
-                        if (playPromise !== undefined) {
-                            playPromise.catch(error => {
-                                console.log(`Audio ${type} diblokir browser:`, error);
-                            });
-                        }
-                    }
+                    if (player) { player.currentTime = 0; player.play().catch(()=>{}); }
                 } catch(e) {}
             },
 
             saveToLocal() {
                 if (this.isReview) return;
-                try {
-                    const payload = {
-                        currentStep: this.currentStep, currentHotspotIndex: this.currentHotspotIndex,
-                        clickedHotspots: this.clickedHotspots, attempts: this.attempts,
-                        currentPotentialXP: this.currentPotentialXP
-                    };
-                    localStorage.setItem(this.storageKey, JSON.stringify(payload));
-                } catch (e) {}
+                const payload = {
+                    currentStep: this.currentStep, currentHotspotIndex: this.currentHotspotIndex,
+                    clickedHotspots: this.clickedHotspots, attempts: this.attempts,
+                    currentPotentialXP: this.currentPotentialXP
+                };
+                localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
 
             get allHotspotsInStepDone() {
@@ -425,10 +373,8 @@
                         this.showErrorEffect = false;
                         this.showHintButton = false; 
                         this.saveToLocal();
-
-                        // PANGGIL AUDIO (Klik Tepat)
                         this.playSound('click');
-                        this.spawnFloatingText(e, '+Tepat', '#10b981');
+                        this.spawnFloatingText(e, '+Tepat 🎯', '#10b981');
                     }
                 } else { 
                     this.triggerError(e); 
@@ -447,36 +393,33 @@
                 if (!this.isReview && this.attempts > 3) {
                     let penalty = Math.floor({{ $mission->max_score }} * 0.05);
                     this.currentPotentialXP = Math.max(this.currentPotentialXP - penalty, Math.floor({{ $mission->max_score }} * 0.4));
-                    this.showToast('Klik Salah', 'Point XP berkurang sedikit.', 'alert.png');
+                    if(e) this.spawnFloatingText(e, '-XP 📉', '#ef4444');
                 } else {
-                    this.showToast('Klik Salah', this.isReview ? 'Mode Review: XP aman.' : 'Perhatikan instruksi.', 'alert.png');
+                    if(e) this.spawnFloatingText(e, 'Meleset! 😭', '#ef4444');
                 }
                 this.saveToLocal();
-
-                // PANGGIL AUDIO (Klik Salah)
                 this.playSound('salah');
                 this.fireCrossParticles();
-                if(e) this.spawnFloatingText(e, 'Meleset!', '#ef4444');
-
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
 
-            showToast(title, message, icon = 'bintang.png') {
-                this.toast = { show: true, title, message, icon };
-                setTimeout(() => { this.toast.show = false; }, 3500);
+            handleFeedbackButton() {
+                this.feedbackModal.show = false;
+                if (this.feedbackModal.type === 'success' && this.feedbackModal.nextUrl) {
+                    window.location.href = this.feedbackModal.nextUrl;
+                }
             },
 
-            triggerFeedbackModal(type, title, subtitle) {
+            triggerFeedbackModal(type, title, subtitle, nextUrl = '') {
                 this.feedbackModal.type = type;
                 this.feedbackModal.title = title;
                 this.feedbackModal.subtitle = subtitle;
+                this.feedbackModal.nextUrl = nextUrl;
                 this.feedbackModal.show = true;
-                setTimeout(() => { this.feedbackModal.show = false; }, 2000);
             },
 
             fireConfetti() {
-                var duration = 4 * 1000; 
-                var end = Date.now() + duration;
+                var duration = 4 * 1000; var end = Date.now() + duration;
                 (function frame() {
                     confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
                     confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
@@ -485,30 +428,18 @@
             },
 
             fireCrossParticles() {
-                var defaults = { spread: 360, ticks: 50, gravity: 0, decay: 0.94, startVelocity: 30, colors: ['#ef4444', '#b91c1c'] };
+                var defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.92, startVelocity: 40, colors: ['#ef4444', '#b91c1c'] };
                 function fire(particleRatio, opts) {
-                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(40 * particleRatio), shapes: ['star'] }));
+                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(150 * particleRatio), shapes: ['star', 'circle'] }));
                 }
-                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.25, { spread: 30, startVelocity: 60 });
                 fire(0.2, { spread: 60 });
             },
 
             spawnFloatingText(e, text, color = '#fbbf24') {
                 if (!e) return;
-                
-                let clientX = e.clientX;
-                let clientY = e.clientY;
-                
-                if (e.touches && e.touches.length > 0) {
-                    clientX = e.touches[0].clientX;
-                    clientY = e.touches[0].clientY;
-                } else if (e.changedTouches && e.changedTouches.length > 0) {
-                    clientX = e.changedTouches[0].clientX;
-                    clientY = e.changedTouches[0].clientY;
-                }
-
-                if (clientX === undefined || clientY === undefined) return;
-
+                let clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                let clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
                 const el = document.createElement('div');
                 el.className = 'floating-text';
                 el.innerText = text;
@@ -532,49 +463,35 @@
                         window.location.href = "{{ route('misi.category.levels', $mission->level->category) }}";
                         return;
                     }
-                    axios.post("{{ route('misi.check', $mission->id) }}", { 
-                        answer: 'MISSION_COMPLETED', attempts: this.attempts 
-                    }).then(res => {
+                    axios.post("{{ route('misi.check', $mission->id) }}", { answer: 'MISSION_COMPLETED', attempts: this.attempts })
+                    .then(res => {
                         localStorage.removeItem(this.storageKey);
-
-                        // PANGGIL AUDIO (Misi Selesai)
                         this.playSound('benar');
                         this.fireConfetti();
-                        this.triggerFeedbackModal('success', 'Misi Selesai!', '+ ' + this.currentPotentialXP + ' XP Diraih');
-
-                        setTimeout(() => { window.location.href = res.data.next_url; }, 4000);
+                        this.triggerFeedbackModal('success', 'Misi Selesai! 🎉', '+ ' + this.currentPotentialXP + ' XP Diraih', res.data.next_url);
                     });
                 }
             },
 
             startDragging(e, target) {
                 if (e.target.closest('button')) return;
-                e.preventDefault(); 
-                this.isDragging = true;
+                e.preventDefault(); this.isDragging = true;
                 document.body.classList.add('is-dragging');
                 let cX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
                 let cY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
-                this.offX = cX - this.boxX;
-                this.offY = cY - this.boxY;
+                this.offX = cX - this.boxX; this.offY = cY - this.boxY;
                 const move = (e) => {
                     if (!this.isDragging) return;
                     let x = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
                     let y = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
-                    this.boxX = x - this.offX;
-                    this.boxY = y - this.offY;
+                    this.boxX = x - this.offX; this.boxY = y - this.offY;
                 };
                 const stop = () => { 
-                    setTimeout(() => { 
-                        this.isDragging = false; 
-                        document.body.classList.remove('is-dragging');
-                    }, 100);
-                    document.removeEventListener('mousemove', move); 
-                    document.removeEventListener('touchmove', move); 
+                    setTimeout(() => { this.isDragging = false; document.body.classList.remove('is-dragging'); }, 100);
+                    document.removeEventListener('mousemove', move); document.removeEventListener('touchmove', move); 
                 };
-                document.addEventListener('mousemove', move);
-                document.addEventListener('touchmove', move, { passive: false });
-                document.addEventListener('mouseup', stop);
-                document.addEventListener('touchend', stop);
+                document.addEventListener('mousemove', move); document.addEventListener('touchmove', move, { passive: false });
+                document.addEventListener('mouseup', stop); document.addEventListener('touchend', stop);
             }
         }
     }

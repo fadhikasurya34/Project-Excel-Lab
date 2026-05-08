@@ -88,23 +88,23 @@
     .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
     
 
-    /* //* (Visual Update) TEBAL Neon Smooth effect (Biru/Ungu) */
+    /* //* (Visual Update) TEBAL Neon Smooth effect (Diperhalus) */
     @keyframes neon-materi-smooth {
         0%, 100% {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(59, 130, 246, 0.3);
-            border-color: #3b82f6;
-            filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.5));
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.8);
+            filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.3));
         }
         50% {
-            box-shadow: 0 0 50px rgba(59, 130, 246, 0.9), 0 0 25px rgba(168, 85, 247, 0.8), inset 0 0 30px rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.7), 0 0 15px rgba(168, 85, 247, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.4);
             border-color: #ffffff;
-            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.9));
-            transform: scale(1.02);
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.7));
+            transform: scale(1.01); /* Diperkecil agar lebih kalem */
         }
     }
 
     .neon-attention-container {
-        animation: neon-materi-smooth 2.5s infinite ease-in-out;
+        animation: neon-materi-smooth 3.5s infinite ease-in-out; /* Diperlambat menjadi 3.5s */
     }
 
     /* //* (Hotspot) Marker Ring */
@@ -168,6 +168,23 @@
         from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
     }
+
+    /* //* (FX Gamification) Animasi Layar Merah, Floating Teks */
+    .flash-error {
+        position: fixed; inset: 0; background-color: rgba(239, 68, 68, 0.2);
+        pointer-events: none; z-index: 9999; animation: fade-out 0.4s forwards;
+    }
+    @keyframes fade-out { 0% { opacity: 1; } 100% { opacity: 0; } }
+    
+    .floating-text {
+        position: fixed; z-index: 10000; font-weight: 900; font-size: 1.5rem;
+        color: #fbbf24; text-shadow: 0 4px 6px rgba(0,0,0,0.4); pointer-events: none;
+        animation: floatUp 1s ease-out forwards;
+    }
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+    }
 </style>
 @endpush
 
@@ -188,6 +205,11 @@
 
 @section('content')
 <div x-data="labInteraction()" class="relative w-full min-h-screen main-scroller bg-slate-950">
+
+    {{-- Efek Layar Salah Klik --}}
+    <template x-if="showErrorEffect">
+        <div class="flash-error"></div>
+    </template>
 
     {{-- 1. Landscape Rotary Guard --}}
     <div id="landscape-notice">
@@ -291,14 +313,14 @@
         </div>
     </div>
 
-    <div class="simulation-wrapper !p-0">
+    <div class="simulation-wrapper !p-0" @click="handleBackgroundClick($event)">
         <div class="relative w-full inline-block">
             <img :src="steps[currentStep] ? steps[currentStep].image : ''" class="w-full h-auto block select-none shadow-2xl">
             <template x-for="(hs, index) in (steps[currentStep] ? steps[currentStep].hotspots : [])" :key="hs.id">
                 <div class="marker-ring" 
                     :class="getMarkerClass(hs, index)"
                     :style="`top: ${hs.y}%; left: ${hs.x}%;`"
-                    @click="handleInteraction(hs, index)">
+                    @click.stop="handleInteraction(hs, index, $event)">
                     <span class="text-amber-500" x-show="!clickedHotspots.includes(hs.id)" x-text="index + 1"></span>
                     <span class="text-emerald-500" x-show="clickedHotspots.includes(hs.id)">✔</span>
                 </div>
@@ -309,17 +331,40 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script>
     function labInteraction() {
         return {
             currentStep: 0, currentOrder: 0, clickedHotspots: [],
             activeHotspot: null, isExpanded: true, showModal: false, showVideo: false,
             boxX: 20, boxY: 80, isDragging: false, offX: 0, offY: 0,
+            showErrorEffect: false,
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
             storageKey: 'material_{{ $material->id }}_progress',
+            
+            // OBJEK AUDIO DITAMBAHKAN
+            audioPlayers: {
+                click: null,
+                benar: null,
+                salah: null
+            },
 
             init() {
+                // INISIALISASI AUDIO (Pre-load file suara)
+                try {
+                    this.audioPlayers.click = new Audio('{{ asset("audio/drop.mp3") }}'); 
+                    this.audioPlayers.benar = new Audio('{{ asset("audio/benar.mp3") }}');
+                    this.audioPlayers.salah = new Audio('{{ asset("audio/salah.mp3") }}');
+                    
+                    this.audioPlayers.click.preload = 'auto';
+                    this.audioPlayers.benar.preload = 'auto';
+                    this.audioPlayers.salah.preload = 'auto';
+                } catch(e) {
+                    console.log('Audio engine gagal di-load', e);
+                }
+
                 const savedData = localStorage.getItem(this.storageKey);
                 if (savedData) {
                     try {
@@ -335,6 +380,21 @@
                     }
                 }
             },
+            
+            // FUNGSI MEMUTAR AUDIO
+            playSound(type) {
+                try {
+                    let player = this.audioPlayers[type];
+                    if (player) {
+                        player.currentTime = 0; 
+                        let playPromise = player.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(error => { console.log(`Audio ${type} dicegah browser:`, error); });
+                        }
+                    }
+                } catch(e) {}
+            },
+
             saveProgress() {
                 const payload = {
                     currentStep: this.currentStep,
@@ -343,24 +403,95 @@
                 };
                 localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
+            
             get allHotspotsInStepDone() {
                 let currentStepData = this.steps[this.currentStep];
                 return currentStepData && this.clickedHotspots.length === currentStepData.hotspots.length;
             },
-            handleInteraction(hs, index) {
+
+            // Fitur Gamifikasi: Confetti (Sukses)
+            fireConfetti() {
+                var duration = 4 * 1000;
+                var end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
+                    if (Date.now() < end) { requestAnimationFrame(frame); }
+                }());
+            },
+
+            // Fitur Gamifikasi: Ledakan Merah (Gagal)
+            fireCrossParticles() {
+                var defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.92, startVelocity: 40, colors: ['#ef4444', '#b91c1c', '#fca5a5'] };
+                function fire(particleRatio, opts) {
+                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(150 * particleRatio), shapes: ['star', 'circle', 'square'] }));
+                }
+                fire(0.25, { spread: 30, startVelocity: 60 });
+                fire(0.2, { spread: 60 });
+                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                fire(0.1, { spread: 120, startVelocity: 30, decay: 0.92, scalar: 1.2 });
+            },
+
+            // Fitur Gamifikasi: Floating Text
+            spawnFloatingText(e, text, color = '#fbbf24') {
+                if (!e) return;
+                let clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+                let clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                if (!clientX || !clientY) return;
+
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.innerText = text;
+                el.style.left = (clientX - 20) + 'px';
+                el.style.top = (clientY - 20) + 'px';
+                el.style.color = color;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1000);
+            },
+
+            handleBackgroundClick(e) {
+                // Abaikan jika drag atau hotspot sudah selesai
+                if (this.allHotspotsInStepDone || this.isDragging) return;
+                this.triggerError(e);
+            },
+
+            triggerError(e) {
+                if (this.showErrorEffect || this.isDragging) return;
+                this.showErrorEffect = true;
+                
+                // MEMAINKAN AUDIO SALAH KLIK
+                this.playSound('salah');
+                
+                this.fireCrossParticles();
+                if(e) this.spawnFloatingText(e, 'Meleset! 😭', '#ef4444');
+                
+                setTimeout(() => { this.showErrorEffect = false; }, 1000);
+            },
+
+            handleInteraction(hs, index, e) {
+                if (this.isDragging) return;
                 if (index === this.currentOrder) {
                     this.activeHotspot = hs;
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots = [...this.clickedHotspots, hs.id];
                         this.currentOrder++;
                         this.saveProgress();
+                        
+                        // MEMAINKAN AUDIO BENAR KLIK
+                        this.playSound('click');
+                        
+                        if(e) this.spawnFloatingText(e, '+Tepat 🎯', '#10b981');
                     }
+                } else if (!this.clickedHotspots.includes(hs.id)) {
+                    this.triggerError(e);
                 }
             },
+
             showToast(title, message, icon = 'bintang.png') {
                 this.toast = { show: true, title, message, icon };
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
+
             nextStep() {
                 if (this.currentStep < this.steps.length - 1) {
                     this.currentStep++;
@@ -372,15 +503,24 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     localStorage.removeItem(this.storageKey);
-                    this.showToast('Misi Selesai', 'Seluruh materi simulasi telah dipelajari.', 'bintang.png');
+                    
+                    // MEMAINKAN AUDIO MISI SELESAI
+                    this.playSound('benar');
+                    
+                    // Efek penyelesaian seluruh materi
+                    this.fireConfetti();
+                    this.showToast('Tepat Sekali! 🎉', 'Seluruh materi simulasi telah dipelajari.', 'bintang.png');
+                    
                     setTimeout(() => { window.location.href = "{{ route('materi.index') }}"; }, 4000);
                 }
             },
+
             getMarkerClass(hs, index) {
                 if (this.clickedHotspots.includes(hs.id)) return 'marker-done';
                 if (index === this.currentOrder) return 'marker-active';
                 return 'opacity-0 pointer-events-none';
             },
+
             startDragging(e) {
                 // FIX: Cek apakah yang diklik adalah tombol. Jika YA, jangan jalankan drag.
                 if (e.target.closest('button')) return;
