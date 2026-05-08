@@ -323,35 +323,33 @@
             attempts: 0, currentPotentialXP: {{ $mission->max_score }},
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
-            
-            // State untuk Gamifikasi Modal
             feedbackModal: { show: false, type: '', title: '', subtitle: '' },
+            
+            // OBJEK AUDIO: Disimpan di sini agar bisa didaur ulang, tidak bikin baru terus
+            audioPlayers: {
+                click: null,
+                benar: null,
+                salah: null
+            },
 
             storageKey: 'mission_{{ $mission->id }}_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
-            // FIX ANDROID AUDIO: Bikin player audio dinamis saat diklik agar tidak diblokir browser HP
-            playSound(type) {
-                try {
-                    let audioPath = '';
-                    if (type === 'click') audioPath = '{{ asset("audio/click.mp3") }}';
-                    else if (type === 'benar') audioPath = '{{ asset("audio/benar.mp3") }}';
-                    else if (type === 'salah') audioPath = '{{ asset("audio/salah.mp3") }}';
-                    
-                    if (audioPath) {
-                        let audio = new Audio(audioPath);
-                        let playPromise = audio.play();
-                        if (playPromise !== undefined) {
-                            playPromise.catch(error => {
-                                // Silent catch: kalau browser memblokir (karena autoplay policy), script tidak akan error 404
-                                console.log("Audio play diabaikan browser.");
-                            });
-                        }
-                    }
-                } catch(e) {}
-            },
-
             init() {
+                // INISIALISASI AUDIO 1 KALI SAJA
+                try {
+                    this.audioPlayers.click = new Audio('{{ asset("audio/click.mp3") }}');
+                    this.audioPlayers.benar = new Audio('{{ asset("audio/benar.mp3") }}');
+                    this.audioPlayers.salah = new Audio('{{ asset("audio/salah.mp3") }}');
+                    
+                    // Paksa browser pre-load filenya
+                    this.audioPlayers.click.preload = 'auto';
+                    this.audioPlayers.benar.preload = 'auto';
+                    this.audioPlayers.salah.preload = 'auto';
+                } catch(e) {
+                    console.log("Audio Engine Error", e);
+                }
+
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
                 } else {
@@ -377,6 +375,23 @@
                 });
                 document.getElementById('header-xp-display').innerText = this.currentPotentialXP;
                 document.getElementById('header-step-current').innerText = this.currentStep + 1;
+            },
+
+            // ENGINE AUDIO YANG SUDAH DIPERBAIKI
+            playSound(type) {
+                try {
+                    let player = this.audioPlayers[type];
+                    if (player) {
+                        player.currentTime = 0; // Kembalikan ke detik 0
+                        let playPromise = player.play();
+                        
+                        if (playPromise !== undefined) {
+                            playPromise.catch(error => {
+                                console.log(`Audio ${type} diblokir browser:`, error);
+                            });
+                        }
+                    }
+                } catch(e) {}
             },
 
             saveToLocal() {
@@ -411,7 +426,7 @@
                         this.showHintButton = false; 
                         this.saveToLocal();
 
-                        // PANGGIL AUDIO BARU: Klik Benar (Suara + Teks Terbang)
+                        // PANGGIL AUDIO (Klik Tepat)
                         this.playSound('click');
                         this.spawnFloatingText(e, '+Tepat', '#10b981');
                     }
@@ -438,7 +453,7 @@
                 }
                 this.saveToLocal();
 
-                // PANGGIL AUDIO BARU: Gagal Misi (Salah Klik - Hanya Efek X & Suara)
+                // PANGGIL AUDIO (Klik Salah)
                 this.playSound('salah');
                 this.fireCrossParticles();
                 if(e) this.spawnFloatingText(e, 'Meleset!', '#ef4444');
@@ -451,7 +466,6 @@
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
 
-            // Fitur Gamifikasi: Elegant Popup Modal
             triggerFeedbackModal(type, title, subtitle) {
                 this.feedbackModal.type = type;
                 this.feedbackModal.title = title;
@@ -460,7 +474,6 @@
                 setTimeout(() => { this.feedbackModal.show = false; }, 2000);
             },
 
-            // Fitur Gamifikasi: Confetti (Sukses Akhir Misi)
             fireConfetti() {
                 var duration = 4 * 1000; 
                 var end = Date.now() + duration;
@@ -471,7 +484,6 @@
                 }());
             },
 
-            // Fitur Gamifikasi: X Particles (Gagal)
             fireCrossParticles() {
                 var defaults = { spread: 360, ticks: 50, gravity: 0, decay: 0.94, startVelocity: 30, colors: ['#ef4444', '#b91c1c'] };
                 function fire(particleRatio, opts) {
@@ -481,7 +493,6 @@
                 fire(0.2, { spread: 60 });
             },
 
-            // FIX ANDROID: Deteksi koordinat tap yang aman di Mobile & Desktop
             spawnFloatingText(e, text, color = '#fbbf24') {
                 if (!e) return;
                 
@@ -526,7 +537,7 @@
                     }).then(res => {
                         localStorage.removeItem(this.storageKey);
 
-                        // PANGGIL AUDIO BARU: Sukses Total Misi
+                        // PANGGIL AUDIO (Misi Selesai)
                         this.playSound('benar');
                         this.fireConfetti();
                         this.triggerFeedbackModal('success', 'Misi Selesai!', '+ ' + this.currentPotentialXP + ' XP Diraih');
