@@ -74,7 +74,7 @@
         box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
     }
 
-    /* //* (Feedback) Animasi */
+    /* //* (Feedback) Animasi Flash Error Normal */
     .flash-error {
         position: fixed; inset: 0; background-color: rgba(239, 68, 68, 0.2);
         pointer-events: none; z-index: 9999; animation: fade-out 0.4s forwards;
@@ -91,7 +91,6 @@
         position: fixed; inset: 0; z-index: 500; background: rgba(15, 23, 42, 0.98);
         backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; padding: 1.5rem;
     }
-    .font-game { font-family: 'Bangers', cursive; }
 
     /* //* (Notification) FIXED: Toast Style for iPhone 13 Notch & Size */
     .toast-top {
@@ -125,6 +124,51 @@
     @media (min-width: 768px) {
         .compact-dropzone { gap: 0.75rem; min-height: 80px; }
     }
+
+    /* //* (GAMIFICATION UPDATE) Elegant Modal Center */
+    .feedback-modal-wrapper {
+        position: fixed; inset: 0; z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: none; /* Biar ngga ganggu klik di background */
+    }
+    
+    .feedback-modal {
+        padding: 2rem 3rem; border-radius: 2rem;
+        text-align: center; color: white;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        animation: popModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        border-bottom: 8px solid rgba(0,0,0,0.2);
+    }
+    
+    .feedback-modal.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .feedback-modal.error { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+
+    .feedback-title {
+        font-size: 2rem; font-weight: 900; text-transform: uppercase;
+        letter-spacing: 0.05em; margin-bottom: 0.5rem;
+    }
+    .feedback-subtitle {
+        font-size: 1rem; font-weight: 600; opacity: 0.9;
+    }
+    @media (min-width: 768px) {
+        .feedback-title { font-size: 2.5rem; }
+        .feedback-subtitle { font-size: 1.1rem; }
+    }
+    @keyframes popModal {
+        0% { transform: scale(0.5) translateY(50px); opacity: 0; }
+        100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    /* //* (GAMIFICATION) Floating Text Effect */
+    .floating-text {
+        position: fixed; z-index: 10000; font-weight: 900; font-size: 1.5rem;
+        color: #fbbf24; text-shadow: 0 4px 6px rgba(0,0,0,0.4); pointer-events: none;
+        animation: floatUp 1s ease-out forwards;
+    }
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+    }
 </style>
 @endpush
 
@@ -149,8 +193,16 @@
 @endsection
 
 @section('content')
-<div x-data="missionEngine()" x-init="initSortable()" class="relative h-full">
+<div x-data="missionEngine()" x-init="initEngine()" class="relative h-full">
     
+    {{-- (GAMIFICATION) Elegant Modal Feedback Center --}}
+    <div x-show="feedbackModal.show" x-transition.opacity x-cloak class="feedback-modal-wrapper">
+        <div class="feedback-modal" :class="feedbackModal.type">
+            <div class="feedback-title" x-text="feedbackModal.title"></div>
+            <div class="feedback-subtitle" x-text="feedbackModal.subtitle"></div>
+        </div>
+    </div>
+
     {{-- Toast Notification (COMPACT) --}}
     <div x-show="toast.show" x-cloak x-transition.opacity 
         class="toast-top shadow-xl flex items-center space-x-3" 
@@ -215,7 +267,7 @@
                     </div>
                 </div>
 
-                {{-- Hint Bantuan (Sesuai output Controller Baru) --}}
+                {{-- Hint Bantuan --}}
                 <div x-show="hint" x-transition class="mt-5 p-3 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-100 dark:border-amber-800 rounded-xl text-[10px] font-extrabold text-amber-700 dark:text-amber-400 text-center uppercase leading-snug">
                     <span x-text="hint"></span>
                 </div>
@@ -230,7 +282,7 @@
                 <h3 class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-5">Gudang Komponen</h3>
                 <div class="flex flex-wrap gap-2 md:gap-3 justify-center">
                     <template x-for="(block, index) in availableBlocks" :key="'gudang-' + index">
-                        <button @click="addToAnswer(block)" :class="getBlockClass(block)"
+                        <button @click="addToAnswer(block, $event)" :class="getBlockClass(block)"
                                 class="token-block font-mono font-black shadow-md border-2 active:scale-90">
                             <span x-text="block"></span>
                         </button>
@@ -243,7 +295,10 @@
 @endsection
 
 @push('scripts')
+{{-- Library pendukung --}}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script>
     function missionEngine() {
         return {
@@ -255,10 +310,33 @@
             rawAvailableBlocks: @js($availableBlocks), 
             attempts: 0,
             toast: { show: false, message: '', title: '', icon: 'bintang.png', type: 'info' }, 
+            
+            // State untuk Gamifikasi Modal & SFX
+            feedbackModal: { show: false, type: '', title: '', subtitle: '' },
+            sfxClick: null,
+            sfxBenar: null,
+            sfxSalah: null,
+
             storageKey: 'mission_{{ $mission->id }}_syntax_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
-            init() {
+            initEngine() {
+                // Heningkan error 404 (Abaikan kalau file audio belum ada)
+                try {
+                    let audioClick = new Audio('{{ asset("audio/drop.mp3") }}');
+                    let audioBenar = new Audio('{{ asset("audio/benar.mp3") }}');
+                    let audioSalah = new Audio('{{ asset("audio/salah.mp3") }}');
+                    
+                    // Preload dummy agar tidak melempar Uncaught (in promise)
+                    audioClick.load(); audioBenar.load(); audioSalah.load();
+                    
+                    this.sfxClick = audioClick;
+                    this.sfxBenar = audioBenar;
+                    this.sfxSalah = audioSalah;
+                } catch(e) {
+                    console.log('SFX tidak ditemukan, mengabaikan fitur suara.');
+                }
+
                 if (!this.isReview) {
                     const saved = localStorage.getItem(this.storageKey);
                     if (saved) {
@@ -274,9 +352,7 @@
                     if(el) el.innerText = v;
                 });
 
-                this.$watch('answerBox', () => {
-                    this.renderBox(); 
-                });
+                this.$watch('answerBox', () => { this.renderBox(); });
 
                 const headerXp = document.getElementById('header-xp-display');
                 if(headerXp) headerXp.innerText = this.currentPotentialXP;
@@ -284,9 +360,10 @@
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
                 }
+
+                this.initSortable();
             },
 
-            // FIXED: Manual DOM Render untuk menghindari error 'item is not defined'
             renderBox() {
                 const dropzone = this.$refs.dropzone;
                 dropzone.innerHTML = ''; 
@@ -295,7 +372,7 @@
                     const div = document.createElement('div');
                     div.className = this.getBlockClass(item) + ' token-block font-mono font-black shadow-md border-2 cursor-grab active:cursor-grabbing';
                     div.innerText = item;
-                    div.onclick = () => this.removeFromAnswer(index);
+                    div.onclick = (e) => this.removeFromAnswer(index, e);
                     dropzone.appendChild(div);
                 });
             },
@@ -307,6 +384,9 @@
                     dragClass: 'sortable-drag',
                     onEnd: (evt) => {
                         if (evt.oldIndex === evt.newIndex) return;
+                        if(this.sfxClick && this.sfxClick.readyState >= 2) { 
+                            this.sfxClick.currentTime = 0; this.sfxClick.play().catch(()=>{}); 
+                        }
                         const list = [...this.answerBox];
                         const [movedItem] = list.splice(evt.oldIndex, 1);
                         list.splice(evt.newIndex, 0, movedItem);
@@ -321,9 +401,7 @@
             saveToLocal() {
                 if (this.isReview) return;
                 const payload = {
-                    answerBox: this.answerBox,
-                    attempts: this.attempts,
-                    currentPotentialXP: this.currentPotentialXP
+                    answerBox: this.answerBox, attempts: this.attempts, currentPotentialXP: this.currentPotentialXP
                 };
                 localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
@@ -337,10 +415,56 @@
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
 
+            // Fitur Gamifikasi: Elegant Popup Modal
+            triggerFeedbackModal(type, title, subtitle) {
+                this.feedbackModal.type = type;
+                this.feedbackModal.title = title;
+                this.feedbackModal.subtitle = subtitle;
+                this.feedbackModal.show = true;
+                // Popup hilang otomatis setelah 2 detik
+                setTimeout(() => { this.feedbackModal.show = false; }, 2000);
+            },
+
+            // Fitur Gamifikasi: Confetti (Sukses)
+            fireConfetti() {
+                var duration = 4 * 1000; // 4 detik
+                var end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
+                    if (Date.now() < end) { requestAnimationFrame(frame); }
+                }());
+            },
+
+            // Fitur Gamifikasi: X Particles (Gagal)
+            fireCrossParticles() {
+                var defaults = { spread: 360, ticks: 50, gravity: 0, decay: 0.94, startVelocity: 30, colors: ['#ef4444', '#b91c1c'] };
+                function fire(particleRatio, opts) {
+                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(40 * particleRatio), shapes: ['star'] }));
+                }
+                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.2, { spread: 60 });
+                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                fire(0.1, { spread: 120, startVelocity: 45 });
+            },
+
+            // Fitur Gamifikasi: Teks Terbang saat klik (Floating Text)
+            spawnFloatingText(e, text, color = '#fbbf24') {
+                if (!e) return;
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.innerText = text;
+                el.style.left = (e.clientX - 20) + 'px';
+                el.style.top = (e.clientY - 20) + 'px';
+                el.style.color = color;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1000);
+            },
+
             get availableBlocks() {
                 let result = [];
                 this.rawAvailableBlocks.forEach(block => {
-                    // Menambahkan \% ke dalam daftar simbol agar tidak hilang saat dipecah menjadi blok
                     let tokens = block.match(/[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\%]/g);
                     if (tokens) { result.push(...tokens); } else { result.push(block); }
                 });
@@ -359,22 +483,36 @@
                 return 'bg-slate-50 text-slate-500 border-slate-200 border-b-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:border-b-slate-500 shadow-slate-100/50';
             },
 
-            addToAnswer(block) { 
+            addToAnswer(block, e) { 
                 this.answerBox.push(block); 
                 this.status = 'idle'; 
                 this.hint = ''; 
                 this.saveToLocal();
+                
+                // Panggil SFX & Floating Text
+                if(this.sfxClick && this.sfxClick.readyState >= 2) { 
+                    this.sfxClick.currentTime = 0; this.sfxClick.play().catch(()=>{}); 
+                }
+                this.spawnFloatingText(e, '+Pilih', '#10b981');
             },
 
-            removeFromAnswer(index) { 
+            removeFromAnswer(index, e) { 
                 this.answerBox.splice(index, 1); 
                 this.saveToLocal();
+                
+                if(this.sfxClick && this.sfxClick.readyState >= 2) { 
+                    this.sfxClick.currentTime = 0; this.sfxClick.play().catch(()=>{}); 
+                }
+                this.spawnFloatingText(e, '-Hapus', '#ef4444');
             },
             
             submitSyntax() {
                 if(this.answerBox.length === 0) { 
                     this.status = 'wrong'; 
                     this.triggerToast('Gagal!', 'Kotak rakitan masih kosong!', 'alert.png', 'error');
+                    if(this.sfxSalah && this.sfxSalah.readyState >= 2) { 
+                        this.sfxSalah.currentTime = 0; this.sfxSalah.play().catch(()=>{}); 
+                    }
                     setTimeout(() => this.status = 'idle', 500); return; 
                 }
 
@@ -388,14 +526,27 @@
                 .then(data => {
                     if (data.status === 'success') {
                         localStorage.removeItem(this.storageKey);
-                        this.triggerToast('Berhasil!', data.message, 'bintang.png', 'info');
-                        setTimeout(() => { window.location.href = data.next_url; }, 1500);
+                        
+                        // GAMIFICATION: Sukses Misi
+                        if(this.sfxBenar && this.sfxBenar.readyState >= 2) { 
+                            this.sfxBenar.currentTime = 0; this.sfxBenar.play().catch(()=>{}); 
+                        }
+                        this.fireConfetti();
+                        this.triggerFeedbackModal('success', 'Tepat Sekali!', '+ ' + this.currentPotentialXP + ' XP Berhasil Diraih');
+                        
+                        // Delay navigasi ke halaman selanjutnya (4 detik) agar user menikmati confetti
+                        setTimeout(() => { window.location.href = data.next_url; }, 4000);
                     } else {
                         this.status = 'wrong'; 
-                        // SYNC: Hint sekarang menampilkan logic token dari controller baru
                         this.hint = data.message; 
                         this.attempts = data.attempts;
-                        this.triggerToast('Periksa Lagi!', 'Rumus belum tepat.', 'find.png', 'error');
+                        
+                        // GAMIFICATION: Gagal Misi
+                        if(this.sfxSalah && this.sfxSalah.readyState >= 2) { 
+                            this.sfxSalah.currentTime = 0; this.sfxSalah.play().catch(()=>{}); 
+                        }
+                        this.fireCrossParticles(); // Ledakan silang merah
+                        this.triggerFeedbackModal('error', 'Kurang Tepat!', 'Perhatikan lagi instruksi di bawah');
                         
                         if (!this.isReview && this.attempts > 3) {
                             let penalty = (this.attempts - 3) * ({{ $mission->max_score }} * 0.05);

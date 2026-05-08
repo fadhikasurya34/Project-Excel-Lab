@@ -1,4 +1,4 @@
-{{-- //* (View) Simulasi Misi Point & Click - Optimized Scroll & Rotary Guard --}}
+{{-- //* (View) Simulasi Misi Point & Click - Optimized Scroll & Gamified --}}
 
 @php
     $jsonData = $mission->steps->sortBy('step_order')->values()->map(function($step) {
@@ -129,6 +129,51 @@
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
     }
     .font-game { font-family: 'Bangers', cursive; }
+
+    /* //* (GAMIFICATION UPDATE) Elegant Modal Center */
+    .feedback-modal-wrapper {
+        position: fixed; inset: 0; z-index: 10000;
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: none; 
+    }
+    
+    .feedback-modal {
+        padding: 2rem 3rem; border-radius: 2rem;
+        text-align: center; color: white;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        animation: popModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        border-bottom: 8px solid rgba(0,0,0,0.2);
+    }
+    
+    .feedback-modal.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .feedback-modal.error { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+
+    .feedback-title {
+        font-size: 2rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.02em; margin-bottom: 0.5rem;
+    }
+    .feedback-subtitle {
+        font-size: 1rem; font-weight: 500; opacity: 0.95;
+    }
+    @media (min-width: 768px) {
+        .feedback-title { font-size: 2.5rem; }
+        .feedback-subtitle { font-size: 1.1rem; }
+    }
+    @keyframes popModal {
+        0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+        100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    /* //* (GAMIFICATION) Floating Text Effect */
+    .floating-text {
+        position: fixed; z-index: 10000; font-weight: 900; font-size: 1.5rem;
+        color: #fbbf24; text-shadow: 0 4px 6px rgba(0,0,0,0.4); pointer-events: none;
+        animation: floatUp 1s ease-out forwards;
+    }
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+    }
 </style>
 @endpush
 
@@ -155,7 +200,15 @@
 @endsection
 
 @section('content')
-<div x-data="missionEngine()" class="relative w-full min-h-screen main-scroller bg-slate-950">
+<div x-data="missionEngine()" x-init="init()" class="relative w-full min-h-screen main-scroller bg-slate-950">
+
+    {{-- (GAMIFICATION) Elegant Modal Feedback Center --}}
+    <div x-show="feedbackModal.show" x-transition.opacity x-cloak class="feedback-modal-wrapper">
+        <div class="feedback-modal" :class="feedbackModal.type">
+            <div class="feedback-title" x-text="feedbackModal.title"></div>
+            <div class="feedback-subtitle" x-text="feedbackModal.subtitle"></div>
+        </div>
+    </div>
 
     {{-- 1. Landscape Guard --}}
     <div id="landscape-notice">
@@ -203,7 +256,6 @@
             </div>
 
             <div class="p-4" x-show="isExpanded" x-collapse>
-                {{-- Update: Teks Instruksi Lebih Gede (15px) & Font Hitam --}}
                 <p class="text-white text-[15px] font-black leading-tight mb-4 tracking-tight" x-text="steps[currentStep] ? steps[currentStep].instruction : ''"></p>
 
                 <div class="flex flex-row gap-2">
@@ -231,14 +283,14 @@
                 <div class="marker-ring" 
                      :class="clickedHotspots.includes(hs.id) ? 'marker-done' : 'opacity-0'"
                      :style="`top: ${hs.y_percent}%; left: ${hs.x_percent}%;`"
-                     @click.stop="handleHotspotClick(hs, index)">
+                     @click.stop="handleHotspotClick(hs, index, $event)">
                     <span class="text-white text-xs font-black">✔</span>
                 </div>
             </template>
         </div>
     </div>
     
-    {{-- Sisanya Tetap Sesuai Kode Asli (Modal Hint, dsb) --}}
+    {{-- Modal Hint --}}
     <div x-show="showModal" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm">
         <div class="glass-ui-shared w-full max-w-[500px] flex flex-col shadow-2xl">
             <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
@@ -260,6 +312,9 @@
 @endsection
 
 @push('scripts')
+{{-- Library Confetti --}}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script>
     function missionEngine() {
         return {
@@ -269,10 +324,32 @@
             attempts: 0, currentPotentialXP: {{ $mission->max_score }},
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
+            
+            // State untuk Gamifikasi Modal & SFX
+            feedbackModal: { show: false, type: '', title: '', subtitle: '' },
+            sfxClick: null,
+            sfxBenar: null,
+            sfxSalah: null,
+
             storageKey: 'mission_{{ $mission->id }}_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
             init() {
+                // Inisialisasi Audio Engine
+                try {
+                    let audioClick = new Audio('{{ asset("audio/click.mp3") }}');
+                    let audioBenar = new Audio('{{ asset("audio/benar.mp3") }}');
+                    let audioSalah = new Audio('{{ asset("audio/salah.mp3") }}');
+                    
+                    audioClick.load(); 
+                    audioBenar.load(); 
+                    audioSalah.load();
+                    
+                    this.sfxClick = audioClick;
+                    this.sfxBenar = audioBenar;
+                    this.sfxSalah = audioSalah;
+                } catch(e) {}
+
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
                 } else {
@@ -309,7 +386,7 @@
                         currentPotentialXP: this.currentPotentialXP
                     };
                     localStorage.setItem(this.storageKey, JSON.stringify(payload));
-                } catch (e) { console.error("Gagal menyimpan ke LocalStorage:", e); }
+                } catch (e) {}
             },
 
             get allHotspotsInStepDone() {
@@ -319,10 +396,10 @@
 
             handleBackgroundClick(e) {
                 if (this.allHotspotsInStepDone || this.isDragging) return;
-                this.triggerError();
+                this.triggerError(e);
             },
 
-            handleHotspotClick(hs, index) {
+            handleHotspotClick(hs, index, e) {
                 if (this.isDragging) return;
                 if (index === this.currentHotspotIndex) {
                     if (!this.clickedHotspots.includes(hs.id)) {
@@ -331,14 +408,22 @@
                         this.showErrorEffect = false;
                         this.showHintButton = false; 
                         this.saveToLocal();
-                        if (this.allHotspotsInStepDone) {
-                            this.showToast('Langkah Berhasil', 'Target ditemukan.', 'checklist.png');
+
+                        // GAMIFICATION: Klik Benar (Suara + Teks Terbang saja)
+                        if(this.sfxClick) { 
+                            let playPromise = this.sfxClick.play();
+                            if (playPromise !== undefined) { playPromise.catch(error => {}); }
                         }
+                        this.spawnFloatingText(e, '+Tepat', '#10b981');
+                        
+                        // Menghapus modal sukses tengah jalan sesuai instruksi
                     }
-                } else { this.triggerError(); }
+                } else { 
+                    this.triggerError(e); 
+                }
             },
 
-            triggerError() {
+            triggerError(e) {
                 if (this.showErrorEffect || this.isDragging) return;
                 this.showErrorEffect = true;
                 this.attempts++;
@@ -346,6 +431,7 @@
                 let stepData = this.steps[this.currentStep];
                 let correctHotspot = stepData ? stepData.hotspots[this.currentHotspotIndex] : null;
                 this.currentHint = correctHotspot ? correctHotspot.content : 'Perhatikan instruksi misi.';
+                
                 if (!this.isReview && this.attempts > 3) {
                     let penalty = Math.floor({{ $mission->max_score }} * 0.05);
                     this.currentPotentialXP = Math.max(this.currentPotentialXP - penalty, Math.floor({{ $mission->max_score }} * 0.4));
@@ -354,12 +440,69 @@
                     this.showToast('Klik Salah', this.isReview ? 'Mode Review: XP aman.' : 'Perhatikan instruksi.', 'alert.png');
                 }
                 this.saveToLocal();
+
+                // GAMIFICATION: Gagal Misi (Salah Klik - Hanya Efek X & Suara)
+                if(this.sfxSalah) { 
+                    let playPromise = this.sfxSalah.play();
+                    if (playPromise !== undefined) { playPromise.catch(error => {}); }
+                }
+                this.fireCrossParticles();
+                // Menghapus Modal Gagal Besar di tengah layar sesuai instruksi
+                if(e) this.spawnFloatingText(e, 'Meleset!', '#ef4444');
+
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
 
             showToast(title, message, icon = 'bintang.png') {
                 this.toast = { show: true, title, message, icon };
                 setTimeout(() => { this.toast.show = false; }, 3500);
+            },
+
+            // Fitur Gamifikasi: Elegant Popup Modal
+            triggerFeedbackModal(type, title, subtitle) {
+                this.feedbackModal.type = type;
+                this.feedbackModal.title = title;
+                this.feedbackModal.subtitle = subtitle;
+                this.feedbackModal.show = true;
+                setTimeout(() => { this.feedbackModal.show = false; }, 2000);
+            },
+
+            // Fitur Gamifikasi: Confetti (Sukses Akhir Misi)
+            fireConfetti() {
+                var duration = 4 * 1000; 
+                var end = Date.now() + duration;
+                (function frame() {
+                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
+                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#10b981', '#3b82f6', '#fbbf24', '#ffffff'] });
+                    if (Date.now() < end) { requestAnimationFrame(frame); }
+                }());
+            },
+
+            // Fitur Gamifikasi: X Particles (Gagal)
+            fireCrossParticles() {
+                var defaults = { spread: 360, ticks: 50, gravity: 0, decay: 0.94, startVelocity: 30, colors: ['#ef4444', '#b91c1c'] };
+                function fire(particleRatio, opts) {
+                    confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(40 * particleRatio), shapes: ['star'] }));
+                }
+                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.2, { spread: 60 });
+            },
+
+            // Fitur Gamifikasi: Teks Terbang saat klik
+            spawnFloatingText(e, text, color = '#fbbf24') {
+                if (!e || e.type !== 'click') return; // Cek untuk touch kalau mau didukung, ini aman
+                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                if(!clientX || !clientY) return;
+
+                const el = document.createElement('div');
+                el.className = 'floating-text';
+                el.innerText = text;
+                el.style.left = (clientX - 20) + 'px';
+                el.style.top = (clientY - 20) + 'px';
+                el.style.color = color;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 1000);
             },
 
             nextStep() {
@@ -379,15 +522,23 @@
                         answer: 'MISSION_COMPLETED', attempts: this.attempts 
                     }).then(res => {
                         localStorage.removeItem(this.storageKey);
-                        window.location.href = res.data.next_url;
+
+                        // GAMIFICATION: Sukses Total Misi (Audio + Confetti + Modal Besar)
+                        if(this.sfxBenar) { 
+                            let playPromise = this.sfxBenar.play();
+                            if (playPromise !== undefined) { playPromise.catch(error => {}); }
+                        }
+                        this.fireConfetti();
+                        this.triggerFeedbackModal('success', 'Misi Selesai!', '+ ' + this.currentPotentialXP + ' XP Diraih');
+
+                        // Delay navigasi agar user puas liat confetti
+                        setTimeout(() => { window.location.href = res.data.next_url; }, 4000);
                     });
                 }
             },
 
             startDragging(e, target) {
-                // FIX: Jangan aktifkan drag jika yang ditekan adalah tombol
                 if (e.target.closest('button')) return;
-
                 e.preventDefault(); 
                 this.isDragging = true;
                 document.body.classList.add('is-dragging');
