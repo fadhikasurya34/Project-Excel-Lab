@@ -42,7 +42,7 @@
         position: relative; 
         width: 100%; 
         min-height: calc(100vh - 160px); 
-        touch-action: none; 
+        /* FIX ANDROID SCROLL: touch-action: none dihapus agar bisa scroll vertikal */
     }
     .main-scroller { 
         overflow-y: auto !important; 
@@ -409,14 +409,12 @@
                         this.showHintButton = false; 
                         this.saveToLocal();
 
-                        // GAMIFICATION: Klik Benar (Suara + Teks Terbang saja)
+                        // GAMIFICATION: Klik Benar (Suara + Teks Terbang)
                         if(this.sfxClick) { 
                             let playPromise = this.sfxClick.play();
                             if (playPromise !== undefined) { playPromise.catch(error => {}); }
                         }
                         this.spawnFloatingText(e, '+Tepat', '#10b981');
-                        
-                        // Menghapus modal sukses tengah jalan sesuai instruksi
                     }
                 } else { 
                     this.triggerError(e); 
@@ -441,14 +439,13 @@
                 }
                 this.saveToLocal();
 
-                // GAMIFICATION: Gagal Misi (Salah Klik - Hanya Efek X & Suara)
+                // GAMIFICATION: Gagal Misi (Salah Klik - Efek X & Suara)
                 if(this.sfxSalah) { 
                     let playPromise = this.sfxSalah.play();
                     if (playPromise !== undefined) { playPromise.catch(error => {}); }
                 }
                 this.fireCrossParticles();
-                // Menghapus Modal Gagal Besar di tengah layar sesuai instruksi
-                if(e) this.spawnFloatingText(e, 'Meleset!', '#ef4444');
+                this.spawnFloatingText(e, 'Meleset!', '#ef4444');
 
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
@@ -488,12 +485,24 @@
                 fire(0.2, { spread: 60 });
             },
 
-            // Fitur Gamifikasi: Teks Terbang saat klik
+            // FIX ANDROID: Deteksi koordinat tap yang aman di Mobile & Desktop
             spawnFloatingText(e, text, color = '#fbbf24') {
-                if (!e || e.type !== 'click') return; // Cek untuk touch kalau mau didukung, ini aman
-                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                if(!clientX || !clientY) return;
+                if (!e) return;
+                
+                let clientX = e.clientX;
+                let clientY = e.clientY;
+                
+                // Ambil koordinat jika sumbernya dari sentuhan layar HP (Touch Event)
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                    clientY = e.changedTouches[0].clientY;
+                }
+
+                // Jika koordinat tetap tidak terdeteksi, batalkan agar tidak error
+                if (clientX === undefined || clientY === undefined) return;
 
                 const el = document.createElement('div');
                 el.className = 'floating-text';
