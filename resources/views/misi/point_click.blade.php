@@ -42,7 +42,6 @@
         position: relative; 
         width: 100%; 
         min-height: calc(100vh - 160px); 
-        /* FIX ANDROID SCROLL: touch-action: none dihapus agar bisa scroll vertikal */
     }
     .main-scroller { 
         overflow-y: auto !important; 
@@ -325,31 +324,34 @@
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
             
-            // State untuk Gamifikasi Modal & SFX
+            // State untuk Gamifikasi Modal
             feedbackModal: { show: false, type: '', title: '', subtitle: '' },
-            sfxClick: null,
-            sfxBenar: null,
-            sfxSalah: null,
 
             storageKey: 'mission_{{ $mission->id }}_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
-            init() {
-                // Inisialisasi Audio Engine
+            // FIX ANDROID AUDIO: Bikin player audio dinamis saat diklik agar tidak diblokir browser HP
+            playSound(type) {
                 try {
-                    let audioClick = new Audio('{{ asset("audio/click.mp3") }}');
-                    let audioBenar = new Audio('{{ asset("audio/benar.mp3") }}');
-                    let audioSalah = new Audio('{{ asset("audio/salah.mp3") }}');
+                    let audioPath = '';
+                    if (type === 'click') audioPath = '{{ asset("audio/click.mp3") }}';
+                    else if (type === 'benar') audioPath = '{{ asset("audio/benar.mp3") }}';
+                    else if (type === 'salah') audioPath = '{{ asset("audio/salah.mp3") }}';
                     
-                    audioClick.load(); 
-                    audioBenar.load(); 
-                    audioSalah.load();
-                    
-                    this.sfxClick = audioClick;
-                    this.sfxBenar = audioBenar;
-                    this.sfxSalah = audioSalah;
+                    if (audioPath) {
+                        let audio = new Audio(audioPath);
+                        let playPromise = audio.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(error => {
+                                // Silent catch: kalau browser memblokir (karena autoplay policy), script tidak akan error 404
+                                console.log("Audio play diabaikan browser.");
+                            });
+                        }
+                    }
                 } catch(e) {}
+            },
 
+            init() {
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
                 } else {
@@ -409,11 +411,8 @@
                         this.showHintButton = false; 
                         this.saveToLocal();
 
-                        // GAMIFICATION: Klik Benar (Suara + Teks Terbang)
-                        if(this.sfxClick) { 
-                            let playPromise = this.sfxClick.play();
-                            if (playPromise !== undefined) { playPromise.catch(error => {}); }
-                        }
+                        // PANGGIL AUDIO BARU: Klik Benar (Suara + Teks Terbang)
+                        this.playSound('click');
                         this.spawnFloatingText(e, '+Tepat', '#10b981');
                     }
                 } else { 
@@ -439,13 +438,10 @@
                 }
                 this.saveToLocal();
 
-                // GAMIFICATION: Gagal Misi (Salah Klik - Efek X & Suara)
-                if(this.sfxSalah) { 
-                    let playPromise = this.sfxSalah.play();
-                    if (playPromise !== undefined) { playPromise.catch(error => {}); }
-                }
+                // PANGGIL AUDIO BARU: Gagal Misi (Salah Klik - Hanya Efek X & Suara)
+                this.playSound('salah');
                 this.fireCrossParticles();
-                this.spawnFloatingText(e, 'Meleset!', '#ef4444');
+                if(e) this.spawnFloatingText(e, 'Meleset!', '#ef4444');
 
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
@@ -492,7 +488,6 @@
                 let clientX = e.clientX;
                 let clientY = e.clientY;
                 
-                // Ambil koordinat jika sumbernya dari sentuhan layar HP (Touch Event)
                 if (e.touches && e.touches.length > 0) {
                     clientX = e.touches[0].clientX;
                     clientY = e.touches[0].clientY;
@@ -501,7 +496,6 @@
                     clientY = e.changedTouches[0].clientY;
                 }
 
-                // Jika koordinat tetap tidak terdeteksi, batalkan agar tidak error
                 if (clientX === undefined || clientY === undefined) return;
 
                 const el = document.createElement('div');
@@ -532,15 +526,11 @@
                     }).then(res => {
                         localStorage.removeItem(this.storageKey);
 
-                        // GAMIFICATION: Sukses Total Misi (Audio + Confetti + Modal Besar)
-                        if(this.sfxBenar) { 
-                            let playPromise = this.sfxBenar.play();
-                            if (playPromise !== undefined) { playPromise.catch(error => {}); }
-                        }
+                        // PANGGIL AUDIO BARU: Sukses Total Misi
+                        this.playSound('benar');
                         this.fireConfetti();
                         this.triggerFeedbackModal('success', 'Misi Selesai!', '+ ' + this.currentPotentialXP + ' XP Diraih');
 
-                        // Delay navigasi agar user puas liat confetti
                         setTimeout(() => { window.location.href = res.data.next_url; }, 4000);
                     });
                 }
