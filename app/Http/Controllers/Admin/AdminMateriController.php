@@ -27,10 +27,11 @@ class AdminMateriController extends Controller
     }
 
     /** * FIX: (View) Menampilkan DAFTAR FOLDER (Topik) 
-     * Menambahkan $stats agar tidak error Undefined Variable di blade index.
+     * Menambahkan orderBy agar posisi folder konsisten dan tidak lompat-lompat.
      */
     public function index() {
-        $categories = MaterialCategory::withCount('materials')->get();
+        // Menggunakan withCount untuk menghitung relasi, diurutkan agar stabil
+        $categories = MaterialCategory::withCount('materials')->orderBy('id', 'asc')->get();
 
         $stats = [
             'total_materi'  => Material::count(),
@@ -43,17 +44,19 @@ class AdminMateriController extends Controller
     }
 
     /** * UPDATE: (View) Menampilkan daftar materi di dalam satu kategori (Folder) 
-     * Menyeimbangkan $stats agar UI Dashboard tetap muncul di dalam topik.
+     * FIX CRITICAL: Menggunakan relasi langsung ($category->materials()) agar
+     * hasil yang ditarik 100% sama dengan perhitungan withCount di Dashboard.
      */
     public function listByTopic(string $id) {
         $category = MaterialCategory::findOrFail($id);
         
-        $materials = Material::where('category_id', $id)
+        // FIX: Tarik data melalui relasi Eloquent agar konsisten dan tidak ada yang hilang
+        $materials = $category->materials()
             ->withCount('activities')
-            ->orderBy('id', 'asc')
+            ->orderBy('created_at', 'asc') // Urutkan berdasarkan waktu pembuatan
             ->get();
 
-        $allTopics = MaterialCategory::all();
+        $allTopics = MaterialCategory::orderBy('id', 'asc')->get();
         
         $stats = [
             'total_materi'  => Material::count(),
@@ -77,7 +80,7 @@ class AdminMateriController extends Controller
         return view('admin.materials.create'); 
     }
 
-    /** * FIX: (Action) Simpan FOLDER BARU (Topik) */
+    /** (Action) Simpan FOLDER BARU (Topik) */
     public function storeTopic(Request $request) {
         $request->validate([
             'name'        => 'required|string|max:255', 
@@ -111,7 +114,9 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Folder beserta isinya berhasil dihapus.');
     }
 
-    /** (Action) Simpan materi secara cepat dari halaman Topik */
+    /** * (Action) Simpan materi secara cepat dari halaman Topik 
+     * FIX: Pastikan memprioritaskan category_id agar tidak masuk ke folder null
+     */
     public function storeQuick(Request $request) {
         $request->validate([
             'title'         => 'required|string|max:255',

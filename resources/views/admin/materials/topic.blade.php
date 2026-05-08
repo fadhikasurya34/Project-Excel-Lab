@@ -1,6 +1,6 @@
 {{-- 
     VIEW: Daftar Modul di Dalam Topik (Admin)
-    DATA: $materials, $category, $allTopics, $topicData
+    DATA: $materials, $category, $allTopics, $topicData, $category_id
     DESC: Tempat mengelola isi modul (Teori/Praktikum) untuk kategori tertentu.
 --}}
 
@@ -146,7 +146,8 @@
                 <h3 id="modalTitle" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-8">Tambah Modul</h3>
                 <form id="materialForm" method="POST" class="space-y-6">
                     @csrf
-                    <input type="hidden" name="category" value="{{ $category }}">
+                    {{-- FIX 1: Ubah name menjadi category_id --}}
+                    <input type="hidden" name="category_id" value="{{ $category_id }}">
                     <div id="methodField"></div>
                     
                     <div class="space-y-5">
@@ -170,9 +171,10 @@
 
                         <div id="moveTopicContainer" class="hidden">
                             <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Pindahkan ke Topik Lain</label>
-                            <select name="target_category" id="form_target_category" class="form-input-premium appearance-none">
+                            {{-- FIX 2: Ubah name menjadi category_id, ambil id dan name dari model --}}
+                            <select name="category_id" id="form_target_category" class="form-input-premium appearance-none">
                                 @foreach($allTopics as $t)
-                                    <option value="{{ $t }}" {{ $t == $category ? 'selected' : '' }}>{{ $t }}</option>
+                                    <option value="{{ $t->id }}" {{ $t->id == $category_id ? 'selected' : '' }}>{{ $t->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -205,6 +207,12 @@
             document.getElementById('form_title').value = m.title;
             document.getElementById('form_description').value = m.description;
             document.getElementById('form_type').value = m.material_type;
+            
+            // FIX 3: Assign category_id yang benar ke select
+            if(document.getElementById('form_target_category')) {
+                document.getElementById('form_target_category').value = m.category_id;
+            }
+
             document.getElementById('moveTopicContainer').classList.remove('hidden');
             document.getElementById('materialModal').classList.remove('hidden');
         }
