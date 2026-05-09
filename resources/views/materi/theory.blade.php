@@ -132,18 +132,6 @@
         right: max(20px, env(safe-area-inset-right)) !important;
     }
 
-    /* //* BLOKIR TOMBOL MAXIMIZE BAWAAN GDRIVE */
-    .gdrive-blocker {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 55px; 
-        height: 50px;
-        z-index: 15; /* Di atas iframe (z-10), agar klik terhalang */
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-    }
-
     /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
     .description-card {
         background: rgba(255, 255, 255, 0.8);
@@ -229,15 +217,12 @@
                         </svg>
                     </button>
 
-                    {{-- iframe TANPA allowfullscreen = Tombol Bawaan Video Mati Sepenuhnya --}}
-                    <iframe src="{{ $contentUrl }}" allow="autoplay"></iframe>
-
-                    {{-- Pelindung Transparan: Memblokir Tombol Maximize GDrive agar tidak diklik --}}
-                    <div class="gdrive-blocker" onclick="toggleCustomFullscreen()" title="Gunakan tombol Perbesar Layar di bawah"></div>
+                    {{-- iframe dibiarkan berjalan normal --}}
+                    <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen"></iframe>
                     
                 </div>
 
-                {{-- Toolbar Bawah Player --}}
+                {{-- Toolbar Bawah Player (Digunakan untuk Dokumen/PDF) --}}
                 <div class="mt-4 flex justify-end fullscreen-btn-container">
                     <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -319,7 +304,7 @@
                     enableIOSFallback();
                 });
             } else {
-                // Di iPhone/iPad, paksa gunakan fitur In-Place Expand (Anti Ngebug)
+                // Di iPhone/iPad (Terutama untuk Dokumen PDF), gunakan fungsi In-Place Expand
                 enableIOSFallback();
             }
             
@@ -332,7 +317,7 @@
         }
     }
 
-    // Fungsi Jurus Pamungkas iOS: In-Place Expand
+    // Fungsi Jurus Pamungkas iOS: In-Place Expand (Hanya untuk dokumen/fallback)
     function enableIOSFallback() {
         window.scrollTo(0, 0); // Pastikan layar naik ke paling atas
         document.body.classList.add('is-ios-fs');
