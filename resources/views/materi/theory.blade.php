@@ -15,7 +15,7 @@
         border-radius: 1.5rem;
         background: #000;
         box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s ease; /* Transisi agar saat iOS fullscreen lebih mulus */
+        transition: all 0.3s ease; 
     }
 
     .video-container iframe {
@@ -28,7 +28,7 @@
         z-index: 10;
     }
 
-    /* Penyesuaian Kontainer saat Masuk Fullscreen Native */
+    /* Penyesuaian Kontainer saat Masuk Fullscreen Native (Android/Desktop) */
     .video-container:fullscreen, .video-container:-webkit-full-screen {
         padding-bottom: 0;
         height: 100dvh;
@@ -38,18 +38,20 @@
         background: #000;
     }
 
-    /* //* FIX IOS SAFARI: Fallback Fullscreen Class */
+    /* //* FIX MUTLAK IOS SAFARI: Fallback Fullscreen Class */
     .ios-fullscreen {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        width: 100vw !important;
-        height: 100dvh !important;
-        z-index: 999999 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 999998 !important; /* Menutupi semua header bawaan layout */
         border-radius: 0 !important;
         border: none !important;
         background: #000 !important;
-        padding-bottom: 0 !important;
+        padding: 0 !important;
         margin: 0 !important;
     }
 
@@ -57,14 +59,14 @@
     .btn-exit-fs {
         display: none; /* Default disembunyikan */
         position: absolute;
-        top: 16px; /* Jarak dari atas */
-        left: 50%; /* Posisikan di tengah horizontal */
-        transform: translateX(-50%); /* Geser agar benar-benar di tengah */
-        z-index: 2147483647; /* Z-index maksimal absolut di CSS */
+        top: 20px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        z-index: 999999 !important; /* Harus paling atas melebihi kontainer */
         background: rgba(220, 38, 38, 0.95);
         color: white;
-        padding: 8px 16px;
-        border-radius: 9999px; /* Bentuk pill */
+        padding: 10px 20px;
+        border-radius: 9999px;
         font-size: 13px;
         font-weight: 700;
         letter-spacing: 0.05em;
@@ -74,23 +76,22 @@
         align-items: center;
         gap: 6px;
         cursor: pointer;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         
-        /* FIX: Agar bisa di-tap di mobile (iOS/Android) */
         pointer-events: auto !important;
         -webkit-tap-highlight-color: transparent;
     }
     
     .btn-exit-fs:active {
         background: rgba(185, 28, 28, 1);
-        transform: translateX(-50%) scale(0.95); /* Tetap di tengah saat ditekan */
+        transform: translateX(-50%) scale(0.95);
     }
 
     /* Munculkan tombol saat Fullscreen Native atau Fallback iOS */
     .video-container:fullscreen .btn-exit-fs, 
     .video-container:-webkit-full-screen .btn-exit-fs,
     .ios-fullscreen .btn-exit-fs {
-        display: flex; 
+        display: flex !important; 
     }
 
     /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
@@ -138,7 +139,7 @@
 <div class="px-4 sm:px-10 py-8">
     <div class="max-w-4xl mx-auto">
         
-        {{-- //* 1. Header Konten (Judul & Deskripsi Pindah Ke Atas) --}}
+        {{-- //* 1. Header Konten (Judul & Deskripsi Paling Atas) --}}
         <div class="mb-6">
             <div class="flex items-center space-x-3 mb-4">
                 <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
@@ -171,12 +172,12 @@
                 {{-- ID ditambahkan ke kontainer untuk target script --}}
                 <div id="materi-container" class="video-container border-4 border-white dark:border-slate-800 shadow-2xl">
                     
-                    {{-- Tombol Keluar Darurat (Tengah Atas, Hanya Muncul Saat Fullscreen) --}}
+                    {{-- Tombol Keluar Darurat (Tengah Atas) --}}
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
-                        Tutup
+                        Tutup Layar
                     </button>
 
                     {{-- iframe TANPA allowfullscreen = Tombol Bawaan Video Mati Sepenuhnya --}}
@@ -200,7 +201,7 @@
             @endif
         </div>
 
-        {{-- //* 3. Instruksi & Info (Berjejer ke bawah) --}}
+        {{-- //* 3. Instruksi & Info --}}
         <div class="grid grid-cols-1 gap-6">
             
             {{-- Instruksi Card --}}
@@ -244,36 +245,55 @@
     const container = document.getElementById("materi-container");
 
     function toggleCustomFullscreen() {
-        // 1. Cek apakah sedang dalam mode iOS Fallback Fullscreen
+        // 1. Matikan jika sedang dalam mode iOS Fallback Fullscreen (Keluar)
         if (container.classList.contains('ios-fullscreen')) {
             container.classList.remove('ios-fullscreen');
+            document.body.style.overflow = ''; // Kembalikan scroll body web
             return;
         }
+
+        // Deteksi cerdas apakah pengguna memakai iPhone/iPad/iPod
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         // 2. Jika tidak Fullscreen secara Native
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
             
-            // Coba Panggil Fullscreen API
             const reqFS = container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen;
             
-            if (reqFS) {
+            // Eksekusi API Fullscreen HANYA JIKA BUKAN iOS (Android/PC)
+            if (reqFS && !isIOS) {
                 reqFS.call(container).catch(err => {
-                    console.error("Native Fullscreen ditolak (Umum di iOS Safari), menggunakan fallback CSS.", err);
-                    // Jika ditolak API Apple, nyalakan layar penuh via CSS Class
-                    container.classList.add('ios-fullscreen');
+                    console.error("Native Fullscreen ditolak, menggunakan fallback CSS.");
+                    enableIOSFallback();
                 });
             } else {
-                // Jika API sama sekali tidak ada di browser
-                container.classList.add('ios-fullscreen');
+                // Eksekusi paksa CSS Fullscreen jika perangkat adalah iPhone (Bypass larangan Safari)
+                enableIOSFallback();
             }
             
         } else {
-            // KELUAR FULLSCREEN NATIVE
+            // KELUAR FULLSCREEN NATIVE (Android/Desktop)
             const extFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
             if (extFS) {
                 extFS.call(document);
             }
         }
     }
+
+    // Fungsi Pembantu untuk mode Layar Penuh Paksa (Fallback)
+    function enableIOSFallback() {
+        container.classList.add('ios-fullscreen');
+        document.body.style.overflow = 'hidden'; // Kunci scroll di belakang
+    }
+
+    // Pendengar event jika user keluar pakai ESC di Desktop/Tablet
+    ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(eventType => {
+        document.addEventListener(eventType, () => {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                container.classList.remove('ios-fullscreen');
+                document.body.style.overflow = '';
+            }
+        });
+    });
 </script>
 @endpush
