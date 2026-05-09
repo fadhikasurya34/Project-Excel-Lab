@@ -25,7 +25,9 @@
             selectedMissions: [],
             showTaskModal: false,
             showEditTaskModal: false,
+            showProgressModal: false,
             editTaskData: { id: '', name: '' },
+            activeTaskProgress: { name: '', mission_ids: [], max_score: 0 },
             availableMissions: @js($availableMissions),
             users: {{ $classroom->users->map(function($user) {
                 return [
@@ -71,6 +73,24 @@
                     let mod = this.sortOrder === 'asc' ? 1 : -1;
                     return (a[this.sortBy] - b[this.sortBy]) * mod;
                 });
+            },
+            viewTaskProgress(task) {
+                this.activeTaskProgress = task;
+                this.showProgressModal = true;
+            },
+            calculateTaskScore(userScores, missionIds) {
+                if (!missionIds || missionIds.length === 0) return 0;
+                let total = 0;
+                missionIds.forEach(id => { total += (userScores[id] || 0); });
+                return total;
+            },
+            calculateTaskMissionsCompleted(userScores, missionIds) {
+                if (!missionIds || missionIds.length === 0) return 0;
+                let count = 0;
+                missionIds.forEach(id => { 
+                    if (userScores[id] && userScores[id] > 0) count++; 
+                });
+                return count;
             }
          }">
 
@@ -249,28 +269,34 @@
         <div x-show="activeTab === 'tasks'" x-transition x-cloak>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($classroom->tasks as $task)
-                <div class="admin-card p-6 border-l-4 border-purple-500 hover:shadow-xl transition-all relative">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="leading-tight min-w-0">
-                            <h4 class="text-lg font-black text-slate-800 truncate">{{ $task->name }}</h4>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Dibuat: {{ $task->created_at->format('d/m/Y') }}</p>
-                        </div>
-                        <div class="flex gap-1 shrink-0">
-                            <button @click="editTaskData = { id: '{{ $task->id }}', name: '{{ $task->name }}' }; showEditTaskModal = true" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                            </button>
-                            <form action="{{ route('admin.tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Hapus tugas?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <div class="admin-card p-6 border-l-4 border-purple-500 hover:shadow-xl transition-all relative flex flex-col justify-between h-full">
+                    <div>
+                        <div class="flex justify-between items-start mb-6">
+                            <div class="leading-tight min-w-0">
+                                <h4 class="text-lg font-black text-slate-800 truncate">{{ $task->name }}</h4>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Dibuat: {{ $task->created_at->format('d/m/Y') }}</p>
+                            </div>
+                            <div class="flex gap-1 shrink-0">
+                                <button @click="editTaskData = { id: '{{ $task->id }}', name: '{{ addslashes($task->name) }}' }; showEditTaskModal = true" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                </button>
+                                <form action="{{ route('admin.tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Hapus tugas?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
                                 </form>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="bg-purple-50 text-purple-600 text-[9px] font-black px-2 py-1 rounded-md uppercase">{{ $task->missions->count() }} MISI</span>
+                            <span class="text-[9px] font-bold text-slate-400">Max XP: {{ $task->missions->sum('max_score') }}</span>
                         </div>
                     </div>
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="bg-purple-50 text-purple-600 text-[9px] font-black px-2 py-1 rounded-md uppercase">{{ $task->missions->count() }} MISI</span>
-                        <span class="text-[9px] font-bold text-slate-300">Max XP: {{ $task->missions->sum('max_score') }}</span>
+                    <div class="flex gap-2">
+                        <button @click="viewTaskProgress({ name: '{{ addslashes($task->name) }}', mission_ids: {{ $task->missions->pluck('id')->toJson() }}, max_score: {{ $task->missions->sum('max_score') }} })" class="w-full py-3 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all block text-center shadow-lg shadow-blue-100">Progres</button>
+                        <a href="{{ route('admin.tasks.export', $task->id) }}" class="w-full py-3 bg-emerald-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all block text-center shadow-lg shadow-emerald-100">Export CSV</a>
                     </div>
-                    <a href="{{ route('admin.tasks.export', $task->id) }}" class="w-full py-3 bg-emerald-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all block text-center shadow-lg shadow-emerald-100">Export Nilai (.CSV)</a>
                 </div>
                 @empty
                 <div class="col-span-full py-24 text-center admin-card bg-slate-50/50 border-dashed border-2">
@@ -281,6 +307,63 @@
         </div>
 
         {{-- Modal Area --}}
+        
+        {{-- MODAL BARU: PROGRES TASK --}}
+        <div x-show="showProgressModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak x-transition>
+            <div class="bg-white rounded-[2rem] p-6 sm:p-8 w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]" @click.away="showProgressModal = false">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="leading-tight min-w-0">
+                        <h3 class="text-xl sm:text-2xl font-black text-slate-900">Progres Siswa</h3>
+                        <p class="text-[10px] font-bold text-purple-600 uppercase tracking-widest mt-1 truncate" x-text="activeTaskProgress.name"></p>
+                    </div>
+                    <button @click="showProgressModal = false" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-xl active:scale-90 transition-all shrink-0 ml-4">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                
+                <div class="overflow-y-auto custom-scrollbar pr-2 flex-1 mt-2">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 border-b border-slate-100 sticky top-0 z-10">
+                            <tr class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                <th class="px-4 py-3 rounded-tl-xl w-auto">Praktikan</th>
+                                <th class="px-4 py-3 text-center w-32">Misi Selesai</th>
+                                <th class="px-4 py-3 text-center w-32">XP Didapat</th>
+                                <th class="px-4 py-3 text-center rounded-tr-xl w-32">Nilai (100)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-50">
+                            <template x-for="siswa in filteredUsers" :key="'prog-'+siswa.id">
+                                <tr class="hover:bg-slate-50/50 transition-colors">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-lg shrink-0" :style="'background-color: #' + siswa.profile_color">
+                                                <img :src="siswa.avatar" class="w-full h-full">
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <span class="text-xs font-bold text-slate-800 truncate" x-text="siswa.name"></span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="font-mono text-xs font-bold text-blue-600" x-text="calculateTaskMissionsCompleted(siswa.scores, activeTaskProgress.mission_ids) + ' / ' + activeTaskProgress.mission_ids.length"></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="font-mono text-xs font-bold text-slate-600" x-text="calculateTaskScore(siswa.scores, activeTaskProgress.mission_ids) + ' / ' + activeTaskProgress.max_score"></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span class="px-2 py-1 rounded-lg text-[10px] font-black" 
+                                              :class="(activeTaskProgress.max_score > 0 ? (calculateTaskScore(siswa.scores, activeTaskProgress.mission_ids) / activeTaskProgress.max_score * 100) : 0) >= 75 ? 'bg-emerald-100 text-emerald-600' : 'bg-red-50 text-red-500'"
+                                              x-text="activeTaskProgress.max_score > 0 ? (calculateTaskScore(siswa.scores, activeTaskProgress.mission_ids) / activeTaskProgress.max_score * 100).toFixed(1) : 0">
+                                        </span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div x-show="showTaskModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak x-transition>
             <div class="bg-white rounded-[2.5rem] p-6 sm:p-10 w-full max-w-md shadow-2xl" @click.away="showTaskModal = false">
                 <h3 class="text-xl sm:text-2xl font-black text-slate-900 mb-2">Simpan Task Baru</h3>
