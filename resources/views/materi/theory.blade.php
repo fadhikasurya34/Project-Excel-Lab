@@ -15,6 +15,7 @@
         border-radius: 1.5rem;
         background: #000;
         box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease; /* Transisi agar saat iOS fullscreen lebih mulus */
     }
 
     .video-container iframe {
@@ -27,7 +28,7 @@
         z-index: 10;
     }
 
-    /* Penyesuaian Kontainer saat Masuk Fullscreen Lewat Tombol Kita */
+    /* Penyesuaian Kontainer saat Masuk Fullscreen Native */
     .video-container:fullscreen, .video-container:-webkit-full-screen {
         padding-bottom: 0;
         height: 100dvh;
@@ -35,6 +36,21 @@
         border-radius: 0;
         border: none;
         background: #000;
+    }
+
+    /* //* FIX IOS SAFARI: Fallback Fullscreen Class */
+    .ios-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        z-index: 999999 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        background: #000 !important;
+        padding-bottom: 0 !important;
+        margin: 0 !important;
     }
 
     /* //* Tombol Keluar (Tengah Atas) */
@@ -70,8 +86,11 @@
         transform: translateX(-50%) scale(0.95); /* Tetap di tengah saat ditekan */
     }
 
-    .video-container:fullscreen .btn-exit-fs, .video-container:-webkit-full-screen .btn-exit-fs {
-        display: flex; /* Munculkan saat fullscreen */
+    /* Munculkan tombol saat Fullscreen Native atau Fallback iOS */
+    .video-container:fullscreen .btn-exit-fs, 
+    .video-container:-webkit-full-screen .btn-exit-fs,
+    .ios-fullscreen .btn-exit-fs {
+        display: flex; 
     }
 
     /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
@@ -96,17 +115,6 @@
         transform: translateY(2px);
         border-bottom-width: 0px;
     }
-
-    .btn-finish-pegas {
-        transition: all 0.1s ease;
-        border-bottom-width: 6px;
-        background-color: #4f46e5;
-        color: white;
-    }
-    .btn-finish-pegas:active {
-        transform: translateY(4px);
-        border-bottom-width: 2px;
-    }
 </style>
 @endpush
 
@@ -120,7 +128,7 @@
     <div class="flex flex-col text-left ml-3 leading-none">
         <span class="text-base font-extrabold tracking-tight dark:text-white uppercase leading-none">Materi Teori</span>
         <div class="flex items-center space-x-1.5 mt-1.5">
-            <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></span>
+            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
             <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Sedang Dipelajari</span>
         </div>
     </div>
@@ -128,9 +136,32 @@
 
 @section('content')
 <div class="px-4 sm:px-10 py-8">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-4xl mx-auto">
         
-        {{-- //* (Player) Area Konten Utama (PDF/Video) --}}
+        {{-- //* 1. Header Konten (Judul & Deskripsi Pindah Ke Atas) --}}
+        <div class="mb-6">
+            <div class="flex items-center space-x-3 mb-4">
+                <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                    {{ $material->material_type }}
+                </span>
+                <span class="text-slate-300 dark:text-slate-600">/</span>
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    ID Modul: #{{ str_pad($material->id, 4, '0', STR_PAD_LEFT) }}
+                </span>
+            </div>
+            
+            <h1 class="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white mb-4 capitalize">
+                {{ strtolower($material->title) }}
+            </h1>
+            
+            <div class="prose prose-slate dark:prose-invert max-w-none mb-2">
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                    {{ $material->description }}
+                </p>
+            </div>
+        </div>
+
+        {{-- //* 2. (Player) Area Konten Utama (PDF/Video) --}}
         <div class="mb-8">
             @php
                 $contentUrl = $material->activities->first()->step_image ?? null;
@@ -169,69 +200,39 @@
             @endif
         </div>
 
-        {{-- //* (Info) Detail Materi --}}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2">
-                <div class="description-card p-8 lg:p-10 shadow-sm">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                            {{ $material->material_type }}
-                        </span>
-                        <span class="text-slate-300 dark:text-slate-600">/</span>
-                        <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                            ID Modul: #{{ str_pad($material->id, 4, '0', STR_PAD_LEFT) }}
-                        </span>
+        {{-- //* 3. Instruksi & Info (Berjejer ke bawah) --}}
+        <div class="grid grid-cols-1 gap-6">
+            
+            {{-- Instruksi Card --}}
+            <div class="description-card p-6 lg:p-8 shadow-sm">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-full flex shrink-0 items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
                     </div>
-                    
-                    <h1 class="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white mb-4 capitalize">
-                        {{ strtolower($material->title) }}
-                    </h1>
-                    
-                    <div class="prose prose-slate dark:prose-invert max-w-none">
-                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                            {{ $material->description }}
-                        </p>
-                    </div>
-
-                    <hr class="my-8 border-slate-100 dark:border-slate-700">
-
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
-                                <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">Instruksi</p>
-                                <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Pelajari materi di atas dengan seksama.</p>
-                            </div>
-                        </div>
-
-                        <a href="{{ route('materi.category.list', $material->category_id) }}" 
-                           class="btn-finish-pegas px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border-indigo-800 shadow-lg shadow-indigo-100 dark:shadow-none">
-                            Selesai Belajar
-                        </a>
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">Instruksi</p>
+                        <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Pelajari materi di atas dengan seksama.</p>
                     </div>
                 </div>
             </div>
 
-            {{-- //* (Sidebar) Info Tambahan --}}
-            <div class="space-y-6">
-                <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-6 rounded-[2rem] shadow-sm">
-                    <h4 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Tips Belajar</h4>
-                    <ul class="space-y-3">
-                        <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
-                            <span class="text-indigo-500 mt-0.5">●</span>
-                            <span>Gunakan mode fullscreen pada player untuk tampilan lebih jelas.</span>
-                        </li>
-                        <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
-                            <span class="text-indigo-500 mt-0.5">●</span>
-                            <span>Catat poin-poin penting sebelum lanjut ke praktikum.</span>
-                        </li>
-                    </ul>
-                </div>
+            {{-- Tips Belajar --}}
+            <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-6 lg:p-8 rounded-[2rem] shadow-sm">
+                <h4 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Tips Belajar</h4>
+                <ul class="space-y-3">
+                    <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
+                        <span class="text-blue-500 mt-0.5">●</span>
+                        <span>Gunakan mode fullscreen pada player untuk tampilan lebih jelas.</span>
+                    </li>
+                    <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
+                        <span class="text-blue-500 mt-0.5">●</span>
+                        <span>Catat poin-poin penting sebelum lanjut ke praktikum.</span>
+                    </li>
+                </ul>
             </div>
+            
         </div>
 
     </div>
@@ -243,14 +244,31 @@
     const container = document.getElementById("materi-container");
 
     function toggleCustomFullscreen() {
+        // 1. Cek apakah sedang dalam mode iOS Fallback Fullscreen
+        if (container.classList.contains('ios-fullscreen')) {
+            container.classList.remove('ios-fullscreen');
+            return;
+        }
+
+        // 2. Jika tidak Fullscreen secara Native
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            // MASUK FULLSCREEN
+            
+            // Coba Panggil Fullscreen API
             const reqFS = container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen;
+            
             if (reqFS) {
-                reqFS.call(container).catch(err => console.error(err));
+                reqFS.call(container).catch(err => {
+                    console.error("Native Fullscreen ditolak (Umum di iOS Safari), menggunakan fallback CSS.", err);
+                    // Jika ditolak API Apple, nyalakan layar penuh via CSS Class
+                    container.classList.add('ios-fullscreen');
+                });
+            } else {
+                // Jika API sama sekali tidak ada di browser
+                container.classList.add('ios-fullscreen');
             }
+            
         } else {
-            // KELUAR FULLSCREEN
+            // KELUAR FULLSCREEN NATIVE
             const extFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
             if (extFS) {
                 extFS.call(document);
