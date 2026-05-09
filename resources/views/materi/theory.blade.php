@@ -38,42 +38,66 @@
         background: #000;
     }
 
-    /* //* FIX MUTLAK IOS SAFARI: Fallback Fullscreen Kustom */
-    .video-container.ios-fullscreen {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
+    /* //* STRATEGI BARU IOS SAFARI: "PURE FLEXBOX CENTER"
+       Bypass bug Safari: Sembunyikan elemen sekitar dan hitamkan layar. Jangan ubah position iframe.
+    */
+    body.is-ios-fs {
+        background-color: #000 !important;
+        overflow: hidden !important; 
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
         height: 100dvh !important;
-        padding-bottom: 0 !important; /* KUNCI: Mematikan rasio 16:9 agar tidak ada ruang hitam */
+        width: 100vw !important;
         margin: 0 !important;
-        z-index: 999999 !important; /* Menutupi semua elemen termasuk header */
+        padding: 0 !important;
+    }
+
+    /* Sembunyikan SEMUA elemen layout bawaan yang mengganggu */
+    body.is-ios-fs header, 
+    body.is-ios-fs nav, 
+    body.is-ios-fs aside,
+    body.is-ios-fs [class*="fixed top-0"], 
+    body.is-ios-fs .z-50,
+    body.is-ios-fs .content-header,
+    body.is-ios-fs .info-section,
+    body.is-ios-fs .fullscreen-btn-container {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    /* Lepaskan batasan ukuran dari pembungkus konten */
+    body.is-ios-fs .main-wrapper,
+    body.is-ios-fs .inner-wrapper,
+    body.is-ios-fs .video-section {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    /* Mekarkan video container menutupi seluruh lebar layar */
+    body.is-ios-fs .video-container {
+        width: 100vw !important;
         border-radius: 0 !important;
         border: none !important;
-        background: #000 !important;
-    }
-
-    .video-container.ios-fullscreen iframe {
-        width: 100% !important;
-        height: 100% !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-    }
-
-    /* Mengunci scroll body saat fallback aktif */
-    body.is-ios-fs {
-        overflow: hidden !important; 
+        /* Biarkan padding-bottom 56.25% agar aspect ratio tetap waras & Safari tidak ngebug */
     }
 
     /* //* Tombol Keluar Layar Penuh */
     .btn-exit-fs {
         display: none; 
         position: absolute;
-        top: 85px; 
-        right: max(20px, env(safe-area-inset-right));
+        top: 20px; 
+        right: 20px;
         z-index: 2147483647 !important; 
-        background: rgba(220, 38, 38, 0.6); 
+        background: rgba(220, 38, 38, 0.7); 
         color: white;
         width: 44px; 
         height: 44px;
@@ -96,9 +120,16 @@
 
     /* Munculkan tombol saat Fullscreen Native atau Fallback iOS */
     .video-container:fullscreen .btn-exit-fs, 
-    .video-container:-webkit-full-screen .btn-exit-fs,
-    .video-container.ios-fullscreen .btn-exit-fs {
+    .video-container:-webkit-full-screen .btn-exit-fs {
         display: flex !important; 
+    }
+
+    /* Untuk iOS, tombol dibuat fixed agar menempel di layar HP, bukan di video */
+    body.is-ios-fs .btn-exit-fs {
+        display: flex !important;
+        position: fixed !important;
+        top: max(20px, env(safe-area-inset-top)) !important;
+        right: max(20px, env(safe-area-inset-right)) !important;
     }
 
     /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
@@ -186,8 +217,8 @@
                         </svg>
                     </button>
 
-                    {{-- iframe dibiarkan berjalan normal --}}
-                    <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen"></iframe>
+                    {{-- FIX: Menambahkan atribut allowfullscreen agar tombol Maximize GDrive nyala di iOS --}}
+                    <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                     
                 </div>
 
@@ -251,8 +282,10 @@
     const container = document.getElementById("materi-container");
 
     function toggleCustomFullscreen() {
-        // 1. Matikan jika sedang dalam mode iOS Fallback Fullscreen (Keluar)
-        if (container.classList.contains('ios-fullscreen')) {
+        // Deteksi apakah web dalam mode Fallback iOS
+        const isCurrentlyIOSFS = document.body.classList.contains('is-ios-fs');
+
+        if (isCurrentlyIOSFS) {
             disableIOSFallback();
             return;
         }
@@ -271,7 +304,7 @@
                     enableIOSFallback();
                 });
             } else {
-                // Di iPhone/iPad (Terutama untuk Dokumen PDF), gunakan fungsi Fallback CSS
+                // Di iPhone/iPad (Terutama untuk Dokumen PDF), gunakan fungsi In-Place Expand
                 enableIOSFallback();
             }
             
@@ -284,14 +317,13 @@
         }
     }
 
-    // Fungsi Fallback iOS Murni: Tambahkan kelas langsung ke kontainer video
+    // Fungsi Jurus Pamungkas iOS: In-Place Expand (Hanya untuk dokumen/fallback)
     function enableIOSFallback() {
-        container.classList.add('ios-fullscreen');
+        window.scrollTo(0, 0); // Pastikan layar naik ke paling atas
         document.body.classList.add('is-ios-fs');
     }
 
     function disableIOSFallback() {
-        container.classList.remove('ios-fullscreen');
         document.body.classList.remove('is-ios-fs');
     }
 
