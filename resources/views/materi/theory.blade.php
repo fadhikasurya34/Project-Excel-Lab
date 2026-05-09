@@ -217,7 +217,7 @@
                         </svg>
                     </button>
 
-                    {{-- FIX: Menambahkan atribut allowfullscreen agar tombol Maximize GDrive nyala di iOS --}}
+                    {{-- FIX: Izin Fullscreen dimasukkan kembali, dan Blocker dihapus agar tombol bawaan berfungsi --}}
                     <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                     
                 </div>
