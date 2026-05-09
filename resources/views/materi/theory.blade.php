@@ -38,7 +38,9 @@
         background: #000;
     }
 
-    /* //* STRATEGI BARU IOS SAFARI: "PURE FLEXBOX CENTER" (KHUSUS DOKUMEN/PDF) */
+    /* //* STRATEGI BARU IOS SAFARI: "PURE FLEXBOX CENTER"
+       Bypass bug Safari: Sembunyikan elemen sekitar dan hitamkan layar. Jangan ubah position iframe.
+    */
     body.is-ios-fs {
         background-color: #000 !important;
         overflow: hidden !important; 
@@ -85,9 +87,10 @@
         width: 100vw !important;
         border-radius: 0 !important;
         border: none !important;
+        /* Biarkan padding-bottom 56.25% agar aspect ratio tetap waras & Safari tidak ngebug */
     }
 
-    /* //* Tombol Keluar Layar Penuh (Custom Fullscreen) */
+    /* //* Tombol Keluar Layar Penuh */
     .btn-exit-fs {
         display: none; 
         position: absolute;
@@ -121,7 +124,7 @@
         display: flex !important; 
     }
 
-    /* Untuk iOS, tombol dibuat fixed agar menempel di layar HP, bukan di iframe */
+    /* Untuk iOS, tombol dibuat fixed agar menempel di layar HP, bukan di video */
     body.is-ios-fs .btn-exit-fs {
         display: flex !important;
         position: fixed !important;
@@ -207,21 +210,19 @@
                 {{-- ID ditambahkan ke kontainer untuk target script --}}
                 <div id="materi-container" class="video-container border-4 border-white dark:border-slate-800 shadow-2xl">
                     
-                    {{-- Tombol Keluar Darurat (Untuk Custom Fullscreen PDF) --}}
+                    {{-- Tombol Keluar Darurat --}}
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
 
-                    {{-- iframe dengan allowfullscreen agar tombol Maximize GDrive berfungsi sempurna di iOS/Android --}}
+                    {{-- FIX: Menambahkan atribut allowfullscreen agar tombol Maximize GDrive nyala di iOS --}}
                     <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
-                    
-                    {{-- Blocker GDrive DIHAPUS agar user bebas klik tombol maximize bawaan video Google Drive --}}
                     
                 </div>
 
-                {{-- Toolbar Bawah Player (Kini Difokuskan Untuk Memperbesar Dokumen/PDF) --}}
+                {{-- Toolbar Bawah Player (Digunakan untuk Dokumen/PDF) --}}
                 <div class="mt-4 flex justify-end fullscreen-btn-container">
                     <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -261,7 +262,7 @@
                 <ul class="space-y-3">
                     <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                         <span class="text-blue-500 mt-0.5">●</span>
-                        <span>Gunakan ikon fullscreen di dalam player untuk video, atau tombol di bawah untuk dokumen.</span>
+                        <span>Gunakan mode fullscreen pada player untuk tampilan lebih jelas.</span>
                     </li>
                     <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                         <span class="text-blue-500 mt-0.5">●</span>
