@@ -38,19 +38,27 @@
         background: #000;
     }
 
-    /* //* STRATEGI BARU IOS SAFARI: "IN-PLACE EXPAND"
-       Bypass bug Safari: Sembunyikan elemen sekitar dan mekarkan video di tempatnya.
+    /* //* STRATEGI BARU IOS SAFARI: "PURE FLEXBOX CENTER"
+       Bypass bug Safari: Sembunyikan elemen sekitar dan hitamkan layar. Jangan ubah position iframe.
     */
     body.is-ios-fs {
         background-color: #000 !important;
         overflow: hidden !important; 
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: 100dvh !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Sembunyikan semua elemen layout bawaan yang mengganggu */
+    /* Sembunyikan SEMUA elemen layout bawaan yang mengganggu */
     body.is-ios-fs header, 
     body.is-ios-fs nav, 
     body.is-ios-fs aside,
-    body.is-ios-fs [class*="fixed"], 
+    body.is-ios-fs [class*="fixed top-0"], 
     body.is-ios-fs .z-50,
     body.is-ios-fs .content-header,
     body.is-ios-fs .info-section,
@@ -61,40 +69,33 @@
     }
 
     /* Lepaskan batasan ukuran dari pembungkus konten */
-    body.is-ios-fs .content-wrapper,
-    body.is-ios-fs .layout-wrapper,
-    body.is-ios-fs .player-section {
+    body.is-ios-fs .main-wrapper,
+    body.is-ios-fs .inner-wrapper,
+    body.is-ios-fs .video-section {
         padding: 0 !important;
         margin: 0 !important;
-        max-width: none !important;
+        max-width: 100% !important;
         width: 100% !important;
-        height: 100% !important;
+        height: auto !important;
         border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
     }
 
-    /* Mekarkan video container menutupi seluruh layar */
+    /* Mekarkan video container menutupi seluruh lebar layar */
     body.is-ios-fs .video-container {
-        padding-bottom: 0 !important;
-        height: 100vh !important;
-        height: 100dvh !important;
         width: 100vw !important;
         border-radius: 0 !important;
         border: none !important;
-        box-shadow: none !important;
-        margin: 0 !important;
+        /* Biarkan padding-bottom 56.25% agar aspect ratio tetap waras & Safari tidak ngebug */
     }
 
-    body.is-ios-fs .video-container iframe {
-        width: 100vw !important;
-        height: 100dvh !important;
-    }
-
-    /* //* Tombol Keluar (Pojok Kanan Atas) */
+    /* //* Tombol Keluar Layar Penuh */
     .btn-exit-fs {
         display: none; 
         position: absolute;
-        top: max(30px, env(safe-area-inset-top)); 
-        right: max(20px, env(safe-area-inset-right));
+        top: 20px; 
+        right: 20px;
         z-index: 2147483647 !important; 
         background: rgba(220, 38, 38, 0.7); 
         color: white;
@@ -119,9 +120,16 @@
 
     /* Munculkan tombol saat Fullscreen Native atau Fallback iOS */
     .video-container:fullscreen .btn-exit-fs, 
-    .video-container:-webkit-full-screen .btn-exit-fs,
-    body.is-ios-fs .btn-exit-fs {
+    .video-container:-webkit-full-screen .btn-exit-fs {
         display: flex !important; 
+    }
+
+    /* Untuk iOS, tombol dibuat fixed agar menempel di layar HP, bukan di video */
+    body.is-ios-fs .btn-exit-fs {
+        display: flex !important;
+        position: fixed !important;
+        top: max(20px, env(safe-area-inset-top)) !important;
+        right: max(20px, env(safe-area-inset-right)) !important;
     }
 
     /* //* BLOKIR TOMBOL MAXIMIZE BAWAAN GDRIVE */
@@ -178,8 +186,8 @@
 @endsection
 
 @section('content')
-<div class="px-4 sm:px-10 py-8 content-wrapper">
-    <div class="max-w-4xl mx-auto layout-wrapper">
+<div class="px-4 sm:px-10 py-8 main-wrapper">
+    <div class="max-w-4xl mx-auto inner-wrapper">
         
         {{-- //* 1. Header Konten (Judul & Deskripsi Paling Atas) --}}
         <div class="mb-6 content-header">
@@ -205,7 +213,7 @@
         </div>
 
         {{-- //* 2. (Player) Area Konten Utama (PDF/Video) --}}
-        <div class="mb-8 player-section">
+        <div class="mb-8 video-section">
             @php
                 $contentUrl = $material->activities->first()->step_image ?? null;
             @endphp
@@ -214,7 +222,7 @@
                 {{-- ID ditambahkan ke kontainer untuk target script --}}
                 <div id="materi-container" class="video-container border-4 border-white dark:border-slate-800 shadow-2xl">
                     
-                    {{-- Tombol Keluar Darurat (Pojok Kanan Atas Diturunkan) --}}
+                    {{-- Tombol Keluar Darurat --}}
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
@@ -311,7 +319,7 @@
                     enableIOSFallback();
                 });
             } else {
-                // Di iPhone/iPad, paksa gunakan fitur In-Place Expand
+                // Di iPhone/iPad, paksa gunakan fitur In-Place Expand (Anti Ngebug)
                 enableIOSFallback();
             }
             
