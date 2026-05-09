@@ -38,46 +38,45 @@
         background: #000;
     }
 
-    /* //* FIX MUTLAK IOS SAFARI: Fallback Fullscreen Class Paling Sederhana (Apa Adanya) */
-    .ios-fullscreen {
+    /* //* FIX MUTLAK IOS SAFARI: Fallback Fullscreen Kustom */
+    .video-container.ios-fullscreen {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-        z-index: 999999 !important; /* Menutupi semua elemen lain */
+        width: 100vw !important;
+        height: 100dvh !important;
+        padding-bottom: 0 !important; /* KUNCI: Mematikan rasio 16:9 agar tidak ada ruang hitam */
+        margin: 0 !important;
+        z-index: 999999 !important; /* Menutupi semua elemen termasuk header */
         border-radius: 0 !important;
         border: none !important;
         background: #000 !important;
-        padding-bottom: 0 !important;
-        margin: 0 !important;
     }
 
-    /* Pastikan Iframe ikut full saat mode iOS fallback */
-    .ios-fullscreen iframe {
+    .video-container.ios-fullscreen iframe {
         width: 100% !important;
         height: 100% !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
     }
 
-    /* Menyembunyikan Header Web Bawaan saat iOS Fullscreen Aktif agar tidak menabrak video */
-    body.is-ios-fs header, 
-    body.is-ios-fs nav, 
-    body.is-ios-fs aside {
-        display: none !important;
+    /* Mengunci scroll body saat fallback aktif */
+    body.is-ios-fs {
+        overflow: hidden !important; 
     }
 
-    /* //* Tombol Keluar (Pojok Kanan - Diturunkan Agar Tidak Menghalangi Toolbar PDF/Video) */
+    /* //* Tombol Keluar Layar Penuh */
     .btn-exit-fs {
-        display: none; /* Default disembunyikan */
+        display: none; 
         position: absolute;
         top: 85px; 
         right: max(20px, env(safe-area-inset-right));
-        
         z-index: 2147483647 !important; 
         background: rgba(220, 38, 38, 0.6); 
         color: white;
-        width: 42px; 
-        height: 42px;
+        width: 44px; 
+        height: 44px;
         padding: 0; 
         border-radius: 50%; 
         border: 2px solid rgba(255, 255, 255, 0.4);
@@ -86,20 +85,19 @@
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        
         pointer-events: auto !important;
         -webkit-tap-highlight-color: transparent;
     }
     
     .btn-exit-fs:active {
-        background: rgba(185, 28, 28, 0.9);
+        background: rgba(185, 28, 28, 1);
         transform: scale(0.90);
     }
 
     /* Munculkan tombol saat Fullscreen Native atau Fallback iOS */
     .video-container:fullscreen .btn-exit-fs, 
     .video-container:-webkit-full-screen .btn-exit-fs,
-    .ios-fullscreen .btn-exit-fs {
+    .video-container.ios-fullscreen .btn-exit-fs {
         display: flex !important; 
     }
 
@@ -145,11 +143,11 @@
 @endsection
 
 @section('content')
-<div class="px-4 sm:px-10 py-8">
-    <div class="max-w-4xl mx-auto">
+<div class="px-4 sm:px-10 py-8 main-wrapper">
+    <div class="max-w-4xl mx-auto inner-wrapper">
         
         {{-- //* 1. Header Konten (Judul & Deskripsi Paling Atas) --}}
-        <div class="mb-6">
+        <div class="mb-6 content-header">
             <div class="flex items-center space-x-3 mb-4">
                 <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
                     {{ $material->material_type }}
@@ -172,7 +170,7 @@
         </div>
 
         {{-- //* 2. (Player) Area Konten Utama (PDF/Video) --}}
-        <div class="mb-8">
+        <div class="mb-8 video-section">
             @php
                 $contentUrl = $material->activities->first()->step_image ?? null;
             @endphp
@@ -181,20 +179,20 @@
                 {{-- ID ditambahkan ke kontainer untuk target script --}}
                 <div id="materi-container" class="video-container border-4 border-white dark:border-slate-800 shadow-2xl">
                     
-                    {{-- Tombol Keluar Darurat (Pojok Kanan Atas Diturunkan) --}}
+                    {{-- Tombol Keluar Darurat --}}
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
 
-                    {{-- FIX: iframe DIBERIKAN IZIN FULLSCREEN agar tombol bawaan GDrive berfungsi normal --}}
-                    <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe>
+                    {{-- iframe dibiarkan berjalan normal --}}
+                    <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen"></iframe>
                     
                 </div>
 
-                {{-- Toolbar Bawah Player --}}
-                <div class="mt-4 flex justify-end">
+                {{-- Toolbar Bawah Player (Digunakan untuk Dokumen/PDF) --}}
+                <div class="mt-4 flex justify-end fullscreen-btn-container">
                     <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
@@ -210,7 +208,7 @@
         </div>
 
         {{-- //* 3. Instruksi & Info --}}
-        <div class="grid grid-cols-1 gap-6">
+        <div class="grid grid-cols-1 gap-6 info-section">
             
             {{-- Instruksi Card --}}
             <div class="description-card p-6 lg:p-8 shadow-sm">
@@ -262,19 +260,18 @@
         // Deteksi cerdas apakah pengguna memakai iPhone/iPad/iPod
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-        // 2. Jika tidak Fullscreen secara Native
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
             
             const reqFS = container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen;
             
-            // Eksekusi API Fullscreen HANYA JIKA BUKAN iOS (Android/PC)
+            // HANYA jalankan Native Fullscreen jika alatnya BUKAN Apple iOS
             if (reqFS && !isIOS) {
                 reqFS.call(container).catch(err => {
-                    console.error("Native Fullscreen ditolak, menggunakan fallback CSS.");
+                    console.error("Native Fullscreen ditolak, memicu fallback.");
                     enableIOSFallback();
                 });
             } else {
-                // Eksekusi paksa CSS Fullscreen jika perangkat adalah iPhone (Bypass larangan Safari)
+                // Di iPhone/iPad (Terutama untuk Dokumen PDF), gunakan fungsi Fallback CSS
                 enableIOSFallback();
             }
             
@@ -287,11 +284,10 @@
         }
     }
 
-    // Fungsi Pembantu untuk mode Layar Penuh Paksa iOS
+    // Fungsi Fallback iOS Murni: Tambahkan kelas langsung ke kontainer video
     function enableIOSFallback() {
-        // Hanya menambah class CSS, biarkan browser yang mengurus ukurannya
         container.classList.add('ios-fullscreen');
-        document.body.classList.add('is-ios-fs'); 
+        document.body.classList.add('is-ios-fs');
     }
 
     function disableIOSFallback() {
@@ -299,13 +295,11 @@
         document.body.classList.remove('is-ios-fs');
     }
 
-    // Pendengar event jika user keluar pakai ESC di Desktop/Tablet
+    // Pendengar event jika user Android/PC keluar pakai tombol ESC atau Back
     ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(eventType => {
         document.addEventListener(eventType, () => {
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-                if(container.classList.contains('ios-fullscreen')) {
-                    disableIOSFallback();
-                }
+                disableIOSFallback();
             }
         });
     });
