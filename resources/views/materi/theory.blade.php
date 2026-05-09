@@ -38,33 +38,32 @@
         background: #000;
     }
 
-    /* //* FIX MUTLAK IOS SAFARI: Fallback Fullscreen Class */
+    /* //* FIX MUTLAK IOS SAFARI: Fallback Fullscreen Class Paling Sederhana (Apa Adanya) */
     .ios-fullscreen {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important; /* Menggunakan vh standar yang paling aman dari bug layar gelap Safari */
-        z-index: 2147483647 !important; /* Z-index maksimal */
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 999999 !important; /* Menutupi semua elemen lain */
         border-radius: 0 !important;
         border: none !important;
         background: #000 !important;
-        padding: 0 !important;
+        padding-bottom: 0 !important;
         margin: 0 !important;
-        /* Hapus semua aturan transform/overflow yang bikin iframe GDrive ngebug */
+    }
+
+    /* Pastikan Iframe ikut full saat mode iOS fallback */
+    .ios-fullscreen iframe {
+        width: 100% !important;
+        height: 100% !important;
     }
 
     /* Menyembunyikan Header Web Bawaan saat iOS Fullscreen Aktif agar tidak menabrak video */
     body.is-ios-fs header, 
     body.is-ios-fs nav, 
-    body.is-ios-fs aside,
-    body.is-ios-fs [class*="fixed top-0"], 
-    body.is-ios-fs .z-50 {
+    body.is-ios-fs aside {
         display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
     }
 
     /* //* Tombol Keluar (Pojok Kanan - Diturunkan Agar Tidak Menghalangi Toolbar PDF/Video) */
@@ -74,7 +73,6 @@
         top: 85px; 
         right: max(20px, env(safe-area-inset-right));
         
-        transform: translate3d(0, 0, 100px); 
         z-index: 2147483647 !important; 
         background: rgba(220, 38, 38, 0.6); 
         color: white;
@@ -95,7 +93,7 @@
     
     .btn-exit-fs:active {
         background: rgba(185, 28, 28, 0.9);
-        transform: translate3d(0, 0, 100px) scale(0.90);
+        transform: scale(0.90);
     }
 
     /* Munculkan tombol saat Fullscreen Native atau Fallback iOS */
