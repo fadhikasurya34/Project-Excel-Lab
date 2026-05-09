@@ -46,24 +46,14 @@
         right: 0 !important;
         bottom: 0 !important;
         width: 100vw !important;
-        height: 100vh !important; /* Fallback utama */
-        height: -webkit-fill-available !important; /* Fix bug layar gelap/tinggi 0 di iOS */
+        height: 100vh !important; /* Menggunakan vh standar yang paling aman dari bug layar gelap Safari */
         z-index: 2147483647 !important; /* Z-index maksimal */
         border-radius: 0 !important;
         border: none !important;
         background: #000 !important;
         padding: 0 !important;
         margin: 0 !important;
-        transform: translateZ(0) !important; /* Paksa Hardware Acceleration agar bisa diklik */
-        -webkit-transform: translateZ(0) !important;
-    }
-
-    .ios-fullscreen iframe {
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
+        /* Hapus semua aturan transform/overflow yang bikin iframe GDrive ngebug */
     }
 
     /* Menyembunyikan Header Web Bawaan saat iOS Fullscreen Aktif agar tidak menabrak video */
@@ -77,9 +67,9 @@
         visibility: hidden !important;
     }
 
-    /* //* Tombol Keluar (Pojok Kanan Atas) */
+    /* //* Tombol Keluar (Pojok Kanan - Diturunkan Agar Tidak Menghalangi Toolbar PDF/Video) */
     .btn-exit-fs {
-        display: none; 
+        display: none; /* Default disembunyikan */
         position: absolute;
         top: 85px; 
         right: max(20px, env(safe-area-inset-right));
@@ -120,10 +110,10 @@
         position: absolute;
         bottom: 0;
         right: 0;
-        width: 45px; /* Menutupi area persis di tombol maximize bawaan */
-        height: 45px;
-        z-index: 15; /* Di atas iframe, di bawah tombol X */
-        cursor: pointer;
+        width: 55px; /* Lebar disesuaikan tepat di area tombol maximize bawaan */
+        height: 50px;
+        z-index: 15; /* Di atas iframe (z-10), agar klik terhalang */
+        cursor: default;
         -webkit-tap-highlight-color: transparent;
     }
 
@@ -215,8 +205,8 @@
                     {{-- iframe TANPA allowfullscreen = Tombol Bawaan Video Mati Sepenuhnya --}}
                     <iframe src="{{ $contentUrl }}" allow="autoplay"></iframe>
 
-                    {{-- Pelindung Transparan: Memblokir Tombol Maximize GDrive --}}
-                    <div class="gdrive-blocker" onclick="toggleCustomFullscreen()" title="Perbesar Layar"></div>
+                    {{-- Pelindung Transparan: Memblokir Tombol Maximize GDrive agar tidak diklik --}}
+                    <div class="gdrive-blocker" title="Gunakan tombol Perbesar Layar di bawah"></div>
                     
                 </div>
 
@@ -316,7 +306,7 @@
 
     // Fungsi Pembantu untuk mode Layar Penuh Paksa iOS
     function enableIOSFallback() {
-        // Tidak memindahkan iframe, hanya menambah class CSS agar terhindar dari bug 'double player'
+        // Hanya menambah class CSS agar terhindar dari bug iframe ter-reload/gelap
         container.classList.add('ios-fullscreen');
         document.body.style.overflow = 'hidden'; 
         document.body.classList.add('is-ios-fs'); // Menyembunyikan header bawaan web
