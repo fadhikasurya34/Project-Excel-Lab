@@ -38,8 +38,8 @@
         background: #000;
     }
 
-    /* //* STRATEGI BARU IOS SAFARI: "PURE FLEXBOX CENTER"
-       Bypass bug Safari: Sembunyikan elemen sekitar dan hitamkan layar. Jangan ubah position iframe.
+    /* //* STRATEGI IOS SAFARI: "PURE FLEXBOX CENTER"
+       (Digunakan HANYA untuk Dokumen/PDF, karena Video pakai bawaan GDrive)
     */
     body.is-ios-fs {
         background-color: #000 !important;
@@ -90,7 +90,7 @@
         /* Biarkan padding-bottom 56.25% agar aspect ratio tetap waras & Safari tidak ngebug */
     }
 
-    /* //* Tombol Keluar Layar Penuh */
+    /* //* Tombol Keluar Layar Penuh (Untuk mode PDF/Dokumen) */
     .btn-exit-fs {
         display: none; 
         position: absolute;
@@ -204,32 +204,42 @@
         <div class="mb-8 video-section">
             @php
                 $contentUrl = $material->activities->first()->step_image ?? null;
+                // Deteksi kasar apakah konten ini adalah video atau PDF berdasarkan pola URL Google Drive
+                $isVideo = strpos($contentUrl, 'preview') !== false && !strpos(strtolower($material->title), 'pdf') && !strpos(strtolower($material->title), 'dokumen');
             @endphp
 
             @if($contentUrl)
                 {{-- ID ditambahkan ke kontainer untuk target script --}}
                 <div id="materi-container" class="video-container border-4 border-white dark:border-slate-800 shadow-2xl">
                     
-                    {{-- Tombol Keluar Darurat --}}
+                    {{-- Tombol Keluar Darurat (Hanya untuk Mode PDF/Custom Fullscreen) --}}
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
 
-                    {{-- FIX: Menambahkan atribut allowfullscreen agar tombol Maximize GDrive nyala di iOS --}}
+                    {{-- FIX: Kembalikan atribut izin Fullscreen penuh agar fitur Google Drive hidup kembali! --}}
                     <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                     
                 </div>
 
-                {{-- Toolbar Bawah Player (Digunakan untuk Dokumen/PDF) --}}
+                {{-- Toolbar Bawah Player --}}
                 <div class="mt-4 flex justify-end fullscreen-btn-container">
-                    <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
-                        </svg>
-                        <span>Perbesar Layar</span>
-                    </button>
+                    @if($isVideo)
+                        {{-- Jika Video: Arahkan siswa untuk pakai tombol bawaan --}}
+                        <div class="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                            Gunakan tombol perbesar di dalam video
+                        </div>
+                    @else
+                        {{-- Jika Dokumen/PDF: Gunakan tombol Perbesar Layar buatan kita --}}
+                        <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                            </svg>
+                            <span>Perbesar Layar</span>
+                        </button>
+                    @endif
                 </div>
             @else
                 <div class="bg-slate-200 dark:bg-slate-800 rounded-[2rem] h-96 flex items-center justify-center border-4 border-dashed border-slate-300 dark:border-slate-700">
