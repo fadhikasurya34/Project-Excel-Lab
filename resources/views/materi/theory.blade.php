@@ -57,35 +57,37 @@
         -webkit-overflow-scrolling: touch !important;
     }
 
-    /* //* Tombol Keluar (Tengah Atas - Diperkecil & Diturunkan Lagi) */
+    /* //* Tombol Keluar (Pojok Kanan - Diturunkan Agar Tidak Menghalangi Toolbar PDF/Video) */
     .btn-exit-fs {
         display: none; /* Default disembunyikan */
         position: absolute;
-        top: 75px; /* Sangat aman dari Poni/Notch & Dynamic Island di orientasi apapun */
-        left: 50%; 
+        /* Diturunkan jauh ke 85px agar tidak menutupi toolbar dari konten iframe */
+        top: 85px; 
+        right: max(20px, env(safe-area-inset-right));
+        
         /* Paksa render 3D agar Safari tidak menyembunyikannya di bawah Iframe */
-        transform: translate3d(-50%, 0, 100px); 
+        transform: translate3d(0, 0, 100px); 
         z-index: 2147483647 !important; 
-        background: rgba(220, 38, 38, 0.85);
+        background: rgba(220, 38, 38, 0.6); /* Transparan agar tidak menusuk mata */
         color: white;
-        width: 44px; 
-        height: 44px;
+        width: 42px; 
+        height: 42px;
         padding: 0; 
         border-radius: 50%; 
-        border: 2px solid rgba(255, 255, 255, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.4);
         backdrop-filter: blur(8px);
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         
         pointer-events: auto !important;
         -webkit-tap-highlight-color: transparent;
     }
     
     .btn-exit-fs:active {
-        background: rgba(185, 28, 28, 1);
-        transform: translate3d(-50%, 0, 100px) scale(0.90);
+        background: rgba(185, 28, 28, 0.9);
+        transform: translate3d(0, 0, 100px) scale(0.90);
     }
 
     /* Munculkan tombol saat Fullscreen Native atau Fallback iOS */
@@ -173,7 +175,7 @@
                 {{-- ID ditambahkan ke kontainer untuk target script --}}
                 <div id="materi-container" class="video-container border-4 border-white dark:border-slate-800 shadow-2xl">
                     
-                    {{-- Tombol Keluar Darurat (Tengah Atas - Diperkecil jadi 'X' saja) --}}
+                    {{-- Tombol Keluar Darurat (Pojok Kanan Atas Diturunkan) --}}
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
