@@ -53,22 +53,32 @@
         background: #000 !important;
         padding: 0 !important;
         margin: 0 !important;
-        overflow: visible !important; /* FIX: Mencegah iframe freeze di iOS */
+        transform: none !important;
+        overflow: visible !important; 
         -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Menyembunyikan Header Web Bawaan saat iOS Fullscreen Aktif agar tidak menabrak video */
+    body.is-ios-fs header, 
+    body.is-ios-fs nav, 
+    body.is-ios-fs aside,
+    body.is-ios-fs [class*="fixed top-0"], 
+    body.is-ios-fs .z-50 {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
     }
 
     /* //* Tombol Keluar (Pojok Kanan - Diturunkan Agar Tidak Menghalangi Toolbar PDF/Video) */
     .btn-exit-fs {
         display: none; /* Default disembunyikan */
         position: absolute;
-        /* Diturunkan jauh ke 85px agar tidak menutupi toolbar dari konten iframe */
         top: 85px; 
         right: max(20px, env(safe-area-inset-right));
         
-        /* Paksa render 3D agar Safari tidak menyembunyikannya di bawah Iframe */
         transform: translate3d(0, 0, 100px); 
         z-index: 2147483647 !important; 
-        background: rgba(220, 38, 38, 0.6); /* Transparan agar tidak menusuk mata */
+        background: rgba(220, 38, 38, 0.6); 
         color: white;
         width: 42px; 
         height: 42px;
@@ -245,10 +255,6 @@
 @push('scripts')
 <script>
     const container = document.getElementById("materi-container");
-    
-    // Variabel penyimpan posisi awal container sebelum ditarik paksa
-    let originalParent = null;
-    let originalSibling = null;
 
     function toggleCustomFullscreen() {
         // 1. Matikan jika sedang dalam mode iOS Fallback Fullscreen (Keluar)
@@ -285,28 +291,18 @@
         }
     }
 
-    // Fungsi Pembantu untuk mode Layar Penuh Paksa iOS (Fallback Bebas Tabrakan Navbar)
+    // Fungsi Pembantu untuk mode Layar Penuh Paksa iOS
     function enableIOSFallback() {
-        // Simpan rumah aslinya
-        originalParent = container.parentNode;
-        originalSibling = container.nextSibling;
-        
-        // CABUT KOTAK VIDEO KE LAPISAN TERLUAR (BODY) agar lepas dari semua layout/navbar/z-index
-        document.body.appendChild(container);
-        
+        // Tidak memindahkan iframe, hanya menambah class CSS agar terhindar dari bug 'double player'
         container.classList.add('ios-fullscreen');
-        document.body.style.overflow = 'hidden'; // Kunci scroll di belakang
+        document.body.style.overflow = 'hidden'; 
+        document.body.classList.add('is-ios-fs'); // Menyembunyikan header bawaan web
     }
 
-    // Fungsi kembalikan video ke tempat semula
     function disableIOSFallback() {
         container.classList.remove('ios-fullscreen');
         document.body.style.overflow = '';
-        
-        // Pulangkan ke habitat aslinya
-        if (originalParent) {
-            originalParent.insertBefore(container, originalSibling);
-        }
+        document.body.classList.remove('is-ios-fs');
     }
 
     // Pendengar event jika user keluar pakai ESC di Desktop/Tablet
