@@ -158,12 +158,12 @@
                         </div>
 
                         <div class="pt-2 btn-group">
-                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
-                                Kirim link
-                            </button>
                             <a href="{{ route('login') }}" class="btn-excel btn-secondary bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 font-black text-xs md:text-sm py-2.5 rounded-xl text-center border-slate-300 dark:border-slate-700 uppercase tracking-tighter">
                                 Kembali
                             </a>
+                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
+                                Kirim link
+                            </button>
                         </div>
                     </form>
                 </div>

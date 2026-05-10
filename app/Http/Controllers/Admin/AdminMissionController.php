@@ -168,10 +168,18 @@ class AdminMissionController extends Controller
             'title'        => 'required|string|max:255',
             'mission_type' => 'required|in:Syntax Assembly,Point & Click,Direct Typing',
             'max_score'    => 'required|integer',
-            'question'     => 'required'
+            'question'     => 'required',
+            'key_answer'   => 'required' // Menambahkan validasi key_answer
         ]);
 
-        Mission::create($request->all());
+        $data = $request->all();
+        
+        // Memastikan key_answer selalu diawali dengan '='
+        if (!str_starts_with($data['key_answer'], '=')) {
+            $data['key_answer'] = '=' . $data['key_answer'];
+        }
+
+        Mission::create($data);
 
         return redirect()->route('admin.missions.index')
                         ->with('success', 'Misi pertama berhasil dipublikasikan!');
@@ -194,6 +202,7 @@ class AdminMissionController extends Controller
             'mission_type' => $request->mission_type,
             'max_score' => $request->max_score,
             'question' => 'Instruksi belum diatur.',
+            'key_answer' => '=0', // Default aman
         ]);
 
         return back()->with('success', 'Misi ditambahkan.');
@@ -357,6 +366,11 @@ class AdminMissionController extends Controller
             'question' => 'required', 'key_answer' => 'required', 
             'distractors' => 'nullable', 'mission_image' => 'nullable|image|max:2048'
         ]);
+
+        // Memastikan key_answer selalu diawali dengan '=' saat disimpan
+        if (!str_starts_with($data['key_answer'], '=')) {
+            $data['key_answer'] = '=' . $data['key_answer'];
+        }
 
         if ($request->hasFile('mission_image')) {
             $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));

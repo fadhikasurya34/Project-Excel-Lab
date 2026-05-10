@@ -8,10 +8,13 @@ use Illuminate\Support\Facades\Auth;
 
 class PeringkatController extends Controller
 {
-    /** (View) Menampilkan halaman utama pemilihan kategori peringkat */
+    /** (View) Menampilkan halaman utama papan peringkat (Global) */
     public function index()
     {
-        return view('peringkat.index');
+        // Menambahkan pengambilan data rankings agar variabel $rankings tersedia di view index
+        $rankings = ScoresAndRanking::with('user')->orderBy('total_xp', 'desc')->get();
+
+        return view('peringkat.index', compact('rankings'));
     }
 
     /** (View) Menampilkan daftar leaderboard berdasarkan XP tertinggi (Global/Kelas) */
@@ -24,6 +27,8 @@ class PeringkatController extends Controller
         if ($type === 'kelas') {
             /** @var User $user */
             $user = Auth::user();
+            
+            // Mengambil class_id dari user yang login (asumsi kolomnya class_id di tabel users)
             $userClassId = $user->class_id; 
             
             if (!$userClassId) {

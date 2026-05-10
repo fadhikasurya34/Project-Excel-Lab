@@ -170,19 +170,17 @@
                             
                             <div x-show="showKeyHelp" x-transition class="help-box mb-4">
                                 <p class="font-black text-emerald-400 mb-1 underline">CONTOH PENGISIAN:</p>
-                                <p>1. IF(B2>=75;"LULUS";"REMEDIAL")</p>
-                                <p>2. SUM(C2:C10)</p>
+                                <p>1. =IF(B2>=75;"LULUS";"REMEDIAL")</p>
+                                <p>2. =SUM(C2:C10)</p>
                                 <p class="mt-2 text-slate-400">*Gunakan titik koma (;) sebagai pemisah argumen.</p>
-                                <p class="text-slate-400">*Tanda "=" di awal sudah otomatis ditambahkan oleh sistem.</p>
+                                <p class="text-slate-400">*Wajib menyertakan tanda "=" di awal rumus sebagai bagian kunci jawaban.</p>
                             </div>
 
                             <div class="relative group">
-                                <div class="absolute left-5 top-1/2 -translate-y-1/2 font-mono text-emerald-500 font-black text-lg select-none">=</div>
                                 <input type="text" name="key_answer" 
-                                    {{-- FIX: Hanya menghapus karakter '=' jika berada di posisi paling depan (index 0) --}}
-                                    value="{{ in_array($mission->key_answer, ['Kunci belum diatur.', 'Kunci jawaban belum diatur.']) ? '' : preg_replace('/^=/', '', $mission->key_answer) }}" 
-                                    class="form-input-premium !pl-12 font-mono text-emerald-600" 
-                                    placeholder="Contoh: IF(B2>=75; 'Lulus'; 'Gagal')">
+                                    value="{{ in_array($mission->key_answer, ['Kunci belum diatur.', 'Kunci jawaban belum diatur.']) ? '' : $mission->key_answer }}" 
+                                    class="form-input-premium font-mono text-emerald-600" 
+                                    placeholder="Contoh: =IF(B2>=75; 'Lulus'; 'Gagal')">
                             </div>
                         </div>
 

@@ -250,7 +250,7 @@ class MisiController extends Controller
         });
     }
 
-    /** * //* (Helper) Standarisasi rumus Excel - Perbaikan: Kompatibilitas & Safety
+    /** * //* (Helper) Standarisasi rumus Excel
      */
     private function normalizeFormula(?string $formula) {
         if (!$formula) return "";
@@ -258,8 +258,6 @@ class MisiController extends Controller
         $replace = ['"', '"', '"', '"', '"', ''];
         $clean = strtoupper(trim(str_replace($search, $replace, (string)$formula)));
         
-        // Ganti str_starts_with dengan substr untuk kompatibilitas versi PHP
-        if (substr($clean, 0, 1) === '=') $clean = substr($clean, 1);
         return $clean;
     }
 
@@ -298,7 +296,6 @@ class MisiController extends Controller
         }
 
         // 3. PRIORITAS 3: Deteksi Komponen yang Kurang (Missing)
-        // Perbaikan: Menggunakan perbandingan jumlah token agar tidak "sticky"
         foreach ($countsCorrect as $token => $count) {
             if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
                 if (preg_match('/^[A-Z]{2,}$/', $token)) {

@@ -25,7 +25,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emerald Terminal - Login</title>
     
-    <!-- Panggil CSS dan JS via Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -148,10 +147,10 @@
                     <form method="POST" action="{{ route('login') }}" class="space-y-4">
                         @csrf
                         <div class="space-y-1">
-                            <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest ml-1">Username</label>
-                            <input type="email" name="email" required autofocus
+                            <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest ml-1">Masukkan Email</label>
+                            <input type="email" name="email" value="{{ old('email') }}" required autofocus
                                    class="input-lab w-full px-4 py-3 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
-                                   placeholder="username@mail.com">
+                                   placeholder="username@gmail.com">
                         </div>
 
                         <div class="space-y-1">
@@ -172,7 +171,7 @@
 
                         <div class="flex items-center px-2 pt-1">
                             <label class="flex items-center cursor-pointer group">
-                                <input type="checkbox" name="remember" class="sr-only peer">
+                                <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }} class="sr-only peer">
                                 <div class="w-3.5 h-3.5 border-2 border-slate-200 dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
                                     <svg class="w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M5 13l4 4L19 7"/></svg>
                                 </div>
@@ -181,12 +180,12 @@
                         </div>
 
                         <div class="pt-2 md:pt-4 btn-group">
-                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
-                                Masuk
-                            </button>
                             <a href="{{ route('register') }}" class="btn-excel btn-secondary bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 font-black text-xs md:text-sm py-2.5 rounded-xl text-center border-slate-300 dark:border-slate-700 uppercase tracking-tighter">
                                 Daftar
                             </a>
+                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
+                                Masuk
+                            </button>
                         </div>
                     </form>
                 </div>

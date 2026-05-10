@@ -65,8 +65,10 @@
     .sortable-ghost { opacity: 0.1; background: #10b981 !important; border: 2px dashed #059669 !important; }
 
     /* //* (UI) Mekanik pegas & Card Styling */
-    .btn-menu-pegas { transition: all 0.1s ease; border-bottom-width: 6px !important; }
-    .btn-menu-pegas:active { transform: translateY(4px); border-bottom-width: 2px !important; }
+    .btn-menu-pegas {transition: all 0.1s ease; border-bottom-width: 6px;}
+    .btn-menu-pegas:active {transform: translateY(4px);border-bottom-width: 2px;}
+    .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
+    .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
     
     .glow-emerald-premium {
         box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
@@ -155,13 +157,11 @@
 @endpush
 
 @section('header_left')
-    @php
-        $backUrl = request('from_task') ? route('kelas.task.show', request('from_task')) : route('misi.category.levels', $mission->level->category);
-    @endphp
-    <a href="{{ $backUrl }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:translate-y-1 transition-all">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path d="M15 19l-7-7 7-7" /></svg>
-    </a>
-
+    <a href="{{ route('misi.category.levels', $mission->level->category) }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path d="M15 19l-7-7 7-7" />
+        </svg>
+    </a>    
     <div class="flex flex-col text-left ml-3 leading-none">
         <span class="text-base font-extrabold tracking-tight dark:text-white uppercase">{{ $mission->title }}</span>
         <div class="flex items-center space-x-1.5 mt-1.5">
@@ -273,7 +273,7 @@
                 </div>
 
                 <div class="flex items-start gap-2 md:gap-3 bg-slate-50 dark:bg-slate-950 rounded-[1.8rem] md:rounded-[2.2rem] p-4 md:p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 shadow-inner min-h-[120px] md:min-h-[140px] z-10">
-                    <span class="text-3xl md:text-4xl font-mono font-black text-emerald-500 mt-1 select-none">=</span>
+                    {{-- TANDA = STATIS DIHAPUS AGAR SISWA WAJIB MEMILIH BLOK = DARI GUDANG --}}
                     
                     {{-- FIXED SORTABLE DOM --}}
                     <div id="dropzone" class="compact-dropzone flex-grow" x-ref="dropzone">

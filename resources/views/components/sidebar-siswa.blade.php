@@ -59,9 +59,10 @@
         $user = Auth::user();
         $userColor = $user->profile_color ?? '3b82f6';
         $rankStatus = $user->rank_status;
-        $allUsers = \App\Models\User::where('role', '!=', 'admin')->get()->sortByDesc('total_xp')->values();
-        $globalRankIndex = $allUsers->search(fn($u) => $u->id === $user->id);
-        $globalRank = $globalRankIndex !== false ? $globalRankIndex + 1 : '-';
+        
+        //* (Optimization) Hitung peringkat langsung dari database tanpa get() semua user
+        $globalRank = \App\Models\ScoresAndRanking::where('total_xp', '>', $user->total_xp)->count() + 1;
+
         $todayTicket = \App\Models\RetryTicket::where('user_id', $user->id)->where('date', now()->toDateString())->first();
         $remainingTickets = 3 - ($todayTicket ? $todayTicket->used_count : 0);
         $userClasses = $user->classrooms ?? collect();

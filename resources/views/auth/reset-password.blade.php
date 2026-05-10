@@ -161,7 +161,7 @@
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 ml-1 capitalize">Kunci akses baru</label>
                             <div class="relative">
-                                <input :type="showPassword ? 'text' : 'password'" name="password" required autofocus
+                                <input :type="showPassword ? 'text' : 'password'" name="password" required 
                                        class="input-lab w-full px-4 py-3 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
                                        placeholder="Minimal 8 karakter">
                                 <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-300 hover:text-emerald-500">
@@ -179,12 +179,12 @@
                         </div>
 
                         <div class="pt-2 md:pt-4 btn-group">
-                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
-                                Update sandi
-                            </button>
                             <a href="{{ route('login') }}" class="btn-excel btn-secondary bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 font-black text-xs md:text-sm py-2.5 rounded-xl text-center border-slate-300 dark:border-slate-700 uppercase tracking-tighter">
                                 Batal
                             </a>
+                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
+                                Update sandi
+                            </button>
                         </div>
                     </form>
                 </div>

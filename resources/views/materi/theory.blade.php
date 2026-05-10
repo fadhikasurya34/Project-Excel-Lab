@@ -263,7 +263,7 @@
                 <ul class="space-y-3">
                     <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                         <span class="text-blue-500 mt-0.5">●</span>
-                        <span>Gunakan mode fullscreen pada player untuk tampilan lebih jelas.</span>
+                        <span>Gunakan mode fullscreen pada Video player atau Dokumen untuk tampilan lebih jelas.</span>
                     </li>
                     <li class="flex items-start space-x-3 text-xs font-bold text-slate-600 dark:text-slate-300">
                         <span class="text-blue-500 mt-0.5">●</span>

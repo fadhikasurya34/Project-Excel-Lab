@@ -25,7 +25,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emerald Terminal - Daftar</title>
     
-    <!-- Panggil CSS dan JS via Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -154,51 +153,53 @@
                         @csrf
                         <div class="form-grid space-y-4 md:space-y-0">
                             <div class="form-full space-y-1">
-                                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest ml-1">Username</label>
-                                <input type="text" name="name" required autofocus
+                                <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest ml-1">Masukkan Nama</label>
+                                <input type="text" name="name" value="{{ old('name') }}" required autofocus
                                        class="input-lab w-full px-4 py-3 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
                                        placeholder="Nama Lengkap">
                             </div>
 
                             <div class="form-full space-y-1">
                                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest ml-1">Email</label>
-                                <input type="email" name="email" required
+                                <input type="email" name="email" value="{{ old('email') }}" required
                                        class="input-lab w-full px-4 py-3 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
-                                       placeholder="username@mail.com">
+                                       placeholder="username@gmail.com">
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest ml-1">Password</label>
-                                <input :type="showPassword ? 'text' : 'password'" name="password" required 
-                                       class="input-lab w-full px-4 py-3 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
-                                       placeholder="••••••••">
+                                <div class="relative">
+                                    <input :type="showPassword ? 'text' : 'password'" name="password" required 
+                                           class="input-lab w-full px-4 py-3 pr-11 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
+                                           placeholder="••••••••">
+                                    <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 transition-colors">
+                                        <svg x-show="!showPassword" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <svg x-show="showPassword" x-cloak class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="space-y-1">
                                 <label class="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest ml-1">Konfirmasi</label>
-                                <input :type="showPassword ? 'text' : 'password'" name="password_confirmation" required 
-                                       class="input-lab w-full px-4 py-3 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
-                                       placeholder="••••••••">
+                                <div class="relative">
+                                    <input :type="showPassword ? 'text' : 'password'" name="password_confirmation" required 
+                                           class="input-lab w-full px-4 py-3 pr-11 rounded-xl text-sm font-bold focus:outline-none placeholder-slate-300 dark:placeholder-slate-700 shadow-inner" 
+                                           placeholder="••••••••">
+                                    <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 transition-colors">
+                                        <svg x-show="!showPassword" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <svg x-show="showPassword" x-cloak class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="flex items-center px-2 pt-1">
-                            <label class="flex items-center cursor-pointer group">
-                                <input type="checkbox" @change="showPassword = !showPassword" class="sr-only peer">
-                                <div class="w-3.5 h-3.5 border-2 border-slate-200 dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-800 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center shadow-inner">
-                                    <svg class="w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path d="M5 13l4 4L19 7"/></svg>
-                                </div>
-                                <span class="ml-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider">Lihat sandi</span>
-                            </label>
-                        </div>
-
                         <div class="pt-2 md:pt-4 btn-group">
-                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
-                                Buat akun
-                            </button>
                             <a href="{{ route('login') }}" class="btn-excel btn-secondary bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 font-black text-xs md:text-sm py-2.5 rounded-xl text-center border-slate-300 dark:border-slate-700 uppercase tracking-tighter">
                                 Masuk
                             </a>
+                            <button type="submit" class="btn-excel bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs md:text-sm py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-tighter">
+                                Buat akun
+                            </button>
                         </div>
                     </form>
                 </div>

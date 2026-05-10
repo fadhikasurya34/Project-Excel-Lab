@@ -116,7 +116,7 @@
         
         <div class="mb-10 text-left px-2">
             <h1 class="text-2xl lg:text-2xl font-black text-slate-900 dark:text-white leading-tight capitalize">Daftar Misi Tersedia</h1>
-            <p class="text-sm lg:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Selesaikan tantangan sesaui dengan level kesulitan.</p>
+            <p class="text-sm lg:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Selesaikan tantangan sesuai dengan level kesulitan.</p>
         </div>
 
         <div class="space-y-4 mb-24">
