@@ -99,7 +99,7 @@
             <div>
                 <div class="flex items-center space-x-2 mb-2">
                     <span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] font-bold tracking-widest uppercase">Materi Terminal</span>
-                    <div class="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.6)]"></div>
+                    <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.6)]"></div>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 text-header tracking-tight">Manajemen <span class="text-blue-600">Topik Modul</span></h1>
                 <p class="text-slate-500 font-medium text-xs sm:text-sm mt-1">Kelola folder topik kurikulum sebelum mengisi modul interaktif.</p>

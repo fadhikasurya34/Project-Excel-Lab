@@ -15,7 +15,7 @@
         @if ($errors->any())
             this.toast.show = true;
             this.toast.title = 'Terjadi Kesalahan';
-            this.toast.message = '{{ $errors->first() }}';
+            this.toast.message = @js($errors->first());
             setTimeout(() => { this.toast.show = false }, 5000);
         @endif
 
@@ -23,7 +23,7 @@
             this.toast.show = true;
             this.toast.type = 'success';
             this.toast.title = 'Email Terkirim';
-            this.toast.message = '{{ session('status') }}';
+            this.toast.message = @js(session('status'));
             setTimeout(() => { this.toast.show = false }, 5000);
         @endif
     }
@@ -33,10 +33,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Emerald Terminal - Lupa Sandi</title>
     
-    <!-- Panggil CSS dan JS via Vite -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css'])
     
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -53,13 +53,11 @@
             background-image: radial-gradient(#064e3b 1px, transparent 1px); 
         }
 
-        /* MEKANIK DEEP BUTTON */
         .btn-excel { transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 5px solid #035a41; }
         .btn-excel:active { transform: translateY(3px) scale(0.98); border-bottom-width: 1px; }
         .btn-secondary { border-bottom-color: #94a3b8; }
         .dark .btn-secondary { border-bottom-color: #1e293b; }
 
-        /* INPUT & DARK MODE TEXT FIX */
         .input-lab { background: #f8fafc; border: 2px solid #e2e8f0; color: #0f172a; transition: all 0.2s; }
         .dark .input-lab { background: #0d1117; border-color: #1e293b; color: #ffffff !important; }
         .input-lab:focus { border-color: #10b981; background: white; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15); }
@@ -67,7 +65,6 @@
 
         .card-emerald { border-bottom: 8px solid #10b981; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
 
-        /* TOAST ANIMATION */
         .toast-top {
             position: fixed; top: 1rem; left: 50%; transform: translateX(-50%);
             z-index: 1000; animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -76,34 +73,28 @@
 
         .wrapper { min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; z-index: 10; }
 
-        /* --- MODE 1: MOBILE VERTICAL (Default) --- */
         .main-container { display: flex; flex-direction: column; width: 100%; max-width: 340px; margin: auto; background: white; border-radius: 2.5rem; overflow: hidden; }
         .panel-logo { padding: 1.5rem; }
         .panel-form { padding: 2rem 1.5rem; }
         .btn-group { display: flex; gap: 0.75rem; width: 100%; }
         .btn-group > * { flex: 1; }
 
-        /* --- MODE 2: MOBILE HORIZONTAL (Landscape HP) --- */
         @media (orientation: landscape) and (max-height: 500px) {
             .main-container { flex-direction: row !important; max-width: 580px !important; } 
             .panel-logo { width: 35% !important; padding: 1rem !important; border-right: 2px solid #e2e8f0; border-bottom: 0 !important; }
             .panel-form { width: 65% !important; padding: 1rem 1.25rem !important; }
-            
             .form-content { max-width: 260px !important; margin: 0 auto; } 
-            
             .logo-box { width: 3.5rem !important; height: 3.5rem !important; }
             .brand-title { font-size: 1.15rem !important; }
             .form-header { margin-bottom: 0.5rem !important; }
             .form-header h1 { font-size: 1.4rem !important; }
-            
+            .form-header p { display: none; }
             .input-lab { padding: 0.45rem 0.75rem !important; font-size: 0.75rem !important; border-radius: 10px !important; }
             .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem !important; }
-            
             .btn-group { width: 100% !important; display: flex !important; }
             .btn-excel { padding: 0.4rem !important; font-size: 0.75rem !important; }
         }
 
-        /* --- MODE 3: WINDOWS/DESKTOP --- */
         @media (min-width: 1024px) {
             .main-container { flex-direction: row; max-width: 780px; }
             .panel-logo { width: 40%; padding: 3rem; border-right: 2px solid #f1f5f9; }
