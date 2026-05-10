@@ -82,12 +82,13 @@
         background: transparent !important;
     }
 
-    /* Mekarkan video container menutupi seluruh lebar layar */
+    /* Mekarkan video container menutupi seluruh layar (FIX untuk Dokumen Vertical) */
     body.is-ios-fs .video-container {
         width: 100vw !important;
+        height: 100dvh !important; /* Dibuat 100% tinggi layar agar dokumen memanjang */
+        padding-bottom: 0 !important; /* Rasio 16:9 dilepas agar tidak terpotong separuh */
         border-radius: 0 !important;
         border: none !important;
-        /* Biarkan padding-bottom 56.25% agar aspect ratio tetap waras & Safari tidak ngebug */
     }
 
     /* //* Tombol Keluar Layar Penuh */
