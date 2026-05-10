@@ -112,10 +112,9 @@
     </a>
     <div class="flex flex-col text-left ml-3 leading-none">
         <span class="text-base font-black dark:text-white uppercase tracking-tighter leading-none">
-            Hall of <span class="text-blue-600">Fame</span>
-        </span>
+            Hall of Fame</span>
         <div class="flex items-center space-x-1.5 mt-1">
-            <span class="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>
+            <span class="w-1 h-1 bg-amber-600 rounded-full animate-pulse"></span>
             <span class="text-[7px] font-black text-slate-400 uppercase tracking-widest leading-none">Global Ranking Live</span>
         </div>
     </div>
