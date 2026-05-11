@@ -20,49 +20,47 @@
             grid-template-columns: 1.1fr 1fr; 
             gap: 2rem; 
             padding: 1.5rem;
-            /* FIX KONTINER TERPOTONG: Mengubah height tetap menjadi min-height agar bisa merentang natural ke bawah */
             min-height: calc(100vh - 140px); 
         }
         .scroll-column { 
             padding-bottom: 2rem;
-            /* Dihapus overflow dan height 100% agar tidak memotong background */
         }
     }
 
-    /* //* (Tactile) Desain blok sintaks - Responsive Size */
+    /* //* (Tactile) Desain blok sintaks */
     .token-block {
         transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        border-bottom-width: 4px !important;
+        border-bottom-width: 3px !important; 
         user-select: none; 
         touch-action: none;
-        padding: 0.5rem 0.7rem;
-        font-size: 11px;
-        border-radius: 0.8rem;
+        padding: 0.4rem 0.6rem;
+        font-size: 10px; 
+        border-radius: 0.6rem;
     }
     
     @media (min-width: 768px) {
         .token-block {
-            padding: 0.7rem 1.1rem;
-            font-size: 13px;
-            border-bottom-width: 5px !important;
-            border-radius: 1rem;
+            padding: 0.5rem 0.8rem;
+            font-size: 12px;
+            border-bottom-width: 4px !important;
+            border-radius: 0.8rem;
         }
     }
     
     .token-block:active { 
-        transform: translateY(3px) scale(0.96) !important; 
+        transform: translateY(2px) scale(0.96) !important; 
         border-bottom-width: 1px !important;
         filter: brightness(0.9);
     }
     
     /* //* (Motion) Drag Visuals */
     .sortable-drag { 
-        opacity: 1 !important; 
-        transform: scale(1.1) rotate(3deg) translateY(-5px) !important; 
+        opacity: 0.9 !important; 
+        transform: scale(1.05) rotate(2deg) !important; 
         z-index: 1000 !important; cursor: grabbing !important;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3) !important;
     }
-    .sortable-ghost { opacity: 0.1; background: #10b981 !important; border: 2px dashed #059669 !important; }
+    .sortable-ghost { opacity: 0.2; background: #10b981 !important; border: 2px dashed #059669 !important; border-radius: 0.8rem;}
 
     /* //* (UI) Mekanik pegas & Card Styling */
     .btn-menu-pegas {transition: all 0.1s ease; border-bottom-width: 6px;}
@@ -113,33 +111,35 @@
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
     }
 
+    /* KOTAK RAKITAN */
     .compact-dropzone {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        min-height: 70px;
+        gap: 0.3rem;
+        align-content: flex-start;
+        min-height: 80px;
+        padding: 0.5rem;
     }
     @media (min-width: 768px) {
-        .compact-dropzone { gap: 0.75rem; min-height: 80px; }
+        .compact-dropzone { gap: 0.4rem; min-height: 100px; }
     }
 
     /* //* (GAMIFICATION UPDATE) Duolingo Style Bottom Sheet Modal */
     .feedback-modal-wrapper {
         position: fixed; inset: 0; z-index: 10000;
         display: flex; align-items: flex-end; justify-content: center;
-        background: rgba(0, 0, 0, 0.4); /* Efek gelap di belakang */
+        background: rgba(0, 0, 0, 0.4); 
         backdrop-filter: blur(2px);
     }
     
     .feedback-modal {
-        width: 100%; max-width: 500px; /* Ukuran dirampingkan */
+        width: 100%; max-width: 500px; 
         background: #ffffff;
-        padding: 1.5rem 1.5rem 2rem 1.5rem; /* Padding dikecilkan */
+        padding: 1.5rem 1.5rem 2rem 1.5rem; 
         border-radius: 1.5rem 1.5rem 0 0;
         text-align: left;
         box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
-        pointer-events: auto; /* Agar tombol di dalam bisa diklik */
+        pointer-events: auto; 
     }
     .dark .feedback-modal { background: #0f172a; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6); }
 
@@ -157,20 +157,27 @@
 @endpush
 
 @section('header_left')
-    <a href="{{ route('misi.category.levels', $mission->level->category) }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:scale-90 transition-transform">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-            <path d="M15 19l-7-7 7-7" />
-        </svg>
-    </a>    
-    <div class="flex flex-col text-left ml-3 leading-none">
-        <span class="text-base font-extrabold tracking-tight dark:text-white uppercase">{{ $mission->title }}</span>
-        <div class="flex items-center space-x-1.5 mt-1.5">
-            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-            <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Lab Perakitan Rumus</span>
+    @php
+        $backUrl = request('from_task') ? route('kelas.task.show', request('from_task')) : route('misi.category.levels', $mission->level->category);
+    @endphp
+    
+    <div class="flex items-center w-full max-w-[80vw] overflow-hidden">
+        <a href="{{ $backUrl }}" class="shrink-0 p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:translate-y-1 transition-all">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path d="M15 19l-7-7 7-7" /></svg>
+        </a>
+
+        {{-- FIX: Menggunakan min-w-0 agar truncate berfungsi dengan baik di dalam flexbox container --}}
+        <div class="flex flex-col text-left ml-3 leading-none flex-1 min-w-0">
+            <span class="text-base font-extrabold tracking-tight dark:text-white uppercase truncate">{{ $mission->title }}</span>
+            <div class="flex items-center space-x-1.5 mt-1.5 shrink-0">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Lab Perakitan Rumus</span>
+            </div>
         </div>
-    </div>
-    <div class="ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-4 py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 font-game text-emerald-600 text-xl tracking-wider">
-        <span id="header-xp-display">{{ $mission->max_score }}</span> XP
+        
+        <div class="shrink-0 ml-3 md:ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 font-game text-emerald-600 text-lg md:text-xl tracking-wider">
+            <span id="header-xp-display">{{ $mission->max_score }}</span> XP
+        </div>
     </div>
 @endsection
 
@@ -189,14 +196,14 @@
         
         <div class="feedback-modal" :class="feedbackModal.type">
             <div class="flex items-center gap-3 md:gap-4 mb-5 md:mb-6">
-                {{-- Icon Alert / Bintang (Ukuran dirampingkan) --}}
+                {{-- Icon Alert / Bintang --}}
                 <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 flex items-center justify-center rounded-full shadow-sm border-[3px]" 
                      :class="feedbackModal.type === 'error' ? 'bg-red-50 border-red-100 dark:bg-red-900/30 dark:border-red-800' : 'bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800'">
                     <img x-show="feedbackModal.type === 'error'" src="{{ asset('images/alert.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain drop-shadow-sm">
                     <img x-show="feedbackModal.type === 'success'" src="{{ asset('images/bintang.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain drop-shadow-sm">
                 </div>
                 
-                {{-- Teks Hasil (Ukuran dirampingkan) --}}
+                {{-- Teks Hasil --}}
                 <div>
                     <div class="text-xl md:text-2xl font-black tracking-wide" 
                          :class="feedbackModal.type === 'error' ? 'text-red-500' : 'text-emerald-500'" 
@@ -207,7 +214,7 @@
                 </div>
             </div>
             
-            {{-- Tombol OKE / Lanjut (Ukuran dan ketebalan border disesuaikan) --}}
+            {{-- Tombol OKE / Lanjut --}}
             <button @click="handleFeedbackButton()" 
                     class="w-full py-3 md:py-3.5 rounded-xl font-black text-base md:text-lg text-white transition-all active:scale-95 border-b-[4px] active:border-b-0 active:translate-y-[4px]" 
                     :class="feedbackModal.type === 'error' ? 'bg-red-500 hover:bg-red-600 border-red-700' : 'bg-emerald-500 hover:bg-emerald-600 border-emerald-700'" 
@@ -252,7 +259,7 @@
                 </button>
                 <div class="overflow-hidden rounded-[1.5rem] bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800/50 cursor-zoom-in" @click="scenarioMaximized = true">
                     <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $mission->mission_image) }}" 
-                         class="w-full h-auto object-contain max-h-[40vh] lg:max-h-[55vh]" alt="Skenario">
+                         class="w-full h-auto object-contain max-h-[30vh] lg:max-h-[45vh] mx-auto" alt="Skenario">
                 </div>
             </div>
 
@@ -264,39 +271,37 @@
 
         {{-- Workspace Perakitan --}}
         <div class="scroll-column space-y-4 md:space-y-6">
-            <div class="bg-white dark:bg-slate-900 p-5 md:p-7 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px] flex flex-col transition-all duration-300" 
+            <div class="bg-white dark:bg-slate-900 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px] flex flex-col transition-all duration-300" 
                  :class="status === 'wrong' ? 'shake-error shadow-red-100' : ''">
                 
-                <div class="flex justify-between items-center mb-4 md:mb-6 px-1">
+                <div class="flex justify-between items-center mb-3 md:mb-5 px-1">
                     <h3 class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Kotak Rakitan</h3>
                     <span class="text-[7px] md:text-[8px] font-black text-blue-500 uppercase tracking-widest animate-pulse" x-show="answerBox.length > 0">Klik hapus | Geser</span>
                 </div>
 
-                <div class="flex items-start gap-2 md:gap-3 bg-slate-50 dark:bg-slate-950 rounded-[1.8rem] md:rounded-[2.2rem] p-4 md:p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 shadow-inner min-h-[120px] md:min-h-[140px] z-10">
-                    {{-- TANDA = STATIS DIHAPUS AGAR SISWA WAJIB MEMILIH BLOK = DARI GUDANG --}}
-                    
-                    {{-- FIXED SORTABLE DOM --}}
-                    <div id="dropzone" class="compact-dropzone flex-grow" x-ref="dropzone">
+                {{-- FIX: Padding dihilangkan, min-height dikurangi agar muat banyak komponen tanpa membesar --}}
+                <div class="bg-slate-50 dark:bg-slate-950 rounded-[1.2rem] border-2 border-dashed border-slate-200 dark:border-slate-800 shadow-inner z-10 w-full">
+                    <div id="dropzone" class="compact-dropzone w-full" x-ref="dropzone">
                     </div>
                 </div>
 
                 {{-- Hint Bantuan --}}
-                <div x-show="hint" x-transition class="mt-5 p-3 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-100 dark:border-amber-800 rounded-xl text-[10px] font-extrabold text-amber-700 dark:text-amber-400 text-center uppercase leading-snug">
+                <div x-show="hint" x-transition class="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-100 dark:border-amber-800 rounded-xl text-[10px] font-extrabold text-amber-700 dark:text-amber-400 text-center uppercase leading-snug">
                     <span x-text="hint"></span>
                 </div>
 
-                <button @click="submitSyntax($event)" class="btn-menu-pegas glow-emerald-premium w-full mt-6 py-4 md:py-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.5rem] md:rounded-[1.8rem] font-black text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-emerald-800 shadow-lg">
+                <button @click="submitSyntax($event)" class="btn-menu-pegas glow-emerald-premium w-full mt-5 py-3 md:py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.2rem] font-black text-[9px] md:text-[10px] tracking-[0.2em] uppercase border-emerald-800 shadow-lg">
                     Verifikasi Rakitan
                 </button>
             </div>
 
             {{-- Gudang Komponen --}}
-            <div class="bg-white dark:bg-slate-900 p-5 md:p-7 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px]">
-                <h3 class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-5">Gudang Komponen</h3>
-                <div class="flex flex-wrap gap-2 md:gap-3 justify-center">
+            <div class="bg-white dark:bg-slate-900 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px]">
+                <h3 class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-4">Gudang Komponen</h3>
+                <div class="flex flex-wrap gap-1.5 md:gap-2 justify-center">
                     <template x-for="(block, index) in availableBlocks" :key="'gudang-' + index">
                         <button @click="addToAnswer(block, $event)" :class="getBlockClass(block)"
-                                class="token-block font-mono font-black shadow-md border-2 active:scale-90">
+                                class="token-block font-mono font-black shadow-sm border-2 active:scale-90">
                             <span x-text="block"></span>
                         </button>
                     </template>
@@ -381,7 +386,7 @@
                 
                 this.answerBox.forEach((item, index) => {
                     const div = document.createElement('div');
-                    div.className = this.getBlockClass(item) + ' token-block font-mono font-black shadow-md border-2 cursor-grab active:cursor-grabbing';
+                    div.className = this.getBlockClass(item) + ' token-block font-mono font-black shadow-sm border-2 cursor-grab active:cursor-grabbing';
                     div.innerText = item;
                     div.onclick = (e) => this.removeFromAnswer(index, e);
                     dropzone.appendChild(div);
@@ -390,9 +395,11 @@
 
             initSortable() {
                 new Sortable(this.$refs.dropzone, {
-                    animation: 200, 
+                    animation: 250, 
+                    easing: "cubic-bezier(0.25, 1, 0.5, 1)",
                     ghostClass: 'sortable-ghost', 
                     dragClass: 'sortable-drag',
+                    swapThreshold: 0.65, 
                     onEnd: (evt) => {
                         if (evt.oldIndex === evt.newIndex) return;
                         if(this.sfxClick && this.sfxClick.readyState >= 2) { 
@@ -490,7 +497,7 @@
             },
 
             getBlockClass(block) {
-                const funcRegex = /^(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT)$/i;
+                const funcRegex = /^(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT|VLOOKUP|HLOOKUP)$/i;
                 const cellRegex = /^[A-Z]+\$?[0-9]+$/i;
                 const stringRegex = /^".*"$/;
                 const digitRegex = /^[0-9]+%?$/;
@@ -567,7 +574,7 @@
                         // Partikel meledak
                         this.fireCrossParticles(); 
 
-                        // DITAMBAHKAN EMOJI NANGIS SAAT SALAH
+                        // Emoji menangis saat salah
                         if(e) this.spawnFloatingText(e, 'Masih salah! 😭', '#ef4444');
                         this.triggerFeedbackModal('error', 'Belum berhasil 😭', 'Ayo coba lagi!');
                         
