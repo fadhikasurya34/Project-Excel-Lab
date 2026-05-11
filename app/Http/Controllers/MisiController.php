@@ -73,7 +73,6 @@ class MisiController extends Controller
         $availableBlocks = collect([]);
 
         if ($mission->mission_type === 'Syntax Assembly') {
-            // Memecah berdasarkan pola yang lebih aman
             preg_match_all('/(".+?")|[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?\%]/', strtoupper($mission->key_answer), $matches);
             $blocks = $matches[0];
             $distractors = $mission->distractors ? explode(',', $mission->distractors) : [];
@@ -280,7 +279,6 @@ class MisiController extends Controller
         $countsUser = array_count_values($tokensUser);
 
         // 1. PRIORITAS 1: Peringatan Mutlak (Tanda =)
-        // Kalau siswa kelupaan =, ini yang paling utama dikasih tau.
         if (isset($countsCorrect['=']) && !isset($countsUser['='])) {
             return "JANGAN LUPA, RUMUS EXCEL SELALU DIAWALI TANDA SAMA DENGAN (=).";
         }
@@ -290,8 +288,7 @@ class MisiController extends Controller
             return "ADA MASALAH PADA PASANGAN KURUNG. COBA CEK LAGI KESEIMBANGANNYA.";
         }
 
-        // 3. PRIORITAS 3: Peringatan Absolut Fungsi Utama Excel
-        // Misal kunci butuh VLOOKUP, tapi siswa nggak masukin VLOOKUP.
+        // 3. PRIORITAS 3: Peringatan Absolut Fungsi Utama Excel.
         $mainFunctions = ['IF', 'VLOOKUP', 'HLOOKUP', 'SUM', 'AVERAGE', 'MIN', 'MAX', 'AND', 'OR', 'NOT', 'COUNT'];
         foreach ($mainFunctions as $func) {
             if (isset($countsCorrect[$func]) && !isset($countsUser[$func])) {
@@ -300,7 +297,6 @@ class MisiController extends Controller
         }
 
         // 4. PRIORITAS 4: Deteksi Komponen yang Kurang (Missing)
-        // Ditaruh sebelum "Penyusup" supaya siswa tau dulu komponen apa yang kurang, bukan malah disalah-salahkan ada penyusup
         foreach ($countsCorrect as $token => $count) {
             if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
                 // Hint pintar untuk $ (Absolute Reference)
@@ -312,7 +308,6 @@ class MisiController extends Controller
         }
 
         // 5. PRIORITAS 5: Deteksi Komponen yang Tidak Seharusnya (Penyusup)
-        // Sekarang sistem hanya bilang "tidak seharusnya" JIKA SEMUA KOMPONEN BENAR SUDAH LENGKAP.
         foreach ($countsUser as $token => $count) {
             if (!isset($countsCorrect[$token])) {
                 return "ADA KOMPONEN YANG TIDAK SEHARUSNYA BERADA DI RUMUS INI.";
@@ -323,7 +318,6 @@ class MisiController extends Controller
         }
 
         // 6. PRIORITAS 6: Deteksi Kesalahan Urutan (Sequence Error)
-        // Jika semua komponen sudah pas jumlahnya dan jenisnya, berarti cuma salah urutan.
         for ($i = 0; $i < count($tokensCorrect); $i++) {
             if (isset($tokensUser[$i]) && $tokensUser[$i] !== $tokensCorrect[$i]) {
                 if ($i === 0 && $tokensUser[$i] !== '=') {
@@ -338,7 +332,7 @@ class MisiController extends Controller
     }
 
     /**
-     * //* (Admin Sync) Opsional: Jalankan ini jika Admin mengubah max_score misi 
+     * //* (Admin Sync) Opsional: Jika Admin mengubah max_score misi 
      */
     public function syncGlobalXpAfterAdminChange(string $missionId)
     {

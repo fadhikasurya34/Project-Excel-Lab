@@ -48,7 +48,7 @@
         }
     </style>
 
-    <div class="min-h-screen bg-admin p-4 sm:p-10"> {{-- Padding responsif --}}
+    <div class="min-h-screen bg-admin p-4 sm:p-10">
 
         {{-- (Notification) Toast System --}}
         @if(session('success') || session('error') || session('status'))
@@ -127,7 +127,7 @@
             </div>
         </div>
 
-        {{-- (Section) Tabel Topik - FIX RESPONSIVE PORTRAIT --}}
+        {{-- (Section) Tabel Topik --}}
         <div class="admin-card overflow-hidden shadow-sm border-none md:border md:border-slate-200">
             <table class="w-full text-left border-collapse block md:table">
                 <thead class="table-header hidden md:table-header-group">

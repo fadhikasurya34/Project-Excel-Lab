@@ -138,7 +138,7 @@
             <div class="lg:col-span-8 space-y-4">
                 <div class="canvas-wrapper">
                     <div class="relative w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-100 custom-crosshair shadow-inner" onclick="setPoint(event)">
-                        {{-- //* UPDATE: Direct Cloudinary URL --}}
+                        {{-- //*Direct Cloudinary URL --}}
                         <img id="canvas" src="{{ $step->step_image }}" 
                              class="w-full h-auto block pointer-events-none select-none shadow-sm">
                         

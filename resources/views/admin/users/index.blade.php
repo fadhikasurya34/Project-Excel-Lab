@@ -62,7 +62,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 
-    <div class="min-h-screen bg-admin p-4 sm:p-10" {{-- Padding responsif --}}
+    <div class="min-h-screen bg-admin p-4 sm:p-10"
          x-data="{ 
             search: '', 
             sortBy: 'xp', 

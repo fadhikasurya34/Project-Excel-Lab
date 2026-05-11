@@ -39,7 +39,6 @@
     }
 
     /* //* STRATEGI BARU IOS SAFARI: "PURE FLEXBOX CENTER"
-       Bypass bug Safari: Sembunyikan elemen sekitar dan hitamkan layar. Jangan ubah position iframe.
     */
     body.is-ios-fs {
         background-color: #000 !important;
@@ -85,8 +84,8 @@
     /* Mekarkan video container menutupi seluruh layar (FIX untuk Dokumen Vertical) */
     body.is-ios-fs .video-container {
         width: 100vw !important;
-        height: 100dvh !important; /* Dibuat 100% tinggi layar agar dokumen memanjang */
-        padding-bottom: 0 !important; /* Rasio 16:9 dilepas agar tidak terpotong separuh */
+        height: 100dvh !important; 
+        padding-bottom: 0 !important;
         border-radius: 0 !important;
         border: none !important;
     }
@@ -218,7 +217,7 @@
                         </svg>
                     </button>
 
-                    {{-- FIX: Izin Fullscreen dimasukkan kembali, dan Blocker dihapus agar tombol bawaan berfungsi --}}
+                    {{-- Izin Fullscreen--}}
                     <iframe src="{{ $contentUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                     
                 </div>
@@ -318,7 +317,7 @@
         }
     }
 
-    // Fungsi Jurus Pamungkas iOS: In-Place Expand (Hanya untuk dokumen/fallback)
+    // In-Place Expand (Hanya untuk dokumen/fallback)
     function enableIOSFallback() {
         window.scrollTo(0, 0); // Pastikan layar naik ke paling atas
         document.body.classList.add('is-ios-fs');

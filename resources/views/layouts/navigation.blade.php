@@ -23,7 +23,7 @@
     @if(Auth::user()->role === 'admin')
         {{-- (Component) ADMIN SIDEBAR --}}
         
-        {{-- Backdrop Mobile: Supaya konten di belakang tidak bisa diklik saat menu buka --}}
+        {{-- Backdrop Mobile --}}
         <div x-show="openMobile" x-cloak 
              x-transition:opacity
              @click="openMobile = false" 
@@ -123,7 +123,6 @@
                             </a>
                         </div>
                     </div>
-                    {{-- User Dropdown dst... (tetap sesuai kodemu) --}}
                 </div>
             </div>
         </nav>

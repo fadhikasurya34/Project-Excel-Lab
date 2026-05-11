@@ -6,7 +6,6 @@
         .btn-tab { padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; }
         .mission-checkbox:checked + label { border-color: #a855f7; background-color: #faf5ff; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1); }
         
-        /* FIXED: Sembunyikan scroller tapi fungsi geser tetap jalan */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -129,7 +128,6 @@
                 <div class="p-4 sm:p-6 border-b border-slate-50 bg-white">
                     <input type="text" x-model="search" placeholder="Cari nama praktikan..." class="form-input-premium w-full sm:!w-72" />
                 </div>
-                {{-- FIXED: Menambah md:table-fixed agar header dan body sejajar --}}
                 <table class="w-full text-left block md:table md:table-fixed">
                     <thead class="bg-slate-50 border-b border-slate-100 hidden md:table-header-group">
                         <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -305,8 +303,6 @@
                 @endforelse
             </div>
         </div>
-
-        {{-- Modal Area --}}
         
         {{-- MODAL BARU: PROGRES TASK --}}
         <div x-show="showProgressModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak x-transition>

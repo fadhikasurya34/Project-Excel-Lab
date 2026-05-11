@@ -169,7 +169,7 @@
                     </div>
                 </div>
 
-                {{-- (Section) Kolom Kanan: Riwayat Aktivitas - FIXED NO SCROLL --}}
+                {{-- (Section) Kolom Kanan: Riwayat Aktivitas --}}
                 <div class="lg:col-span-3">
                     <div class="admin-card overflow-hidden min-h-[600px] flex flex-col">
                         

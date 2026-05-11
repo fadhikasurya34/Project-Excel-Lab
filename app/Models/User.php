@@ -16,7 +16,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'class_id', // Biarkan jika memang masih dipakai di tempat lain
+        'class_id',
         'avatar',
         'profile_color', 
     ];

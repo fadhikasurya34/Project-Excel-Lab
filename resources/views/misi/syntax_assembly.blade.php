@@ -27,15 +27,24 @@
         }
     }
 
-    /* //* (Tactile) Desain blok sintaks */
+    /* //* (Tactile) Desain blok sintaks - Mobile Optimized */
     .token-block {
         transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        border-bottom-width: 3px !important; 
+        border-bottom-width: 3px !important;
         user-select: none; 
-        touch-action: none;
-        padding: 0.4rem 0.6rem;
-        font-size: 10px; 
+        touch-action: pan-y; /* FIX: Memperbaiki respon sentuhan di HP */
+        padding: 0.6rem 0.8rem; /* Padding sedikit dibesarkan agar mudah disentuh di HP */
+        font-size: 11px;
         border-radius: 0.6rem;
+        margin: 0.1rem; /* Memberi sedikit jarak bernapas antar blok */
+        /* Memperbesar area sentuh transparan (Touch Target) */
+        position: relative;
+    }
+    
+    .token-block::after {
+        content: '';
+        position: absolute;
+        top: -4px; left: -4px; right: -4px; bottom: -4px;
     }
     
     @media (min-width: 768px) {
@@ -44,6 +53,7 @@
             font-size: 12px;
             border-bottom-width: 4px !important;
             border-radius: 0.8rem;
+            margin: 0;
         }
     }
     
@@ -53,10 +63,10 @@
         filter: brightness(0.9);
     }
     
-    /* //* (Motion) Drag Visuals */
+    /* //* (Motion) Drag Visuals - Lebih fluid */
     .sortable-drag { 
         opacity: 0.9 !important; 
-        transform: scale(1.05) rotate(2deg) !important; 
+        transform: scale(1.1) rotate(2deg) !important; /* Diperbesar saat didrag agar jelas */
         z-index: 1000 !important; cursor: grabbing !important;
         box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3) !important;
     }
@@ -111,13 +121,13 @@
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
     }
 
-    /* KOTAK RAKITAN */
+    /* FIX KOTAK RAKITAN AGAR COMPACT DAN MUAT BANYAK */
     .compact-dropzone {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.3rem;
-        align-content: flex-start;
-        min-height: 80px;
+        gap: 0.4rem; /* Gap sedikit dilebarkan di HP agar tidak terlalu rapat saat didrag */
+        align-content: flex-start; 
+        min-height: 80px; 
         padding: 0.5rem;
     }
     @media (min-width: 768px) {
@@ -166,7 +176,6 @@
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path d="M15 19l-7-7 7-7" /></svg>
         </a>
 
-        {{-- FIX: Menggunakan min-w-0 agar truncate berfungsi dengan baik di dalam flexbox container --}}
         <div class="flex flex-col text-left ml-3 leading-none flex-1 min-w-0">
             <span class="text-base font-extrabold tracking-tight dark:text-white uppercase truncate">{{ $mission->title }}</span>
             <div class="flex items-center space-x-1.5 mt-1.5 shrink-0">
@@ -279,7 +288,6 @@
                     <span class="text-[7px] md:text-[8px] font-black text-blue-500 uppercase tracking-widest animate-pulse" x-show="answerBox.length > 0">Klik hapus | Geser</span>
                 </div>
 
-                {{-- FIX: Padding dihilangkan, min-height dikurangi agar muat banyak komponen tanpa membesar --}}
                 <div class="bg-slate-50 dark:bg-slate-950 rounded-[1.2rem] border-2 border-dashed border-slate-200 dark:border-slate-800 shadow-inner z-10 w-full">
                     <div id="dropzone" class="compact-dropzone w-full" x-ref="dropzone">
                     </div>
@@ -395,10 +403,12 @@
 
             initSortable() {
                 new Sortable(this.$refs.dropzone, {
-                    animation: 250, 
-                    easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+                    animation: 150, // FIX: Dipercepat agar lebih responsif di HP
+                    easing: "cubic-bezier(0.25, 1, 0.5, 1)", 
                     ghostClass: 'sortable-ghost', 
                     dragClass: 'sortable-drag',
+                    delay: 100, // FIX: Memberikan delay kecil agar tidak bentrok dengan klik hapus di HP
+                    delayOnTouchOnly: true, // Hanya berlaku di layar sentuh
                     swapThreshold: 0.65, 
                     onEnd: (evt) => {
                         if (evt.oldIndex === evt.newIndex) return;
@@ -574,7 +584,7 @@
                         // Partikel meledak
                         this.fireCrossParticles(); 
 
-                        // Emoji menangis saat salah
+                        // DITAMBAHKAN EMOJI NANGIS SAAT SALAH
                         if(e) this.spawnFloatingText(e, 'Masih salah! 😭', '#ef4444');
                         this.triggerFeedbackModal('error', 'Belum berhasil 😭', 'Ayo coba lagi!');
                         

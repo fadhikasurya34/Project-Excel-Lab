@@ -34,7 +34,6 @@ class MateriController extends Controller
             ->pluck('material_id')
             ->toArray();
 
-        // FIX: Pastikan nama view ini 'materi.category'
         return view('materi.category', compact('materials', 'category', 'userProgress'));
     }
 

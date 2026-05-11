@@ -24,7 +24,7 @@
 
 @push('styles')
 <style>
-    /* //* (Guard) Mode Landscape Mobile - WAJIB */
+    /* //* (Guard) Mode Landscape Mobile */
     #landscape-notice { display: none; }
     @media screen and (orientation: portrait) and (max-width: 1024px) {
         #landscape-notice {
@@ -37,7 +37,7 @@
     .phone-rotate { animation: rotatePhone 2s ease-in-out infinite; }
     @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
 
-    /* //* (Layout) Fix Scroll & Anti-Gesture */
+    /* //* (Layout) Scroll & Anti-Gesture */
     .simulation-wrapper { 
         position: relative; 
         width: 100%; 
@@ -57,7 +57,7 @@
         border-radius: 1.8rem; overflow: hidden;
     }
 
-    /* //* (Fix) Proteksi tombol saat Dragging */
+    /* //* Proteksi tombol saat Dragging */
     body.is-dragging a, body.is-dragging button:not(.hud-btn) { 
         pointer-events: none !important; 
     }
@@ -93,7 +93,7 @@
     .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
     .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
     
-    /* //* (FX) Error Feedback */
+    /* //* Error Feedback */
     .flash-error { position: fixed; inset: 0; background: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 100; animation: fade-out 0.4s forwards; }
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
@@ -214,7 +214,7 @@
         <p class="text-slate-400 text-[9px] uppercase tracking-widest">Misi wajib menggunakan mode Landscape agar presisi klik akurat.</p>
     </div>
 
-    {{-- FX Flash Error --}}
+    {{-- Flash Error --}}
     <template x-if="showErrorEffect">
         <div class="flash-error"></div>
     </template>

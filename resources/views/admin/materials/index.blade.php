@@ -123,7 +123,7 @@
                 </div>
             </div>
 
-            {{-- UPDATE: Kartu Total Modul sekarang menggunakan count dari relasi kategori yang diload di halaman ini --}}
+            {{-- Kartu Total Modul menggunakan count dari relasi kategori --}}
             <div class="admin-card p-5 sm:p-6 flex items-center justify-between">
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Total Modul</p>

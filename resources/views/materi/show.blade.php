@@ -24,7 +24,6 @@
 @section('title', $material->title . ' - Simulasi')
 
 @push('styles')
-{{-- FIX: Menghilangkan error favicon 404 di konsol --}}
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
 <style>
@@ -55,7 +54,6 @@
         height: 100%;
     }
 
-    /* //* (Fix) Navigasi Lock saat Dragging */
     body.is-dragging a, body.is-dragging button:not(.hud-btn) { 
         pointer-events: none !important; 
     }
@@ -87,8 +85,6 @@
     .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
     .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
     
-
-    /* //* (Visual Update) TEBAL Neon Smooth effect (Diperhalus) */
     @keyframes neon-materi-smooth {
         0%, 100% {
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2);
@@ -251,11 +247,10 @@
             </div>
 
             <div class="p-4" x-show="isExpanded" x-collapse>
-                {{-- FIX: Kembalikan Teks Instruksi yang hilang --}}
                 <p class="text-white text-[15px] font-black leading-tight mb-4 tracking-tight" x-text="steps[currentStep] ? steps[currentStep].instruction : ''"></p>
 
                 <div class="flex flex-row gap-2" x-show="activeHotspot" x-transition.scale.origin.top>
-                    {{-- FIX: Tambahkan @mousedown.stop agar tombol bisa diklik tanpa memicu drag --}}
+                    {{-- Tambahkan @mousedown.stop agar tombol bisa diklik tanpa memicu drag --}}
                     <button @click="showModal = true" 
                             @mousedown.stop @touchstart.stop
                             class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg">
@@ -344,7 +339,6 @@
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
             storageKey: 'material_{{ $material->id }}_progress',
             
-            // OBJEK AUDIO DITAMBAHKAN
             audioPlayers: {
                 click: null,
                 benar: null,

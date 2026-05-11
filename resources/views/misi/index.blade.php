@@ -60,6 +60,8 @@
         transform: translateY(4px);
         border-bottom-width: 0px !important;
     }
+
+    [x-cloak] { display: none !important; }
 </style>
 @endpush
 
@@ -80,21 +82,43 @@
 @endsection
 
 @section('content')
-<div class="px-4 sm:px-10 py-8 flex flex-col items-center">
+{{-- //* (State) Alpine data untuk menyimpan input pencarian --}}
+<div class="px-4 sm:px-10 py-8 flex flex-col items-center" x-data="{ searchQuery: '' }">
     
     {{-- //* (Grid) Container adaptif untuk daftar kategori --}}
     <div class="w-full max-w-md sm:max-w-3xl lg:max-w-5xl mx-auto transition-all duration-500">
         
-        <div class="mb-10 text-left px-2">
-            <h1 class="text-2xl lg:text-2xl font-black text-slate-900 dark:text-white leading-tight">Pilih Tantangan Misi</h1>
-            <p class="text-sm lg:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Selesaikan kategori misi untuk mengumpulkan Learning Power.</p>
+        {{-- Header & Search Bar --}}
+        <div class="mb-10 px-2 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="text-left">
+                <h1 class="text-2xl lg:text-2xl font-black text-slate-900 dark:text-white leading-tight">Pilih Tantangan Misi</h1>
+                <p class="text-sm lg:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Selesaikan kategori misi untuk mengumpulkan Learning Power.</p>
+            </div>
+
+            {{-- //* (Search Input) Desain Premium Emerald --}}
+            <div class="relative w-full md:w-72 lg:w-80 shrink-0 group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-emerald-500 text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" x-model="searchQuery" 
+                       class="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-800 dark:text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm placeholder-slate-400" 
+                       placeholder="Cari topik...">
+                
+                {{-- Tombol clear pencarian muncul jika ada teks --}}
+                <button x-show="searchQuery.length > 0" @click="searchQuery = ''" x-cloak
+                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-red-500 transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 mb-16">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 mb-16" x-ref="missionGrid">
             
             {{-- //* (Data) Iterasi daftar kategori quest dari database --}}
             @foreach($categories as $cat)
-            <div class="glass-card bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 lg:p-8 border-b-[8px] flex flex-col items-start relative overflow-hidden h-full shadow-sm hover:-translate-y-2 active:scale-[0.98]">
+            <div x-show="searchQuery === '' || '{{ strtolower($cat->category) }}'.includes(searchQuery.toLowerCase())"
+                 x-transition.opacity.duration.300ms
+                 class="glass-card bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 lg:p-8 border-b-[8px] flex flex-col items-start relative overflow-hidden h-full shadow-sm hover:-translate-y-2 active:scale-[0.98] mission-card">
                 
                 <div class="card-silhouette">QUEST</div>
 
@@ -124,6 +148,17 @@
             @endforeach
 
         </div>
+
+        {{-- //* (Feedback) Menampilkan info jika pencarian tidak ditemukan --}}
+        <div x-cloak 
+             x-show="searchQuery.length > 0 && Array.from($refs.missionGrid.children).every(el => el.style.display === 'none')" 
+             class="py-12 flex flex-col items-center justify-center text-center opacity-80 animate-pulse">
+            <svg class="w-16 h-16 text-slate-300 dark:text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+            </svg>
+            <p class="text-slate-500 dark:text-slate-400 font-bold text-sm">Tidak menemukan topik misi yang mengandung kata <br><span class="text-emerald-500" x-text="`&quot;${searchQuery}&quot;`"></span></p>
+        </div>
+
     </div>
 </div>
 @endsection

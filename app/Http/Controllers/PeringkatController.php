@@ -43,7 +43,6 @@ class PeringkatController extends Controller
         // 3. Eksekusi query untuk mengambil data ranking
         $rankings = $query->get();
 
-        // FIX: Diarahkan ke peringkat.index agar satu file blade bisa dipakai bersama
         return view('peringkat.index', compact('rankings', 'type'));
     }
 }

@@ -26,11 +26,9 @@ class AdminMateriController extends Controller
         return view('admin.dashboard', compact('stats'));
     }
 
-    /** * FIX: (View) Menampilkan DAFTAR FOLDER (Topik) 
-     * Menambahkan orderBy agar posisi folder konsisten dan tidak lompat-lompat.
-     */
+    /**  (View) Menampilkan DAFTAR FOLDER (Topik)*/
     public function index() {
-        // Menggunakan withCount untuk menghitung relasi, diurutkan agar stabil
+        // WithCount untuk menghitung relasi, diurutkan agar stabil
         $categories = MaterialCategory::withCount('materials')->orderBy('id', 'asc')->get();
 
         $stats = [
@@ -43,9 +41,7 @@ class AdminMateriController extends Controller
         return view('admin.materials.index', compact('categories', 'stats'));
     }
 
-    /** * UPDATE: (View) Menampilkan daftar materi di dalam satu kategori (Folder) 
-     * FIX CRITICAL: Menggunakan relasi langsung ($category->materials()) agar
-     * hasil yang ditarik 100% sama dengan perhitungan withCount di Dashboard.
+    /**(View) Menampilkan daftar materi di dalam satu kategori (Folder) 
      */
     public function listByTopic(string $id) {
         $category = MaterialCategory::findOrFail($id);
@@ -114,8 +110,7 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Folder beserta isinya berhasil dihapus.');
     }
 
-    /** * (Action) Simpan materi secara cepat dari halaman Topik 
-     * FIX: Pastikan memprioritaskan category_id agar tidak masuk ke folder null
+    /** (Action) Simpan materi secara cepat dari halaman Topik 
      */
     public function storeQuick(Request $request) {
         $request->validate([

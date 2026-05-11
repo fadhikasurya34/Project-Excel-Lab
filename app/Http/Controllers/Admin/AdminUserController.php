@@ -14,7 +14,7 @@ class AdminUserController extends Controller
     /** (View) Menampilkan daftar siswa beserta peringkat dan kelasnya */
     public function index()
     {
-        // Ambil user yang bukan admin
+        // Ambil user bukan admin
         $students = User::where('role', '!=', 'admin')
             ->with(['ranking', 'classrooms'])
             ->latest()

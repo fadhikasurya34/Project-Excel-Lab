@@ -27,8 +27,8 @@ class KelasController extends Controller
         // PEMBARUAN: Tambahkan users.progress dan users.completedMaterials ke dalam with()
         $classroom = Classroom::with([
             'users.ranking', 
-            'users.progress',           // Memuat data misi untuk dihitung di Blade
-            'users.completedMaterials', // Memuat data modul untuk dihitung di Blade
+            'users.progress',           
+            'users.completedMaterials',
             'tasks.missions'
         ])->findOrFail($id);
 

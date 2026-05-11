@@ -133,7 +133,7 @@
             </button>
         </div>
 
-        {{-- (Section) Tabel Misi - FIXED NO DOUBLE INFO --}}
+        {{-- (Section) Tabel Misi --}}
         <div class="admin-card overflow-hidden shadow-sm relative border-none md:border md:border-slate-200">
             {{-- Loading Overlay --}}
             <div id="loading-overlay" class="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-50 hidden items-center justify-center">

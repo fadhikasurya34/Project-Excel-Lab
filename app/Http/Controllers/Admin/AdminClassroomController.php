@@ -129,7 +129,7 @@ class AdminClassroomController extends Controller
     public function destroyTask(string $id)
     {
         $task = Task::findOrFail($id);
-        $task->missions()->detach(); // Hapus relasi di pivot
+        $task->missions()->detach();
         $task->delete();
         return back()->with('success', 'Tugas berhasil dihapus.');
     }

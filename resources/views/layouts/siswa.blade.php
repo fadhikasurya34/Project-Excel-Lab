@@ -183,10 +183,7 @@
                 </div>
             </footer>
         </main>
-        {{-- 
-            FLOATING NAV: Home & Dark Mode
-            Posisi: Kanan bawah
-        --}}
+        {{-- FLOATING NAV: Home & Dark Mode --}}
         <div class="fixed bottom-6 right-4 flex flex-col space-y-4 z-50 md:hidden">
             
             {{-- 1. Tombol Home --}}

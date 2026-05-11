@@ -11,7 +11,7 @@ class Material extends Model
 
     protected $fillable = ['title', 'description', 'category_id', 'material_type'];
 
-    // TAMBAHKAN INI: Relasi balik ke folder (kategori)
+    // Relasi balik ke folder (kategori)
     public function category()
     {
         return $this->belongsTo(MaterialCategory::class, 'category_id');

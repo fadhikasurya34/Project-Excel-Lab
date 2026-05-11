@@ -119,7 +119,7 @@
                 </a>
             </div>
 
-            {{-- (Section) Error Validation: Muncul jika ada field yang terlewat --}}
+            {{-- (Section) Error Validation: jika ada field yang terlewat --}}
             @if ($errors->any())
                 <div class="mb-8 p-6 bg-red-50 border-l-4 border-red-500 rounded-r-2xl shadow-sm">
                     <div class="flex items-center mb-3">
