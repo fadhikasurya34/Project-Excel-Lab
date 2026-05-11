@@ -32,18 +32,22 @@
         }
         .form-input-premium:focus {
             outline: none;
-            border-color: #4f46e5;
+            border-color: #3b82f6; /* Ubah dari #4f46e5 ke biru (blue-500) */
             background-color: #ffffff;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.05);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); /* Glow biru */
         }
 
         .btn-blue-main {
-            background-color: #4f46e5;
+            background-color: #3b82f6; /* Ubah dari #4f46e5 ke biru (blue-500) */
             color: white;
             font-weight: 800;
             border-radius: 0.875rem;
-            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
             transition: all 0.2s ease;
+        }
+        
+        .btn-blue-main:hover {
+            background-color: #2563eb; /* Hover lebih gelap (blue-600) */
         }
 
         .text-header { letter-spacing: -0.02em; }
@@ -146,7 +150,7 @@
                 <h3 id="modalTitle" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mb-8">Tambah Modul</h3>
                 <form id="materialForm" method="POST" class="space-y-6">
                     @csrf
-                    {{-- FIX 1: Ubah name menjadi category_id --}}
+                    {{-- Ubah name menjadi category_id --}}
                     <input type="hidden" name="category_id" value="{{ $category_id }}">
                     <div id="methodField"></div>
                     
@@ -182,7 +186,7 @@
 
                     <div class="flex space-x-4 pt-4">
                         <button type="button" onclick="closeModal()" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-xl uppercase tracking-widest text-[10px]">Batal</button>
-                        <button type="submit" class="flex-1 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg uppercase tracking-widest text-[10px]">Simpan Modul</button>
+                        <button type="submit" class="flex-1 py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-colors">Simpan Modul</button>
                     </div>
                 </form>
             </div>
@@ -208,7 +212,6 @@
             document.getElementById('form_description').value = m.description;
             document.getElementById('form_type').value = m.material_type;
             
-            // FIX 3: Assign category_id yang benar ke select
             if(document.getElementById('form_target_category')) {
                 document.getElementById('form_target_category').value = m.category_id;
             }
