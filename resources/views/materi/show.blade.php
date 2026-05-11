@@ -72,7 +72,7 @@
         position: fixed; inset: 0; z-index: 200; background: rgba(15, 23, 42, 0.85);
         display: flex; align-items: center; justify-content: center; padding: 1.5rem;
     }
-    .modal-scroll { overflow-y: auto; padding: 1.25rem; flex: 1; }
+    .modal-scroll { overflow-y: auto; flex: 1; }
 
     /* //* (Buttons) Gamified Pegas */
     .btn-pegas-blue { background: #2563eb; border-bottom: 4px solid #1e3a8a; transition: all 0.1s; }
@@ -282,23 +282,26 @@
         </div>
     </div>
 
-    {{-- Sisanya tetap sesuai kode asli (Modal, Video, Canvas) --}}
+    {{-- FIX: Modifikasi Desain Modal Informasi Lab --}}
     <div x-show="showModal" x-cloak class="modal-overlay" x-transition.opacity>
-        <div class="glass-ui-shared w-full max-w-[550px] max-h-[80vh] flex flex-col shadow-2xl">
-            <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
-                <div class="flex items-center space-x-2">
-                    <img src="{{ asset('images/find.png') }}" class="w-4 h-4">
-                    <span class="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Informasi Lab</span>
+        <div class="glass-ui-shared w-full max-w-[90%] md:max-w-[650px] max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="p-4 md:p-5 border-b border-white/10 flex justify-between items-center bg-blue-500/20">
+                <div class="flex items-center space-x-3">
+                    <img src="{{ asset('images/find.png') }}" class="w-5 h-5 drop-shadow-md">
+                    <span class="text-[10px] md:text-xs font-black text-blue-400 uppercase tracking-widest drop-shadow-md">Informasi Lab</span>
                 </div>
-                <button @click="showModal = false" class="p-2 bg-red-500/20 text-red-400 rounded-xl active:scale-90 transition-all">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                <button @click="showModal = false" class="p-2 bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-white rounded-xl active:scale-90 transition-all">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div class="modal-scroll scrollbar-hide text-center">
-                <p class="text-slate-100 font-bold text-sm leading-relaxed" x-text="activeHotspot?.content"></p>
+            
+            {{-- FIX: Penyesuaian padding, teks rata kiri, spasi lebih lega, dan format baris baru --}}
+            <div class="modal-scroll p-5 md:p-8 text-left">
+                <p class="text-slate-100 font-medium text-[13px] md:text-[15px] leading-loose whitespace-pre-line tracking-wide" x-text="activeHotspot?.content"></p>
+                
                 <template x-if="activeHotspot?.video">
-                    <button @click="showVideo = true" class="mt-6 w-full py-4 bg-slate-800/50 text-blue-400 rounded-2xl font-black text-[10px] border-2 border-blue-500/30 border-b-4">
-                        Putar Tutorial Video
+                    <button @click="showVideo = true" class="mt-8 w-full py-4 bg-slate-800/80 hover:bg-slate-700 text-blue-400 rounded-2xl font-black text-[11px] md:text-xs border-2 border-blue-500/30 border-b-4 transition-all">
+                        ▶ Putar Tutorial Video
                     </button>
                 </template>
             </div>
