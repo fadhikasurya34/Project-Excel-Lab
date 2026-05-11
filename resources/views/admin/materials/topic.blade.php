@@ -32,13 +32,13 @@
         }
         .form-input-premium:focus {
             outline: none;
-            border-color: #3b82f6; /* Ubah dari #4f46e5 ke biru (blue-500) */
+            border-color: #2563eb;
             background-color: #ffffff;
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.05); /* Glow biru */
         }
 
         .btn-blue-main {
-            background-color: #3b82f6; /* Ubah dari #4f46e5 ke biru (blue-500) */
+            background-color: #2563eb;
             color: white;
             font-weight: 800;
             border-radius: 0.875rem;
@@ -47,7 +47,7 @@
         }
         
         .btn-blue-main:hover {
-            background-color: #2563eb; /* Hover lebih gelap (blue-600) */
+            background-color: #2563eb;
         }
 
         .text-header { letter-spacing: -0.02em; }
