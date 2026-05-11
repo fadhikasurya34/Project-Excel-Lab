@@ -73,8 +73,8 @@ class MisiController extends Controller
         $availableBlocks = collect([]);
 
         if ($mission->mission_type === 'Syntax Assembly') {
-            // FIX: Menambahkan % ke dalam Regex pemecah blok
-            preg_match_all('/[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?\%]/', strtoupper($mission->key_answer), $matches);
+            // FIX: Menambahkan pendeteksi string (".+?") agar teks di dalam kutip tidak pecah
+            preg_match_all('/(".+?")|[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?\%]/', strtoupper($mission->key_answer), $matches);
             $blocks = $matches[0];
             $distractors = $mission->distractors ? explode(',', $mission->distractors) : [];
             
@@ -262,24 +262,25 @@ class MisiController extends Controller
     }
 
     /**
-     * //* (Helper) Hierarki Feedback (Nudge) - Versi Sinkronisasi Akurat
+     * //* (Helper) Hierarki Feedback (Nudge) - Super Akurat & Tepat Sasaran
      */
     private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
         if (empty($userAnswer)) return "KOTAK RAKITAN MASIH KOSONG. MULAI RAKIT RUMUSMU!";
 
-        // FIX: Regex pendeteksi token yang lebih inklusif (Mendukung %)
-        $pattern = '/([A-Z]+(?=\())|([A-Z0-9\%]+)|(".+?")|([=\>\<\,\;\:\+\-\*\/\%])|([\(\)])/';
-        preg_match_all($pattern, $correctAnswer, $matchesCorrect);
-        preg_match_all($pattern, $userAnswer, $matchesUser);
+        // FIX: Regex cerdas yang memecah string rakitan kembali jadi fungsi, sel, dan simbol secara akurat
+        $pattern = '/(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT)|([A-Z]+\$?[0-9]+)|(".+?")|([0-9]+)|([=\>\<\,\;\:\+\-\*\/\%\(\)])|([A-Z]+)/i';
+        
+        preg_match_all($pattern, strtoupper($correctAnswer), $matchesCorrect);
+        preg_match_all($pattern, strtoupper($userAnswer), $matchesUser);
 
         $tokensCorrect = $matchesCorrect[0];
         $tokensUser = $matchesUser[0];
 
-        // 1. PRIORITAS 1: Deteksi Komponen "Penyusup" atau "Berlebihan"
         $countsCorrect = array_count_values($tokensCorrect);
         $countsUser = array_count_values($tokensUser);
 
+        // 1. PRIORITAS 1: Deteksi Komponen "Penyusup" atau "Berlebihan"
         foreach ($countsUser as $token => $count) {
             if (!isset($countsCorrect[$token])) {
                 return "ADA KOMPONEN 'PENYUSUP' YANG TIDAK COCOK UNTUK RUMUS INI.";
@@ -290,7 +291,7 @@ class MisiController extends Controller
             }
         }
 
-        // 2. PRIORITAS 2: Cek Keseimbangan Kurung (Sering terlewat oleh siswa)
+        // 2. PRIORITAS 2: Cek Keseimbangan Kurung
         if (substr_count($userAnswer, '(') !== substr_count($userAnswer, ')')) {
             return "ADA MASALAH PADA PASANGAN KURUNG. COBA CEK LAGI KESEIMBANGANNYA.";
         }
@@ -298,9 +299,15 @@ class MisiController extends Controller
         // 3. PRIORITAS 3: Deteksi Komponen yang Kurang (Missing)
         foreach ($countsCorrect as $token => $count) {
             if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
-                if (preg_match('/^[A-Z]{2,}$/', $token)) {
+                
+                // Pesan Peringatan Khusus!
+                if ($token === '=') {
+                    return "JANGAN LUPA, RUMUS EXCEL SELALU DIAWALI TANDA SAMA DENGAN (=).";
+                }
+                if (preg_match('/^(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT)$/i', $token)) {
                     return "LOGIKA RUMUS INI BUTUH SATU FUNGSI KALKULASI LAGI.";
                 }
+                
                 return "INVENTARIS KOMPONENMU MASIH ADA YANG KURANG LENGKAP.";
             }
         }
@@ -308,7 +315,7 @@ class MisiController extends Controller
         // 4. PRIORITAS 4: Deteksi Kesalahan Urutan (Sequence Error)
         for ($i = 0; $i < count($tokensCorrect); $i++) {
             if (isset($tokensUser[$i]) && $tokensUser[$i] !== $tokensCorrect[$i]) {
-                if ($i === 0) return "AWALI RAKITAN DENGAN LANGKAH YANG LEBIH TEPAT.";
+                if ($i === 0) return "AWALI RAKITAN DENGAN TANDA SAMA DENGAN (=) LALU FUNGSI YANG TEPAT.";
                 return "KOMPONEN SUDAH BENAR, TAPI URUTAN LOGIKANYA MASIH PERLU DIPERBAIKI.";
             }
         }
