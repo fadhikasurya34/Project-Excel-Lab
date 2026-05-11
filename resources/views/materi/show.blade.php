@@ -84,6 +84,16 @@
     .btn-menu-pegas:active {transform: translateY(4px);border-bottom-width: 2px;}
     .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
     .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
+
+    /* //* (Buttons) Animasi Wajib Baca Penjelasan */
+    @keyframes btn-glow-pulse {
+        0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); filter: brightness(1); }
+        50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.3); filter: brightness(1.25); }
+    }
+    .btn-attention-glow {
+        animation: btn-glow-pulse 1.2s infinite ease-in-out;
+        border-top: 1px solid #93c5fd;
+    }
     
     @keyframes neon-materi-smooth {
         0%, 100% {
@@ -250,17 +260,20 @@
                 <p class="text-white text-[15px] font-black leading-tight mb-4 tracking-tight" x-text="steps[currentStep] ? steps[currentStep].instruction : ''"></p>
 
                 <div class="flex flex-row gap-2" x-show="activeHotspot" x-transition.scale.origin.top>
-                    {{-- Tambahkan @mousedown.stop agar tombol bisa diklik tanpa memicu drag --}}
-                    <button @click="showModal = true" 
+                    {{-- Tambahkan class animasi glow (btn-attention-glow) jika penjelasan belum dibaca --}}
+                    <button @click="showModal = true; explanationRead = true; saveProgress();" 
                             @mousedown.stop @touchstart.stop
-                            class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg">
+                            class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg transition-all"
+                            :class="!explanationRead ? 'btn-attention-glow' : ''">
                         Penjelasan
                     </button>
                     
                     <template x-if="allHotspotsInStepDone">
-                        <button @click="nextStep()" 
+                        {{-- FIX: Tombol Lanjut sekarang mengecek apakah penjelasan sudah dibaca --}}
+                        <button @click="if(explanationRead) { nextStep(); } else { showToast('Perhatian', 'Wajib membuka Penjelasan terlebih dahulu sebelum lanjut.', 'alert.png'); playSound('salah'); }" 
                                 @mousedown.stop @touchstart.stop
-                                class="hud-btn flex-1 py-2.5 btn-pegas-emerald text-white rounded-xl font-black text-[9px] shadow-lg">
+                                class="hud-btn flex-1 py-2.5 text-white rounded-xl font-black text-[9px] shadow-lg transition-all"
+                                :class="explanationRead ? 'btn-pegas-emerald' : 'bg-slate-400 border-b-4 border-slate-500 opacity-90'">
                             Lanjut
                         </button>
                     </template>
@@ -335,6 +348,7 @@
             activeHotspot: null, isExpanded: true, showModal: false, showVideo: false,
             boxX: 20, boxY: 80, isDragging: false, offX: 0, offY: 0,
             showErrorEffect: false,
+            explanationRead: false, // State untuk memantau apakah penjelasan sudah dibaca
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
             storageKey: 'material_{{ $material->id }}_progress',
@@ -366,6 +380,7 @@
                         this.currentStep = parsed.currentStep ?? 0;
                         this.currentOrder = parsed.currentOrder ?? 0;
                         this.clickedHotspots = parsed.clickedHotspots ?? [];
+                        this.explanationRead = parsed.explanationRead ?? false;
                         if (this.currentOrder > 0 && this.steps[this.currentStep] && this.steps[this.currentStep].hotspots[this.currentOrder - 1]) {
                             this.activeHotspot = this.steps[this.currentStep].hotspots[this.currentOrder - 1];
                         }
@@ -393,7 +408,8 @@
                 const payload = {
                     currentStep: this.currentStep,
                     currentOrder: this.currentOrder,
-                    clickedHotspots: this.clickedHotspots
+                    clickedHotspots: this.clickedHotspots,
+                    explanationRead: this.explanationRead
                 };
                 localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
@@ -469,6 +485,7 @@
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots = [...this.clickedHotspots, hs.id];
                         this.currentOrder++;
+                        this.explanationRead = false; // Reset agar wajib dibaca setiap ganti hotspot/step baru
                         this.saveProgress();
                         
                         // MEMAINKAN AUDIO BENAR KLIK
@@ -493,6 +510,7 @@
                     this.clickedHotspots = [];
                     this.activeHotspot = null;
                     this.showModal = false;
+                    this.explanationRead = false; // Reset penjelasan saat naik step
                     this.saveProgress();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
