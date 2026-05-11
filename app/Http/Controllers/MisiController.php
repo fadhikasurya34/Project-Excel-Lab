@@ -73,7 +73,7 @@ class MisiController extends Controller
         $availableBlocks = collect([]);
 
         if ($mission->mission_type === 'Syntax Assembly') {
-            // FIX: Menambahkan pendeteksi string (".+?") agar teks di dalam kutip tidak pecah
+            // Memecah berdasarkan pola yang lebih aman
             preg_match_all('/(".+?")|[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?\%]/', strtoupper($mission->key_answer), $matches);
             $blocks = $matches[0];
             $distractors = $mission->distractors ? explode(',', $mission->distractors) : [];
@@ -262,13 +262,12 @@ class MisiController extends Controller
     }
 
     /**
-     * //* (Helper) Hierarki Feedback (Nudge) - Super Akurat (Sync dengan show)
+     * //* (Helper) Hierarki Feedback (Nudge) - Super Akurat & Cerdas
      */
     private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
         if (empty($userAnswer)) return "KOTAK RAKITAN MASIH KOSONG. MULAI RAKIT RUMUSMU!";
 
-        // FIX: Regex ini disamakan 100% dengan fungsi show() yang memecah blok di Frontend
         $pattern = '/(".+?")|[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?\%]/';
         
         preg_match_all($pattern, strtoupper($correctAnswer), $matchesCorrect);
@@ -280,15 +279,10 @@ class MisiController extends Controller
         $countsCorrect = array_count_values($tokensCorrect);
         $countsUser = array_count_values($tokensUser);
 
-        // 1. PRIORITAS 1: Deteksi Komponen yang Tidak Seharusnya (Intruder)
-        foreach ($countsUser as $token => $count) {
-            if (!isset($countsCorrect[$token])) {
-                return "ADA KOMPONEN YANG TIDAK SEHARUSNYA BERADA DI RUMUS INI.";
-            }
-            
-            if ($count > $countsCorrect[$token]) {
-                return "TERDETEKSI PEMAKAIAN BLOK YANG BERLEBIHAN. PERIKSA EFISIENSI RUMUSMU.";
-            }
+        // 1. PRIORITAS 1: Peringatan Mutlak (Tanda =)
+        // Kalau siswa kelupaan =, ini yang paling utama dikasih tau.
+        if (isset($countsCorrect['=']) && !isset($countsUser['='])) {
+            return "JANGAN LUPA, RUMUS EXCEL SELALU DIAWALI TANDA SAMA DENGAN (=).";
         }
 
         // 2. PRIORITAS 2: Cek Keseimbangan Kurung
@@ -296,27 +290,50 @@ class MisiController extends Controller
             return "ADA MASALAH PADA PASANGAN KURUNG. COBA CEK LAGI KESEIMBANGANNYA.";
         }
 
-        // 3. PRIORITAS 3: Deteksi Komponen yang Kurang (Missing)
+        // 3. PRIORITAS 3: Peringatan Absolut Fungsi Utama Excel
+        // Misal kunci butuh VLOOKUP, tapi siswa nggak masukin VLOOKUP.
+        $mainFunctions = ['IF', 'VLOOKUP', 'HLOOKUP', 'SUM', 'AVERAGE', 'MIN', 'MAX', 'AND', 'OR', 'NOT', 'COUNT'];
+        foreach ($mainFunctions as $func) {
+            if (isset($countsCorrect[$func]) && !isset($countsUser[$func])) {
+                return "LOGIKA RUMUS INI BUTUH FUNGSI '{$func}'.";
+            }
+        }
+
+        // 4. PRIORITAS 4: Deteksi Komponen yang Kurang (Missing)
+        // Ditaruh sebelum "Penyusup" supaya siswa tau dulu komponen apa yang kurang, bukan malah disalah-salahkan ada penyusup
         foreach ($countsCorrect as $token => $count) {
             if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
-                
-                // Peringatan jika yang terlewat adalah tanda =
-                if ($token === '=') {
-                    return "JANGAN LUPA, RUMUS EXCEL SELALU DIAWALI TANDA SAMA DENGAN (=).";
+                // Hint pintar untuk $ (Absolute Reference)
+                if ($token === '$') {
+                    return "ADA REFERENSI SEL YANG HARUS DIKUNCI (ABSOLUT). JANGAN LUPA TANDA DOLLAR ($).";
                 }
-                
                 return "INVENTARIS KOMPONENMU MASIH ADA YANG KURANG LENGKAP.";
             }
         }
 
-        // 4. PRIORITAS 4: Deteksi Kesalahan Urutan (Sequence Error)
+        // 5. PRIORITAS 5: Deteksi Komponen yang Tidak Seharusnya (Penyusup)
+        // Sekarang sistem hanya bilang "tidak seharusnya" JIKA SEMUA KOMPONEN BENAR SUDAH LENGKAP.
+        foreach ($countsUser as $token => $count) {
+            if (!isset($countsCorrect[$token])) {
+                return "ADA KOMPONEN YANG TIDAK SEHARUSNYA BERADA DI RUMUS INI.";
+            }
+            if ($count > $countsCorrect[$token]) {
+                return "TERDETEKSI PEMAKAIAN BLOK YANG BERLEBIHAN. PERIKSA EFISIENSI RUMUSMU.";
+            }
+        }
+
+        // 6. PRIORITAS 6: Deteksi Kesalahan Urutan (Sequence Error)
+        // Jika semua komponen sudah pas jumlahnya dan jenisnya, berarti cuma salah urutan.
         for ($i = 0; $i < count($tokensCorrect); $i++) {
             if (isset($tokensUser[$i]) && $tokensUser[$i] !== $tokensCorrect[$i]) {
-                if ($i === 0) return "AWALI RAKITAN DENGAN TANDA SAMA DENGAN (=) LALU FUNGSI YANG TEPAT.";
+                if ($i === 0 && $tokensUser[$i] !== '=') {
+                    return "AWALI RAKITAN DENGAN TANDA SAMA DENGAN (=) LALU FUNGSI YANG TEPAT.";
+                }
                 return "KOMPONEN SUDAH BENAR, TAPI URUTAN LOGIKANYA MASIH PERLU DIPERBAIKI.";
             }
         }
 
+        // Default Fallback
         return "KOMPONEN SUDAH LENGKAP, PERIKSA KEMBALI POSISI DETAILNYA.";
     }
 
