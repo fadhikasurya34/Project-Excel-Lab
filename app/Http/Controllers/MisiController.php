@@ -262,14 +262,14 @@ class MisiController extends Controller
     }
 
     /**
-     * //* (Helper) Hierarki Feedback (Nudge) - Super Akurat & Tepat Sasaran
+     * //* (Helper) Hierarki Feedback (Nudge) - Super Akurat (Sync dengan show)
      */
     private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
         if (empty($userAnswer)) return "KOTAK RAKITAN MASIH KOSONG. MULAI RAKIT RUMUSMU!";
 
-        // FIX: Regex cerdas yang memecah string rakitan kembali jadi fungsi, sel, dan simbol secara akurat
-        $pattern = '/(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT)|([A-Z]+\$?[0-9]+)|(".+?")|([0-9]+)|([=\>\<\,\;\:\+\-\*\/\%\(\)])|([A-Z]+)/i';
+        // FIX: Regex ini disamakan 100% dengan fungsi show() yang memecah blok di Frontend
+        $pattern = '/(".+?")|[A-Z0-9\%]+|[\(\)\,\;\:\=\"\>\<\$\.\!\?\%]/';
         
         preg_match_all($pattern, strtoupper($correctAnswer), $matchesCorrect);
         preg_match_all($pattern, strtoupper($userAnswer), $matchesUser);
@@ -280,10 +280,10 @@ class MisiController extends Controller
         $countsCorrect = array_count_values($tokensCorrect);
         $countsUser = array_count_values($tokensUser);
 
-        // 1. PRIORITAS 1: Deteksi Komponen "Penyusup" atau "Berlebihan"
+        // 1. PRIORITAS 1: Deteksi Komponen yang Tidak Seharusnya (Intruder)
         foreach ($countsUser as $token => $count) {
             if (!isset($countsCorrect[$token])) {
-                return "ADA KOMPONEN 'PENYUSUP' YANG TIDAK COCOK UNTUK RUMUS INI.";
+                return "ADA KOMPONEN YANG TIDAK SEHARUSNYA BERADA DI RUMUS INI.";
             }
             
             if ($count > $countsCorrect[$token]) {
@@ -300,12 +300,9 @@ class MisiController extends Controller
         foreach ($countsCorrect as $token => $count) {
             if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
                 
-                // Pesan Peringatan Khusus!
+                // Peringatan jika yang terlewat adalah tanda =
                 if ($token === '=') {
                     return "JANGAN LUPA, RUMUS EXCEL SELALU DIAWALI TANDA SAMA DENGAN (=).";
-                }
-                if (preg_match('/^(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT)$/i', $token)) {
-                    return "LOGIKA RUMUS INI BUTUH SATU FUNGSI KALKULASI LAGI.";
                 }
                 
                 return "INVENTARIS KOMPONENMU MASIH ADA YANG KURANG LENGKAP.";
