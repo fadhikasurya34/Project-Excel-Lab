@@ -125,6 +125,9 @@
         right: max(20px, env(safe-area-inset-right)) !important;
     }
 
+    /* Mencegah tabrakan saat fullscreen aktif */
+    body.is-ios-fs .text-content-block { display: none !important; }
+
     /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
     .description-card {
         background: rgba(255, 255, 255, 0.8);
@@ -226,7 +229,7 @@
         </div>
 
         {{-- //* 2. Area Multi-Konten Pembelajaran --}}
-        <div class="mb-10 space-y-12 video-section">
+        <div class="mb-10 space-y-12 video-section" x-data="{ isVideoOpen: false }">
             @php
                 $videoUrl = $material->video_url ?? null; 
                 $pdfUrl = $material->pdf_url ?? null; 
@@ -243,22 +246,13 @@
                 }
                 if ($videoUrl && $pdfUrl === $videoUrl) { $pdfUrl = null; }
 
-                // FIX: Ubah Link Google Drive jadi Direct Access (.mp4) untuk <video> tag
-                $isYouTube = false;
-                if ($videoUrl) {
-                    if (str_contains(strtolower($videoUrl), 'youtube.com') || str_contains(strtolower($videoUrl), 'youtu.be')) {
-                        $isYouTube = true;
-                    } elseif (str_contains($videoUrl, 'drive.google.com')) {
-                        preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $videoUrl, $matches);
-                        if (!empty($matches[1])) {
-                            // Link download paksa dari Google Drive
-                            $videoUrl = 'https://drive.google.com/uc?export=download&id=' . $matches[1];
-                        }
-                    }
+                // FIX: Ubah Drive link menjadi bersih (mode preview)
+                if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
+                    $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
                 }
             @endphp
 
-            {{-- URUTAN 1: VIDEO TUTORIAL --}}
+            {{-- URUTAN 1: VIDEO TUTORIAL DENGAN SISTEM PREVIEW ISOLASI --}}
             @if($videoUrl)
             <div>
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -268,20 +262,42 @@
                     Video Tutorial
                 </h3>
                 
-                <div class="w-full overflow-hidden rounded-[1.5rem] border-4 border-white dark:border-slate-800 shadow-xl bg-black">
-                    @if($isYouTube)
-                        {{-- Fallback jika ada video dari youtube --}}
-                        <div class="video-container">
-                            <iframe src="{{ $videoUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                {{-- THUMBNAIL PEMUTAR (Mencegah browser meload video sebelum dibesarkan) --}}
+                <div @click="isVideoOpen = true; document.body.style.overflow = 'hidden';" class="relative w-full rounded-[1.5rem] border-4 border-slate-200 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-900 cursor-pointer hover:border-blue-500 transition-all group overflow-hidden" style="padding-top: 56.25%;">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] dark:bg-none">
+                        <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
                         </div>
-                    @else
-                        {{-- NATIVE HTML5 VIDEO PLAYER (Anti-Ngebug / Anti Double UI) --}}
-                        <video width="100%" height="auto" controls playsinline preload="metadata" class="w-full object-contain max-h-[500px] outline-none">
-                            <source src="{{ $videoUrl }}" type="video/mp4">
-                            Browser Anda tidak mendukung tag video.
-                        </video>
-                    @endif
+                        <span class="font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest text-xs group-hover:text-blue-500 transition-colors">Buka Layar Video</span>
+                    </div>
                 </div>
+                
+                {{-- MODAL PREVIEW VIDEO (Layar Penuh, Anti-Hijack) --}}
+                <template x-if="isVideoOpen">
+                    <div class="fixed inset-0 z-[999999] bg-black flex flex-col">
+                        {{-- Toolbar Atas --}}
+                        <div class="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-50 bg-gradient-to-b from-black/80 to-transparent">
+                            <div class="text-white/80 font-bold text-xs uppercase tracking-widest">Pemutar Video Eksklusif</div>
+                            <button @click="isVideoOpen = false; document.body.style.overflow = '';" class="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform cursor-pointer pointer-events-auto">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        
+                        {{-- Area Player --}}
+                        <div class="flex-1 w-full h-full flex items-center justify-center mt-12 mb-4">
+                            @if(str_contains($videoUrl, 'drive.google.com') || str_contains($videoUrl, 'youtube.com'))
+                                {{-- Eksekusi GDrive/Youtube Embed --}}
+                                <iframe src="{{ $videoUrl }}" class="w-full h-full border-none" allow="autoplay" playsinline></iframe>
+                            @else
+                                {{-- Eksekusi Sesuai Permintaan: Tag <video> murni --}}
+                                <video width="100%" height="auto" controls playsinline class="max-h-full">
+                                    <source src="{{ $videoUrl }}" type="video/mp4">
+                                    Browser Anda tidak mendukung tag video.
+                                </video>
+                            @endif
+                        </div>
+                    </div>
+                </template>
             </div>
             @endif
 
@@ -365,6 +381,7 @@
                 <div class="mb-10">
                     <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-4" onsubmit="submitAjax(event, this, 'Komentar dikirim!')">
                         @csrf
+                        {{-- Avatar Pengirim SINKRON --}}
                         <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
                             <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                         </div>
@@ -378,7 +395,7 @@
                     </form>
                 </div>
 
-                {{-- Thread Komentar --}}
+                {{-- Thread Komentar (Dibungkus div id untuk AJAX Refresh) --}}
                 <div id="diskusi-list" class="space-y-8">
                     @forelse($material->comments as $comment)
                         <div class="relative">
