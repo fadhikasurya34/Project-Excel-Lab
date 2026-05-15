@@ -125,41 +125,6 @@
         right: max(20px, env(safe-area-inset-right)) !important;
     }
 
-    /* =========================================================
-       CSS KLONINGAN KHUSUS UNTUK VIDEO AGAR TIDAK BENTROK
-       ========================================================= */
-    .yt-container {
-        position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; 
-        border-radius: 1.5rem; background: #000; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; 
-    }
-    .yt-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 10; }
-    
-    /* FIX THEATER MODE: CSS Pseudo-Fullscreen */
-    body.is-yt-fs { background-color: #000 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; height: 100dvh !important; width: 100vw !important; margin: 0 !important; padding: 0 !important; }
-    body.is-yt-fs header, body.is-yt-fs nav, body.is-yt-fs aside, body.is-yt-fs [class*="fixed top-0"], body.is-yt-fs .z-50, body.is-yt-fs .content-header, body.is-yt-fs .info-section, body.is-yt-fs .fullscreen-btn-container, body.is-yt-fs .multi-content-header { display: none !important; opacity: 0 !important; visibility: hidden !important; }
-    body.is-yt-fs .main-wrapper, body.is-yt-fs .inner-wrapper, body.is-yt-fs .video-section { padding: 0 !important; margin: 0 !important; max-width: 100% !important; width: 100% !important; height: auto !important; border: none !important; box-shadow: none !important; background: transparent !important; }
-    
-    /* Mengubah Container Video jadi sepenuh layar */
-    body.is-yt-fs .yt-container { 
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important; 
-        height: 100dvh !important; 
-        padding-bottom: 0 !important; 
-        border-radius: 0 !important; 
-        border: none !important; 
-        z-index: 99999 !important;
-    }
-    
-    .btn-exit-yt { display: none; position: absolute; top: 20px; right: 20px; z-index: 2147483647 !important; background: rgba(220, 38, 38, 0.7); color: white; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); pointer-events: auto !important; -webkit-tap-highlight-color: transparent; }
-    .btn-exit-yt:active { background: rgba(185, 28, 28, 1); transform: scale(0.90); }
-    body.is-yt-fs .btn-exit-yt { display: flex !important; position: fixed !important; top: max(20px, env(safe-area-inset-top)) !important; right: max(20px, env(safe-area-inset-right)) !important; }
-
-    /* Mencegah tabrakan saat fullscreen aktif */
-    body.is-ios-fs .yt-container, body.is-ios-fs .text-content-block { display: none !important; }
-    body.is-yt-fs .video-container, body.is-yt-fs .text-content-block { display: none !important; }
-
     /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
     .description-card {
         background: rgba(255, 255, 255, 0.8);
@@ -278,9 +243,18 @@
                 }
                 if ($videoUrl && $pdfUrl === $videoUrl) { $pdfUrl = null; }
 
-                // FIX: Paksa Google Drive menjadi Embed Preview Bersih
-                if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
-                    $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
+                // FIX: Ubah Link Google Drive jadi Direct Access (.mp4) untuk <video> tag
+                $isYouTube = false;
+                if ($videoUrl) {
+                    if (str_contains(strtolower($videoUrl), 'youtube.com') || str_contains(strtolower($videoUrl), 'youtu.be')) {
+                        $isYouTube = true;
+                    } elseif (str_contains($videoUrl, 'drive.google.com')) {
+                        preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $videoUrl, $matches);
+                        if (!empty($matches[1])) {
+                            // Link download paksa dari Google Drive
+                            $videoUrl = 'https://drive.google.com/uc?export=download&id=' . $matches[1];
+                        }
+                    }
                 }
             @endphp
 
@@ -294,20 +268,19 @@
                     Video Tutorial
                 </h3>
                 
-                {{-- FIX: Kembalikan tombol silang merah, pakai iframe murni --}}
-                <div id="yt-container" class="yt-container border-4 border-white dark:border-slate-800 shadow-xl bg-black">
-                    <button type="button" onclick="toggleYtFullscreen()" class="btn-exit-yt" aria-label="Tutup Layar">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                    <iframe src="{{ $videoUrl }}" allow="autoplay"></iframe>
-                </div>
-                
-                {{-- FIX: Kembalikan tombol Perbesar Video --}}
-                <div class="mt-4 flex justify-end fullscreen-btn-container">
-                    <button type="button" onclick="toggleYtFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                        <span>Perbesar Video</span>
-                    </button>
+                <div class="w-full overflow-hidden rounded-[1.5rem] border-4 border-white dark:border-slate-800 shadow-xl bg-black">
+                    @if($isYouTube)
+                        {{-- Fallback jika ada video dari youtube --}}
+                        <div class="video-container">
+                            <iframe src="{{ $videoUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                        </div>
+                    @else
+                        {{-- NATIVE HTML5 VIDEO PLAYER (Anti-Ngebug / Anti Double UI) --}}
+                        <video width="100%" height="auto" controls playsinline preload="metadata" class="w-full object-contain max-h-[500px] outline-none">
+                            <source src="{{ $videoUrl }}" type="video/mp4">
+                            Browser Anda tidak mendukung tag video.
+                        </video>
+                    @endif
                 </div>
             </div>
             @endif
@@ -392,7 +365,6 @@
                 <div class="mb-10">
                     <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-4" onsubmit="submitAjax(event, this, 'Komentar dikirim!')">
                         @csrf
-                        {{-- Avatar Pengirim SINKRON --}}
                         <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
                             <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                         </div>
@@ -564,17 +536,6 @@
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { disableIOSFallback(); }
         });
     });
-
-    // --- KLONINGAN KHUSUS VIDEO (FIX: CSS Theater Mode, Tanpa Native Browser UI Hijacking) ---
-    function toggleYtFullscreen() {
-        const isCurrentlyYtFS = document.body.classList.contains('is-yt-fs');
-        if (isCurrentlyYtFS) { 
-            document.body.classList.remove('is-yt-fs'); 
-        } else { 
-            window.scrollTo(0, 0); 
-            document.body.classList.add('is-yt-fs'); 
-        }
-    }
 
     // --- FUNGSI BACA TEKS ---
     function toggleTextExpansion() {
