@@ -5,18 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Material;
 use App\Models\MaterialCategory;
 use App\Models\MaterialCompletion;
+use App\Models\MaterialComment; // Tambahkan ini
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MateriController extends Controller
 {
-    /** * (View) Menampilkan daftar FOLDER/TOPIK materi
-     * Data: Mengambil semua kategori dari tabel MaterialCategory
-     */
+    /** * (View) Menampilkan daftar FOLDER/TOPIK materi */
     public function index()
     {
-        // Mengambil semua folder kategori beserta jumlah modul di dalamnya
         $categories = MaterialCategory::withCount('materials')->get();
-            
         return view('materi.index', compact('categories'));
     }
 
@@ -37,17 +35,22 @@ class MateriController extends Controller
         return view('materi.category', compact('materials', 'category', 'userProgress'));
     }
 
-    /** * (View) Player Materi: Menampilkan detail konten
-     * Logika: Memisahkan tampilan antara Teori (PDF/Video) dan Praktikum (Hotspot)
-     */
+    /** * (View) Player Materi: Menampilkan detail konten */
     public function show(string $id)
     {
-        // Eager loading activities dan hotspots agar performa cepat
-        $material = Material::with(['activities.hotspots' => function($q) {
-            $q->orderBy('order', 'asc');
-        }])->findOrFail($id);
+        // FIX: Eager loading hanya untuk komentar UTAMA (parent_id null) 
+        // dan memuat balasan (replies) di dalamnya beserta data user masing-masing.
+        $material = Material::with([
+            'activities.hotspots' => function($q) {
+                $q->orderBy('order', 'asc');
+            },
+            'comments' => function($q) {
+                $q->whereNull('parent_id')
+                  ->with(['user', 'replies.user'])
+                  ->latest(); 
+            }
+        ])->findOrFail($id);
 
-        // Logika Progres: Tandai "Selesai" otomatis jika siswa membuka materi ini
         if (Auth::check() && Auth::user()->role !== 'admin') {
             MaterialCompletion::firstOrCreate([
                 'user_id'     => Auth::id(),
@@ -55,13 +58,56 @@ class MateriController extends Controller
             ]);
         }
 
-        // PENGALIHAN VIEW BERDASARKAN TIPE
-        // 1. Tipe Teori: Diarahkan ke blade khusus materi bacaan/video
         if ($material->material_type === 'teori') {
             return view('materi.theory', compact('material'));
         }
 
-        // 2. Tipe Praktikum: Diarahkan ke blade interaktif (Hotspot/Virtual Lab)
         return view('materi.show', compact('material'));
+    }
+
+    /** * (Action) Menyimpan komentar atau balasan baru */
+    public function storeComment(Request $request, string $id)
+    {
+        $request->validate([
+            'body' => 'required|string|max:1000',
+            'parent_id' => 'nullable|exists:material_comments,id' // Validasi untuk reply
+        ]);
+
+        MaterialComment::create([
+            'material_id' => $id,
+            'user_id'     => Auth::id(),
+            'body'        => $request->body,
+            'parent_id'   => $request->parent_id // Simpan parent_id jika ada
+        ]);
+
+        return back()->with('success', 'Komentar berhasil dikirim!');
+    }
+
+    /** * (Action) Menangani Like dan Dislike komentar */
+    public function reactComment(string $id, string $type)
+    {
+        $comment = MaterialComment::findOrFail($id);
+
+        if ($type === 'like') {
+            $comment->increment('likes');
+        } elseif ($type === 'dislike') {
+            $comment->increment('dislikes');
+        }
+
+        return back();
+    }
+    
+    /** * (Action) Menghapus Komentar/Balasan */
+    public function destroyComment(string $id)
+    {
+        $comment = \App\Models\MaterialComment::findOrFail($id);
+        
+        // Proteksi: Pastikan hanya pemilik yang bisa menghapus
+        if ($comment->user_id !== Auth::id()) {
+            abort(403, 'Aksi tidak diizinkan.');
+        }
+
+        $comment->delete();
+        return back()->with('success', 'Komentar berhasil dihapus.');
     }
 }

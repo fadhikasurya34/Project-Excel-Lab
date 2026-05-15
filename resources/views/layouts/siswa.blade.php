@@ -125,33 +125,42 @@
             </div>
 
             <div class="flex items-center space-x-2 md:space-x-3">
-                {{-- 1. Tombol Home --}}
-                <a href="{{ route('dashboard') }}" 
-                class="hidden md:flex w-10 h-10 md:w-11 md:h-11 items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-emerald-100 dark:border-emerald-900/30 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all">
+                
+                {{-- 0. Tombol Bantuan (Help Center) - FIX LINK --}}
+                <a href="{{ route('tutorial') }}" title="Pusat Bantuan"
+                   class="hidden md:flex w-10 h-10 md:w-11 md:h-11 items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-blue-100 dark:border-blue-900/30 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </a>
 
-                {{-- 2. Tombol Theme Toggle--}}
-                <button @click="toggleTheme()" 
-                        class="hidden md:flex w-10 h-10 md:w-11 md:h-11 items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 transition-colors">
+                {{-- 1. Tombol Home --}}
+                <a href="{{ route('dashboard') }}" title="Dashboard Home"
+                   class="hidden md:flex w-10 h-10 md:w-11 md:h-11 items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-emerald-100 dark:border-emerald-900/30 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                </a>
+
+                {{-- 2. Tombol Theme Toggle --}}
+                <button @click="toggleTheme()" title="Ubah Tema"
+                        class="hidden md:flex w-10 h-10 md:w-11 md:h-11 items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50">
                     <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                     </svg>
                     <svg x-show="!darkMode" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
                 </button>
                 
                 {{-- 3. Tombol Profile & Sidebar --}}
                 <button @click="sidebarOpen = true" 
-                        class="flex items-center p-1 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-full btn-pegas group shadow-sm">
+                        class="flex items-center p-1 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-full btn-pegas group shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
                     @php $userColor = Auth::user()->profile_color ?? '10b981'; @endphp
                     <div class="w-8 h-8 rounded-full border-2 border-white dark:border-slate-600 overflow-hidden" style="background-color: #{{ $userColor }};">
-                        <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                        <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5 transform scale-110">
                     </div>
-                    <svg class="w-4 h-4 text-slate-400 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                    <svg class="w-4 h-4 text-slate-400 mx-2 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
                 </button>
             </div>
         </nav>
@@ -183,30 +192,40 @@
                 </div>
             </footer>
         </main>
-        {{-- FLOATING NAV: Home & Dark Mode --}}
+        
+        {{-- FLOATING NAV MOBILE --}}
         <div class="fixed bottom-6 right-4 flex flex-col space-y-4 z-50 md:hidden">
             
-            {{-- 1. Tombol Home --}}
-            <a href="{{ route('dashboard') }}" 
-            class="w-11 h-11 flex items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-500 dark:text-emerald-400 shadow-xl">
+            {{-- 0. Tombol Bantuan (Help Center) - Mobile FIX LINK --}}
+            <a href="{{ route('tutorial') }}" 
+               class="w-11 h-11 flex items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-blue-100 dark:border-blue-900/30 text-blue-500 dark:text-blue-400 shadow-xl active:scale-95">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </a>
 
-            {{-- 2. Tombol Theme Toggle --}}
+            {{-- 1. Tombol Home - Mobile --}}
+            <a href="{{ route('dashboard') }}" 
+               class="w-11 h-11 flex items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-emerald-100 dark:border-emerald-900/30 text-emerald-500 dark:text-emerald-400 shadow-xl active:scale-95">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+            </a>
+
+            {{-- 2. Tombol Theme Toggle - Mobile --}}
             <button @click="toggleTheme()" 
-                    class="w-11 h-11 flex items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl">
+                    class="w-11 h-11 flex items-center justify-center rounded-xl btn-pegas bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 shadow-xl active:scale-95">
                 {{-- Ikon Matahari (Muncul pas Dark Mode) --}}
                 <svg x-show="darkMode" x-cloak class="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
                 {{-- Ikon Bulan --}}
-                <svg x-show="!darkMode" class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                <svg x-show="!darkMode" class="w-5 h-5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                 </svg>
             </button>
         </div>
+
         {{-- KODE SIDEBAR --}}
         <div class="fixed inset-0 z-[100] pointer-events-none" x-show="sidebarOpen" x-cloak>
             <div @click="sidebarOpen = false" 

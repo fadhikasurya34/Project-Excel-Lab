@@ -9,7 +9,16 @@ class Material extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'category_id', 'material_type'];
+    // FIX: Menambahkan video_url, text_content, dan pdf_url agar bisa disimpan dari Controller
+    protected $fillable = [
+        'title', 
+        'description', 
+        'category_id', 
+        'material_type', 
+        'video_url', 
+        'text_content', 
+        'pdf_url'
+    ];
 
     // Relasi balik ke folder (kategori)
     public function category()
@@ -26,5 +35,11 @@ class Material extends Model
     public function completions()
     {
         return $this->hasMany(MaterialCompletion::class);
+    }
+
+    // FIX: Menambahkan relasi ke tabel material_comments untuk fitur Ruang Diskusi
+    public function comments()
+    {
+        return $this->hasMany(MaterialComment::class)->orderBy('created_at', 'desc');
     }
 }

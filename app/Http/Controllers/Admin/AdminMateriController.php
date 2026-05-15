@@ -26,7 +26,7 @@ class AdminMateriController extends Controller
         return view('admin.dashboard', compact('stats'));
     }
 
-    /**  (View) Menampilkan DAFTAR FOLDER (Topik)*/
+    /** (View) Menampilkan DAFTAR FOLDER (Topik)*/
     public function index() {
         // WithCount untuk menghitung relasi, diurutkan agar stabil
         $categories = MaterialCategory::withCount('materials')->orderBy('id', 'asc')->get();
@@ -174,7 +174,7 @@ class AdminMateriController extends Controller
                 foreach ($step->hotspots as $hs) {
                     if ($hs->video_path) $uploadApi->destroy($this->getPublicId($hs->video_path), ['resource_type' => 'video']);
                 }
-                if ($step->step_image && !str_contains($step->step_image, 'drive.google.com')) {
+                if ($step->step_image && !str_contains($step->step_image, 'drive.google.com') && !str_contains($step->step_image, 'youtube.com')) {
                     try { $uploadApi->destroy($this->getPublicId($step->step_image)); } catch(\Exception $e){}
                 }
             }
@@ -194,9 +194,53 @@ class AdminMateriController extends Controller
         return view('admin.materials.steps', compact('material'));
     }
 
-    /** (Action) Unggah Langkah (Hybrid Support) */
+    /** (Action) Unggah Langkah (Hybrid Support) - Diupdate untuk Multi-Konten Teori */
     public function storeStep(Request $request, string $id) {
         $material = Material::findOrFail($id);
+
+        if ($material->material_type === 'teori') {
+            // FIX: Validasi khusus untuk 3 komponen Teori (Bisa salah satu saja)
+            $request->validate([
+                'video_url'    => 'nullable|url',
+                'text_content' => 'nullable|string',
+                'pdf_url'      => 'nullable|url'
+            ]);
+
+            // Normalisasi Link GDrive untuk Preview (jika ada PDF)
+            $pdfUrl = $request->pdf_url;
+            if ($pdfUrl && str_contains($pdfUrl, 'drive.google.com')) {
+                $pdfUrl = str_replace(['/view?usp=sharing', '/view'], '/preview', $pdfUrl);
+            }
+
+            // Normalisasi Link GDrive untuk Video (Jika menggunakan GDrive)
+            $videoUrl = $request->video_url;
+            if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
+                $videoUrl = str_replace(['/view?usp=sharing', '/view'], '/preview', $videoUrl);
+            }
+
+            // 1. Simpan ke tabel Material (Kolom baru)
+            $material->update([
+                'video_url'    => $videoUrl,
+                'text_content' => $request->text_content,
+                'pdf_url'      => $pdfUrl
+            ]);
+
+            // 2. Fallback Compatibility ke tabel activities (Agar tidak error kalau ada relasi lain yang butuh)
+            MaterialActivity::updateOrCreate(
+                ['material_id' => $id],
+                [
+                    'step_image'  => $pdfUrl ?? $videoUrl, // Simpan salah satu sebagai fallback image
+                    'instruction' => 'Silakan pelajari materi berikut.',
+                    'step_order'  => 1
+                ]
+            );
+
+            return back()->with('success', 'Konten Materi Teori berhasil diperbarui.');
+        }
+
+        // ============================================
+        // LOGIKA UNTUK TIPE PRAKTIKUM (KODE LAMA TETAP SAMA)
+        // ============================================
 
         $request->validate([
             'image'        => 'nullable|image|max:2048',
@@ -225,28 +269,17 @@ class AdminMateriController extends Controller
             return back()->with('error', 'Unggah gambar atau masukkan link external!');
         }
 
-        if ($material->material_type === 'teori') {
-            MaterialActivity::updateOrCreate(
-                ['material_id' => $id],
-                [
-                    'step_image'  => $finalUrl,
-                    'instruction' => $request->instruction ?? 'Ringkasan materi.',
-                    'step_order'  => 1
-                ]
-            );
-        } else {
-            MaterialActivity::create([
-                'material_id' => $id,
-                'step_image'  => $finalUrl,
-                'instruction' => $request->instruction ?? 'Perhatikan bagian ini.',
-                'step_order'  => MaterialActivity::where('material_id', $id)->count() + 1,
-            ]);
-        }
+        MaterialActivity::create([
+            'material_id' => $id,
+            'step_image'  => $finalUrl,
+            'instruction' => $request->instruction ?? 'Perhatikan bagian ini.',
+            'step_order'  => MaterialActivity::where('material_id', $id)->count() + 1,
+        ]);
 
-        return back()->with('success', 'Konten materi berhasil diperbarui.');
+        return back()->with('success', 'Langkah praktikum berhasil ditambahkan.');
     }
 
-    /** (Action) Update Langkah Materi */
+    /** (Action) Update Langkah Materi (Tetap dipertahankan untuk Praktikum) */
     public function updateStep(Request $request, string $id) {
         $step = MaterialActivity::findOrFail($id);
         
@@ -304,7 +337,7 @@ class AdminMateriController extends Controller
             if ($hs->video_path) $uploadApi->destroy($this->getPublicId($hs->video_path), ['resource_type' => 'video']);
         }
         
-        if ($step->step_image && !str_contains($step->step_image, 'drive.google.com')) {
+        if ($step->step_image && !str_contains($step->step_image, 'drive.google.com') && !str_contains($step->step_image, 'youtube.com')) {
             try { $uploadApi->destroy($this->getPublicId($step->step_image)); } catch(\Exception $e){}
         }
         

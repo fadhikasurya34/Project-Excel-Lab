@@ -43,11 +43,18 @@ Route::middleware('auth')->group(function () {
 // --- 2. STUDENT / SISWA ROUTES ---
 Route::middleware(['auth'])->group(function () {
     
+    // Pusat Bantuan & Tutorial
+    Route::view('/tutorial', 'tutorial')->name('tutorial');
+    
     // Eksplorasi Materi
     Route::get('/materi', [MateriController::class, 'index'])->name('materi.index');
     // --- BARU: Menampilkan daftar materi di kategori tertentu ---
     Route::get('/materi/topik/{category}', [MateriController::class, 'showByCategory'])->name('materi.category.list');
     Route::get('/materi/{id}', [MateriController::class, 'show'])->name('materi.show');
+    // --- BARU: Menyimpan komentar diskusi di materi teori ---
+    Route::post('/materi/{id}/comment', [MateriController::class, 'storeComment'])->name('materi.comment');
+    Route::post('/comment/{id}/react/{type}', [MateriController::class, 'reactComment'])->name('comment.react');
+    Route::delete('/comment/{id}/destroy', [MateriController::class, 'destroyComment'])->name('materi.comment.destroy');
     
     // Petualangan Misi
     Route::get('/misi', [MisiController::class, 'index'])->name('misi.index'); 

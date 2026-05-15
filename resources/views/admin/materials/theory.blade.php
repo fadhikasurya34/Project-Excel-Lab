@@ -1,7 +1,7 @@
 {{-- 
     VIEW: Editor Materi Teori (Admin)
     DATA: $material (With activities)
-    DESC: Halaman khusus untuk mengelola konten PDF atau Video via Link External.
+    DESC: Halaman khusus untuk mengelola konten PDF, Teks, atau Video via Link External.
 --}}
 
 <x-app-layout>
@@ -90,24 +90,37 @@
                         <form action="{{ route('admin.materials.store-step', $material->id) }}" method="POST" class="space-y-6">
                             @csrf
                             
+                            {{-- FIX: Form dipecah menjadi 3 untuk mendukung Multi-Konten --}}
+                            
+                            {{-- 1. Video URL --}}
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Link Konten Eksternal</label>
-                                <input type="url" name="external_url" 
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Link Video Tutorial (Opsional)</label>
+                                <input type="url" name="video_url" id="input_video"
                                     class="form-input-premium" 
-                                    value="{{ $material->activities->first()->step_image ?? '' }}"
-                                    placeholder="Tempel link GDrive / YouTube / PDF..." 
-                                    required>
+                                    value="{{ $material->video_url ?? '' }}"
+                                    placeholder="Tempel link Embed YouTube / GDrive...">
+                            </div>
+
+                            {{-- 2. Teks Materi --}}
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Bahan Bacaan / Teks Materi (Opsional)</label>
+                                <textarea name="text_content" rows="6" class="form-input-premium" placeholder="Tuliskan materi teks disini (Support Enter/Baris Baru)...">{{ $material->text_content ?? '' }}</textarea>
+                            </div>
+
+                            {{-- 3. PDF URL --}}
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Link Dokumen PDF (Opsional)</label>
+                                <input type="url" name="pdf_url" id="input_pdf"
+                                    class="form-input-premium" 
+                                    {{-- FIX: Value hanya mengambil dari pdf_url agar tidak kecampur dengan video/step_image --}}
+                                    value="{{ $material->pdf_url ?? '' }}"
+                                    placeholder="Tempel link Preview GDrive / PDF...">
                                 <div class="mt-3 flex items-start space-x-2 opacity-70">
                                     <svg class="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"></path></svg>
                                     <p class="text-[9px] text-slate-500 font-medium leading-relaxed">
-                                        Gunakan link <strong>Preview</strong> untuk Google Drive.
+                                        Isi minimal salah satu dari ketiga konten di atas agar materi dapat disajikan ke siswa.
                                     </p>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Ringkasan / Instruksi</label>
-                                <textarea name="instruction" rows="6" class="form-input-premium" placeholder="Tuliskan panduan singkat untuk siswa..." required>{{ $material->activities->first()->instruction ?? '' }}</textarea>
                             </div>
 
                             <button type="submit" class="btn-blue-main w-full py-4 text-[10px] uppercase tracking-widest active:scale-95 transition-all">
@@ -123,8 +136,11 @@
                             <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                             Tips Terminal
                         </h4>
+                        <p class="text-[10px] font-medium leading-relaxed opacity-70 relative z-10 mb-2">
+                            Untuk G-Drive, gunakan link <strong class="text-emerald-400">/preview</strong> bukan <strong class="text-red-400">/view</strong>.
+                        </p>
                         <p class="text-[10px] font-medium leading-relaxed opacity-70 relative z-10">
-                            Untuk PDF, pastikan izin berbagi diatur ke "Siapa saja yang memiliki link" agar siswa bisa membacanya tanpa login Google.
+                            Pastikan izin file PDF atau Video diatur ke "Siapa saja yang memiliki link".
                         </p>
                     </div>
                 </div>
@@ -143,18 +159,23 @@
                             <div class="w-10"></div> {{-- Spacer --}}
                         </div>
 
-                        <div class="flex-1 p-6 bg-slate-50">
-                            @if($material->activities->first() && $material->activities->first()->step_image)
-                                <div class="w-full h-full rounded-xl overflow-hidden bg-white shadow-inner border border-slate-200">
-                                    <iframe src="{{ $material->activities->first()->step_image }}" class="w-full h-full" frameborder="0" allow="autoplay"></iframe>
+                        <div class="flex-1 p-6 bg-slate-50 relative">
+                            {{-- Logika Penampil Preview: Memprioritaskan PDF, lalu Video --}}
+                            @php
+                                $previewUrl = $material->pdf_url ?? ($material->activities->first()->step_image ?? ($material->video_url ?? null));
+                            @endphp
+
+                            @if($previewUrl)
+                                <div class="w-full h-[600px] rounded-xl overflow-hidden bg-white shadow-inner border border-slate-200">
+                                    <iframe id="preview_frame" src="{{ $previewUrl }}" class="w-full h-full" frameborder="0" allow="autoplay; fullscreen"></iframe>
                                 </div>
                             @else
-                                <div class="w-full h-full flex flex-col items-center justify-center text-center opacity-40">
+                                <div class="w-full h-full min-h-[600px] flex flex-col items-center justify-center text-center opacity-40">
                                     <div class="w-20 h-20 bg-slate-200 rounded-3xl flex items-center justify-center mb-4 border-2 border-dashed border-slate-300">
                                         <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                     </div>
                                     <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Konten Belum Terhubung</p>
-                                    <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">Link eksternal akan muncul di sini secara real-time</p>
+                                    <p class="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-tighter">Link eksternal (Video/PDF) akan muncul di sini secara real-time</p>
                                 </div>
                             @endif
                         </div>
@@ -164,4 +185,30 @@
             </div>
         </div>
     </div>
+
+    {{-- Script untuk Live Preview Sederhana --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputPdf = document.getElementById('input_pdf');
+            const inputVideo = document.getElementById('input_video');
+            const previewFrame = document.getElementById('preview_frame');
+
+            function updatePreview() {
+                if (!previewFrame) return;
+                
+                // Prioritaskan PDF untuk preview, jika kosong, ambil Video.
+                let newUrl = inputPdf.value.trim();
+                if (!newUrl) {
+                    newUrl = inputVideo.value.trim();
+                }
+
+                if (newUrl && newUrl !== previewFrame.src) {
+                    previewFrame.src = newUrl;
+                }
+            }
+
+            if (inputPdf) inputPdf.addEventListener('blur', updatePreview);
+            if (inputVideo) inputVideo.addEventListener('blur', updatePreview);
+        });
+    </script>
 </x-app-layout>
