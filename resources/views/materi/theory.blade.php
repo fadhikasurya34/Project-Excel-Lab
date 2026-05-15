@@ -256,10 +256,21 @@
                 $pdfUrl = $material->pdf_url ?? null; 
                 $textContent = $material->text_content ?? null;
                 $legacyUrl = $material->activities->first()->step_image ?? null;
+                
+                // Konversi Legacy URL
                 if (empty($videoUrl) && empty($pdfUrl) && $legacyUrl) {
-                    if (str_contains(strtolower($legacyUrl), 'youtube') || str_contains(strtolower($legacyUrl), 'mp4')) { $videoUrl = $legacyUrl; } else { $pdfUrl = $legacyUrl; }
+                    if (str_contains(strtolower($legacyUrl), 'youtube') || str_contains(strtolower($legacyUrl), 'mp4') || str_contains(strtolower($legacyUrl), 'drive.google')) { 
+                        $videoUrl = $legacyUrl; 
+                    } else { 
+                        $pdfUrl = $legacyUrl; 
+                    }
                 }
                 if ($videoUrl && $pdfUrl === $videoUrl) { $pdfUrl = null; }
+
+                // FIX: Paksa Google Drive menjadi Embed Preview Bersih
+                if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
+                    $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
+                }
             @endphp
 
             @if($videoUrl)
@@ -365,7 +376,7 @@
                         @csrf
                         {{-- Avatar Pengirim SINKRON --}}
                         <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
-                            <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                            <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                         </div>
 
                         <div class="flex-1 relative">
@@ -389,7 +400,7 @@
                             {{-- Komentar Utama --}}
                             <div class="flex gap-4 group">
                                 <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-white dark:border-slate-700 shadow-md flex items-center justify-center z-10 overflow-hidden" style="background-color: #{{ $comment->user->profile_color ?? '10b981' }}">
-                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $comment->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $comment->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                 </div>
 
                                 <div class="flex-1">
@@ -430,7 +441,7 @@
                                             @csrf
                                             <input type="hidden" name="parent_id" value="{{ $comment->id }}">
                                             <div class="shrink-0 w-8 h-8 rounded-xl border-2 border-slate-100 overflow-hidden" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
-                                                <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                                                <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                             </div>
                                             <div class="flex-1 relative">
                                                 <input type="text" name="body" class="w-full pl-4 pr-12 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Balas {{ $comment->user->name }}..." required>
@@ -442,12 +453,12 @@
                                         </form>
                                     </div>
 
-                                    {{-- List Balasan (Menampilkan yang terbaru di atas) --}}
+                                    {{-- List Balasan --}}
                                     <div class="space-y-6 mt-4">
                                         @foreach($comment->replies->sortByDesc('created_at') as $reply)
                                             <div class="flex gap-3 ml-4 relative z-10">
                                                 <div class="shrink-0 w-8 h-8 rounded-xl border-2 border-white dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" style="background-color: #{{ $reply->user->profile_color ?? '10b981' }}">
-                                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $reply->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $reply->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                                 </div>
                                                 <div class="flex-1">
                                                     <div class="comment-bubble p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 {{ $reply->user_id === Auth::id() ? 'my-comment-bubble' : '' }}">
