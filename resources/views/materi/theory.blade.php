@@ -20,7 +20,7 @@
         transition: all 0.3s ease; 
     }
 
-    .video-container iframe {
+    .video-container iframe, .video-container video {
         position: absolute;
         top: 0;
         left: 0;
@@ -84,7 +84,6 @@
         padding-bottom: 0 !important;
         border-radius: 0 !important;
         border: none !important;
-        z-index: 9999;
     }
 
     .btn-exit-fs {
@@ -133,13 +132,13 @@
         position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; 
         border-radius: 1.5rem; background: #000; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; 
     }
-    .yt-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 10; }
+    .yt-container iframe, .yt-container video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 10; }
     .yt-container:fullscreen, .yt-container:-webkit-full-screen { padding-bottom: 0; height: 100dvh; width: 100vw; border-radius: 0; border: none; background: #000; }
     
     body.is-yt-fs { background-color: #000 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; height: 100dvh !important; width: 100vw !important; margin: 0 !important; padding: 0 !important; }
     body.is-yt-fs header, body.is-yt-fs nav, body.is-yt-fs aside, body.is-yt-fs [class*="fixed top-0"], body.is-yt-fs .z-50, body.is-yt-fs .content-header, body.is-yt-fs .info-section, body.is-yt-fs .fullscreen-btn-container, body.is-yt-fs .multi-content-header { display: none !important; opacity: 0 !important; visibility: hidden !important; }
     body.is-yt-fs .main-wrapper, body.is-yt-fs .inner-wrapper, body.is-yt-fs .video-section { padding: 0 !important; margin: 0 !important; max-width: 100% !important; width: 100% !important; height: auto !important; border: none !important; box-shadow: none !important; background: transparent !important; }
-    body.is-yt-fs .yt-container { width: 100vw !important; height: 100dvh !important; padding-bottom: 0 !important; border-radius: 0 !important; border: none !important; z-index: 9999; }
+    body.is-yt-fs .yt-container { width: 100vw !important; height: 100dvh !important; padding-bottom: 0 !important; border-radius: 0 !important; border: none !important; }
     
     .btn-exit-yt { display: none; position: absolute; top: 20px; right: 20px; z-index: 2147483647 !important; background: rgba(220, 38, 38, 0.7); color: white; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); pointer-events: auto !important; -webkit-tap-highlight-color: transparent; }
     .btn-exit-yt:active { background: rgba(185, 28, 28, 1); transform: scale(0.90); }
@@ -268,12 +267,27 @@
                 }
                 if ($videoUrl && $pdfUrl === $videoUrl) { $pdfUrl = null; }
 
-                // PENTING: Paksa Google Drive menjadi Embed Preview Bersih
+                $isNativeVideo = false;
+
+                // FIX: Bypass Iframe Google Drive menjadi Video Native Murni
                 if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
-                    $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
+                    // Ambil ID Unik Video dari Link Google Drive
+                    preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $videoUrl, $matches);
+                    
+                    if (!empty($matches[1])) {
+                        // Paksa stream langsung lewat HTML5 Video Tag
+                        $videoUrl = 'https://drive.google.com/uc?export=download&id=' . $matches[1];
+                        $isNativeVideo = true;
+                    } else {
+                        // Fallback aman jika ID gagal diambil
+                        $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
+                    }
+                } elseif ($videoUrl && str_ends_with(strtolower($videoUrl), '.mp4')) {
+                    $isNativeVideo = true;
                 }
             @endphp
 
+            {{-- URUTAN 1: VIDEO TUTORIAL --}}
             @if($videoUrl)
             <div>
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -282,23 +296,26 @@
                     </span>
                     Video Tutorial
                 </h3>
-                <div id="yt-container" class="yt-container border-4 border-white dark:border-slate-800 shadow-xl">
+                
+                <div id="yt-container" class="yt-container border-4 border-white dark:border-slate-800 shadow-xl bg-black">
                     <button type="button" onclick="toggleYtFullscreen()" class="btn-exit-yt" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
-                    <iframe src="{{ $videoUrl }}" allow="autoplay"></iframe>
-                </div>
-                
-                {{-- FIX: Kembalikan Tombol Perbesar Video --}}
-                <div class="mt-4 flex justify-end fullscreen-btn-container">
-                    <button type="button" onclick="toggleYtFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                        <span>Perbesar Video</span>
-                    </button>
+                    
+                    @if($isNativeVideo)
+                        {{-- Memaksa satu Media Player Native (Tanpa Double UI) --}}
+                        <video controls playsinline class="w-full h-full object-contain focus:outline-none">
+                            <source src="{{ $videoUrl }}" type="video/mp4">
+                            Browser Anda tidak mendukung pemutar video HTML5.
+                        </video>
+                    @else
+                        <iframe src="{{ $videoUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                    @endif
                 </div>
             </div>
             @endif
 
+            {{-- URUTAN 2: MODUL PDF --}}
             @if($pdfUrl)
             <div>
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -322,6 +339,7 @@
             </div>
             @endif
 
+            {{-- URUTAN 3: TEKS MATERI --}}
             @if($textContent)
             <div class="text-content-block">
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -377,7 +395,6 @@
                 <div class="mb-10">
                     <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-4" onsubmit="submitAjax(event, this, 'Komentar dikirim!')">
                         @csrf
-                        {{-- Avatar Pengirim SINKRON --}}
                         <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
                             <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                         </div>
@@ -391,7 +408,7 @@
                     </form>
                 </div>
 
-                {{-- Thread Komentar (Dibungkus div id untuk AJAX Refresh) --}}
+                {{-- Thread Komentar --}}
                 <div id="diskusi-list" class="space-y-8">
                     @forelse($material->comments as $comment)
                         <div class="relative">
@@ -526,16 +543,15 @@
 
 @push('scripts')
 <script>
-    // --- FUNGSI FULLSCREEN PDF (TIDAK DIUBAH) ---
+    // --- FUNGSI FULLSCREEN ORIGINAL (SESUAI PERMINTAAN: TIDAK DIUBAH) ---
     const container = document.getElementById("materi-container");
     function toggleCustomFullscreen() {
         const isCurrentlyIOSFS = document.body.classList.contains('is-ios-fs');
         if (isCurrentlyIOSFS) { disableIOSFallback(); return; }
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
             const reqFS = container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen;
-            if (reqFS && !isMobile) {
+            if (reqFS && !isIOS) {
                 reqFS.call(container).catch(err => { enableIOSFallback(); });
             } else { enableIOSFallback(); }
         } else {
@@ -551,25 +567,15 @@
         });
     });
 
-    // --- FIX: FUNGSI FULLSCREEN VIDEO (ANTI-BAJAKAN NATIVE PLAYER) ---
+    // --- KLONINGAN KHUSUS VIDEO ---
     const ytContainer = document.getElementById("yt-container");
     function toggleYtFullscreen() {
         const isCurrentlyYtFS = document.body.classList.contains('is-yt-fs');
         if (isCurrentlyYtFS) { disableYtFallback(); return; }
-        
-        // Deteksi apakah user buka di HP
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
             const reqFS = ytContainer.requestFullscreen || ytContainer.webkitRequestFullscreen || ytContainer.msRequestFullscreen;
-            
-            // JIKA BUKA DI HP: Jangan jalankan API Fullscreen sistem (karena akan memancing Native Player Android)
-            // Lakukan Fullscreen lewat manipulasi CSS (CSS Fullscreen)
-            if (reqFS && !isMobile) { 
-                reqFS.call(ytContainer).catch(err => { enableYtFallback(); }); 
-            } else { 
-                enableYtFallback(); 
-            }
+            if (reqFS && !isIOS) { reqFS.call(ytContainer).catch(err => { enableYtFallback(); }); } else { enableYtFallback(); }
         } else {
             const extFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
             if (extFS) extFS.call(document);
