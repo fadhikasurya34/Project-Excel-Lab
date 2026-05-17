@@ -168,8 +168,9 @@
                         </div>
 
                         <div class="relative z-30 w-full px-1">
+                            {{-- FIX: Hapus explode() agar nama tampil penuh --}}
                             <h3 class="text-slate-900 dark:text-white font-black text-xs md:text-lg leading-none truncate capitalize">
-                                {{ explode(' ', $user->name)[0] }}
+                                {{ $user->name }}
                             </h3>
                             <p class="text-[7px] md:text-[9px] font-extrabold text-{{ $status['color'] ?? 'slate' }}-500 dark:text-{{ $status['color'] ?? 'slate' }}-400 uppercase tracking-[0.2em] mt-1.5 opacity-80">
                                 {{ $status['title'] ?? 'Excel Apprentice' }}
@@ -197,25 +198,26 @@
                     
                     <div class="card-silhouette silhouette-list">#{{ $realRank }}</div>
 
-                    <div class="flex items-center space-x-3 md:space-x-5 relative z-30">
-                        <div class="w-6 h-6 md:w-8 md:h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center font-black text-slate-500 text-[9px] md:text-xs">
+                    <div class="flex items-center space-x-3 md:space-x-5 relative z-30 min-w-0 flex-1">
+                        <div class="w-6 h-6 md:w-8 md:h-8 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center font-black text-slate-500 text-[9px] md:text-xs shrink-0">
                             {{ $realRank }}
                         </div>
 
-                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-[2.2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm" style="background-color: #{{ $rank->user->profile_color ?? '3b82f6' }};">
+                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-[2.2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm shrink-0" style="background-color: #{{ $rank->user->profile_color ?? '3b82f6' }};">
                             <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $rank->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover scale-110">
                         </div>
 
-                        <div class="min-w-0">
-                            <h4 class="text-[10px] md:text-sm font-bold text-slate-800 dark:text-white capitalize truncate max-w-[120px] md:max-w-none flex items-center">
+                        <div class="min-w-0 pr-2">
+                            {{-- FIX: Perlebar max-w di mobile agar nama lebih panjang tidak cepat terpotong --}}
+                            <h4 class="text-[10px] md:text-sm font-bold text-slate-800 dark:text-white capitalize truncate max-w-[200px] sm:max-w-[300px] md:max-w-none flex items-center">
                                 {{ $rank->user->name }}
                                 @if($isMe) <span class="ml-1.5 px-1.5 py-0.5 bg-purple-600 text-white text-[6px] rounded-md uppercase font-black tracking-widest shrink-0">Kamu</span> @endif
                             </h4>
-                            <p class="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-tighter">{{ $status['title'] }}</p>
+                            <p class="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-tighter truncate">{{ $status['title'] }}</p>
                         </div>
                     </div>
                     
-                    <div class="text-right whitespace-nowrap pr-2 relative z-30">
+                    <div class="text-right whitespace-nowrap pr-2 relative z-30 shrink-0">
                         <span class="text-xs md:text-base font-black text-slate-700 dark:text-slate-300">{{ number_format($rank->total_xp) }}</span>
                         <span class="text-[7px] md:text-[9px] font-bold text-slate-400 uppercase ml-0.5">xp</span>
                     </div>
