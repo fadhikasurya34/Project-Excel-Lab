@@ -84,14 +84,17 @@
         padding-bottom: 0 !important;
         border-radius: 0 !important;
         border: none !important;
-        /* FIX ZOOM: Izinkan scroll saat di-zoom */
+        /* FIX ZOOM: Mengizinkan scrolling di kontainer utama */
         overflow: auto !important; 
         -webkit-overflow-scrolling: touch !important; 
     }
 
-    /* FIX ZOOM: Izinkan gesture zoom pada iframe saat layar penuh */
+    /* FIX ZOOM: Memaksa iframe PDF untuk bisa membesar sesuai isi dokumennya */
     body.is-ios-fs .video-container iframe {
         touch-action: pan-x pan-y pinch-zoom !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100vh !important; /* Memastikan ruang scroll ada */
     }
 
     .btn-exit-fs {
@@ -294,7 +297,8 @@
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
-                    <iframe src="{{ $pdfUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                    {{-- FIX ZOOM: Tambahkan scrolling="yes" agar dokumen internal PDF bisa discroll/zoom --}}
+                    <iframe src="{{ $pdfUrl }}" scrolling="yes" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                 </div>
                 <div class="mt-4 flex justify-end fullscreen-btn-container">
                     <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
@@ -511,15 +515,19 @@
 <script>
     // --- FUNGSI FULLSCREEN ORIGINAL (KHUSUS UNTUK PDF SAJA) ---
     const container = document.getElementById("materi-container");
+    
     function toggleCustomFullscreen() {
         const isCurrentlyIOSFS = document.body.classList.contains('is-ios-fs');
         if (isCurrentlyIOSFS) { disableIOSFallback(); return; }
+        
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
             const reqFS = container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen;
             if (reqFS && !isIOS) {
                 reqFS.call(container).catch(err => { enableIOSFallback(); });
-            } else { enableIOSFallback(); }
+            } else { 
+                enableIOSFallback(); 
+            }
         } else {
             const extFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
             if (extFS) { extFS.call(document); }
@@ -530,7 +538,7 @@
         window.scrollTo(0, 0); 
         document.body.classList.add('is-ios-fs'); 
         
-        // FIX: Ubah meta viewport agar mengizinkan Zoom (Pinch/Double Click)
+        // FIX ZOOM PDF: Membuka kunci viewport agar pengguna bisa mencubit/zoom dokumen
         let metaViewport = document.querySelector('meta[name="viewport"]');
         if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
     }
@@ -538,14 +546,16 @@
     function disableIOSFallback() { 
         document.body.classList.remove('is-ios-fs'); 
         
-        // FIX: Kembalikan meta viewport ke awal (Kunci Zoom agar layout tidak rusak)
+        // FIX ZOOM PDF: Mengunci kembali viewport agar tata letak tidak rusak
         let metaViewport = document.querySelector('meta[name="viewport"]');
         if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
     }
     
     ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(eventType => {
         document.addEventListener(eventType, () => {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { disableIOSFallback(); }
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { 
+                disableIOSFallback(); 
+            }
         });
     });
 
