@@ -41,7 +41,8 @@
 
     body.is-ios-fs {
         background-color: #000 !important;
-        overflow: hidden !important; 
+        /* FIX ZOOM: Ubah dari hidden ke auto agar bisa digeser saat di zoom */
+        overflow: auto !important; 
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
@@ -84,17 +85,14 @@
         padding-bottom: 0 !important;
         border-radius: 0 !important;
         border: none !important;
-        /* FIX ZOOM: Mengizinkan scrolling di kontainer utama */
+        /* FIX ZOOM: Izinkan scroll saat di-zoom */
         overflow: auto !important; 
         -webkit-overflow-scrolling: touch !important; 
     }
 
-    /* FIX ZOOM: Memaksa iframe PDF untuk bisa membesar sesuai isi dokumennya */
+    /* FIX ZOOM: Izinkan gesture zoom pada iframe saat layar penuh */
     body.is-ios-fs .video-container iframe {
         touch-action: pan-x pan-y pinch-zoom !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 100vh !important; /* Memastikan ruang scroll ada */
     }
 
     .btn-exit-fs {
@@ -297,8 +295,7 @@
                     <button type="button" onclick="toggleCustomFullscreen()" class="btn-exit-fs" aria-label="Tutup Layar">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
-                    {{-- FIX ZOOM: Tambahkan scrolling="yes" agar dokumen internal PDF bisa discroll/zoom --}}
-                    <iframe src="{{ $pdfUrl }}" scrolling="yes" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                    <iframe src="{{ $pdfUrl }}" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                 </div>
                 <div class="mt-4 flex justify-end fullscreen-btn-container">
                     <button type="button" onclick="toggleCustomFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
@@ -538,17 +535,32 @@
         window.scrollTo(0, 0); 
         document.body.classList.add('is-ios-fs'); 
         
-        // FIX ZOOM PDF: Membuka kunci viewport agar pengguna bisa mencubit/zoom dokumen
-        let metaViewport = document.querySelector('meta[name="viewport"]');
-        if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+        // FIX ZOOM PDF: Hapus tag meta lama dan buat baru agar HP (iOS/Android) mereset sensor zoom
+        let oldMeta = document.querySelector('meta[name="viewport"]');
+        if (oldMeta) oldMeta.remove();
+        
+        let newMeta = document.createElement('meta');
+        newMeta.name = "viewport";
+        newMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
+        document.head.appendChild(newMeta);
     }
     
     function disableIOSFallback() { 
         document.body.classList.remove('is-ios-fs'); 
         
-        // FIX ZOOM PDF: Mengunci kembali viewport agar tata letak tidak rusak
-        let metaViewport = document.querySelector('meta[name="viewport"]');
-        if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        // FIX ZOOM PDF: Kunci kembali dan paksa browser reset zoom level ke 1.0
+        let oldMeta = document.querySelector('meta[name="viewport"]');
+        if (oldMeta) oldMeta.remove();
+        
+        let newMeta = document.createElement('meta');
+        newMeta.name = "viewport";
+        newMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+        document.head.appendChild(newMeta);
+
+        // Paksa scroll reset agar halaman tidak tersangkut setelah zoom
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 50);
     }
     
     ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(eventType => {
