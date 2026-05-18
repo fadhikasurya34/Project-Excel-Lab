@@ -101,11 +101,26 @@
 
     /* //* (Marker) Done State */
     .marker-ring {
-        position: absolute; width: 34px; height: 34px; margin-top: -17px; margin-left: -17px;
-        border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;
-        transition: all 0.3s; z-index: 20; color: white; cursor: pointer;
+        position: absolute; 
+        width: 40px; height: 40px; 
+        margin: 0;
+        transform: translate(-50%, -50%);
+        border-radius: 50%; 
+        border: 3px solid transparent; 
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s; z-index: 20; cursor: pointer;
     }
-    .marker-done { background: #10b981; border-color: transparent; opacity: 0.8; cursor: default; }
+    .marker-ring:not(.marker-done) {
+        background: transparent;
+        border-color: transparent;
+    }
+    .marker-done { 
+        background: transparent; 
+        border-color: #10b981; 
+        opacity: 1 !important; 
+        cursor: default; 
+    }
+    .check-icon { color: #10b981; font-size: 1.25rem; font-weight: 900; }
 
     .font-game { font-family: 'Bangers', cursive; }
 
@@ -165,6 +180,46 @@
 
 @section('content')
 <div x-data="missionEngine()" x-init="init()" class="relative w-full min-h-screen main-scroller bg-slate-950">
+
+    {{-- Modal Peringatan Awal --}}
+    <div x-show="showIntro" x-cloak class="fixed inset-0 z-[1000] p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto flex">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl m-auto border-4 border-emerald-500 transform transition-all"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+            
+            <div class="p-6 md:p-8 max-h-[85vh] overflow-y-auto scrollbar-hide">
+                <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-5 mx-auto shadow-inner border border-emerald-200 dark:border-emerald-800">
+                    <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                
+                {{-- FIX: Teks diubah menjadi PERHATIAN --}}
+                <h3 class="text-2xl md:text-3xl font-black text-emerald-600 dark:text-emerald-400 text-center mb-2 uppercase tracking-tight">PERHATIAN</h3>
+                <p class="text-[13px] text-slate-500 dark:text-slate-400 text-center mb-8 font-medium">Baca panduan ini agar kamu tidak membuang-buang XP.</p>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex gap-4 items-start bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="text-2xl shrink-0 mt-0.5">🖱️</div>
+                        <div>
+                            <h4 class="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1.5">Satu Ketukan (Point & Click)</h4>
+                            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">Jika disuruh blok kolom (misal A1 ke D5), <strong>jangan ditarik (drag)</strong>. Cukup <strong>KLIK SATU KALI</strong> pada sel tujuan (A1) atau sesuai petunjuk.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="text-2xl shrink-0 mt-0.5">🎯</div>
+                        <div>
+                            <h4 class="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1.5">Area Klik Harus Presisi</h4>
+                            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">Pastikan kamu selalu menekan <strong>tepat di tengah-tengah ikon, tombol, atau kolom Excel</strong> yang dimaksud dalam instruksi agar tidak meleset.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button @click="showIntro = false" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-emerald-500/30 transition-all active:scale-95 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1">
+                    Saya Mengerti, Mulai Misi!
+                </button>
+            </div>
+        </div>
+    </div>
 
     {{-- (GAMIFICATION) Duolingo Style Modal Feedback (Hanya Sukses Akhir) --}}
     <div x-show="feedbackModal.show" 
@@ -265,7 +320,7 @@
                      :class="clickedHotspots.includes(hs.id) ? 'marker-done' : 'opacity-0'"
                      :style="`top: ${hs.y_percent}%; left: ${hs.x_percent}%;`"
                      @click.stop="handleHotspotClick(hs, index, $event)">
-                    <span class="text-white text-xs font-black">✔</span>
+                    <span class="check-icon" x-show="clickedHotspots.includes(hs.id)">✔</span>
                 </div>
             </template>
         </div>
@@ -304,6 +359,7 @@
             attempts: 0, currentPotentialXP: {{ $mission->max_score }},
             steps: @json($jsonData),
             feedbackModal: { show: false, type: '', title: '', subtitle: '', nextUrl: '' },
+            showIntro: true, // Variabel State Modal Peringatan Awal
             
             audioPlayers: { click: null, benar: null, salah: null },
 
@@ -322,6 +378,7 @@
 
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
+                    this.showIntro = false; // Matikan intro jika mode review
                 } else {
                     const saved = localStorage.getItem(this.storageKey);
                     if (saved) {
@@ -331,6 +388,11 @@
                         this.clickedHotspots = data.clickedHotspots ?? [];
                         this.attempts = data.attempts ?? 0;
                         this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
+                        
+                        // Jika sudah ada progres (bukan murni dari awal 0), matikan Intro Modal
+                        if (this.currentStep > 0 || this.clickedHotspots.length > 0 || this.attempts > 0) {
+                            this.showIntro = false;
+                        }
                     }
                 }
                 this.$watch('currentPotentialXP', v => { document.getElementById('header-xp-display').innerText = v; });
@@ -360,12 +422,12 @@
             },
 
             handleBackgroundClick(e) {
-                if (this.allHotspotsInStepDone || this.isDragging) return;
+                if (this.allHotspotsInStepDone || this.isDragging || this.showIntro) return;
                 this.triggerError(e);
             },
 
             handleHotspotClick(hs, index, e) {
-                if (this.isDragging) return;
+                if (this.isDragging || this.showIntro) return;
                 if (index === this.currentHotspotIndex) {
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots.push(hs.id);
@@ -382,7 +444,7 @@
             },
 
             triggerError(e) {
-                if (this.showErrorEffect || this.isDragging) return;
+                if (this.showErrorEffect || this.isDragging || this.showIntro) return;
                 this.showErrorEffect = true;
                 this.attempts++;
                 this.showHintButton = true;
@@ -474,7 +536,7 @@
             },
 
             startDragging(e, target) {
-                if (e.target.closest('button')) return;
+                if (e.target.closest('button') || this.showIntro) return;
                 e.preventDefault(); this.isDragging = true;
                 document.body.classList.add('is-dragging');
                 let cX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;

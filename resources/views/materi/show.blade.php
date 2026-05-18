@@ -113,16 +113,15 @@
         animation: neon-materi-smooth 3.5s infinite ease-in-out; /* Diperlambat menjadi 3.5s */
     }
 
-    /* //* (Hotspot) Marker Ring */
+    /* //* (Hotspot) Marker Ring - FIX PRESISI: Ukuran 40px, Center Absolut, Invisible & Hollow Green */
     .marker-ring {
         position: absolute; 
-        width: 34px; 
-        height: 34px; 
-        margin-top: -17px; 
-        margin-left: -17px;
+        width: 40px; 
+        height: 40px; 
+        margin: 0;
+        transform: translate(-50%, -50%); /* Fix kalibrasi presisi persis di titik klik admin */
         border-radius: 50%; 
-        border: 3px solid white;
-        background: transparent !important;
+        border: 3px solid transparent; 
         display: flex; 
         align-items: center; 
         justify-content: center;
@@ -131,16 +130,27 @@
         transition: all 0.3s; 
         z-index: 20;
     }
-   .marker-active { 
-    border-color: #f59e0b !important;
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); 
-    animation: pulse-border 1.5s infinite; 
-    cursor: pointer; 
+    
+    /* State tidak terlihat sebelum diklik/dipilih */
+    .marker-ring:not(.marker-active):not(.marker-done) {
+        background: transparent !important;
+        border-color: transparent !important;
     }
+
+    /* State aktif tapi belum diklik */
+    .marker-active { 
+        border-color: #f59e0b !important;
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); 
+        animation: pulse-border 1.5s infinite; 
+        cursor: pointer; 
+    }
+
+    /* State hollow green (bolong) dengan centang saat berhasil */
     .marker-done { 
         border-color: #10b981 !important; 
-        opacity: 1;
+        opacity: 1 !important;
         background: transparent !important;
+        cursor: default; 
     }
 
     @keyframes pulse-border { 
@@ -204,13 +214,52 @@
         <span class="text-base font-extrabold tracking-tight dark:text-white uppercase">{{ $material->title }}</span>
         <div class="flex items-center space-x-1.5 mt-1.5">
             <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-            <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Simulasi Laboratorium Aktif</span>
+            <span class="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none font-sans">Simulasi Laboratorium Aktif</span>
         </div>
     </div>
 @endsection
 
 @section('content')
-<div x-data="labInteraction()" class="relative w-full min-h-screen main-scroller bg-slate-950">
+<div x-data="labInteraction()" class="relative w-full min-h-screen main-scroller bg-slate-950 font-sans">
+
+    {{-- FIX: MODAL PERINGATAN (Bersih, Font Sans Jakarta, Scrollable) --}}
+    <div x-show="showIntro" x-cloak class="fixed inset-0 z-[1000] p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto flex font-sans">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl m-auto border-4 border-blue-500 transform transition-all"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+            
+            <div class="p-6 md:p-8 max-h-[85vh] overflow-y-auto scrollbar-hide">
+                <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-5 mx-auto shadow-inner border border-blue-200 dark:border-blue-800">
+                    <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                
+                <h3 class="text-2xl md:text-3xl font-black text-blue-600 dark:text-blue-400 text-center mb-2 uppercase tracking-tight">PERHATIAN</h3>
+                <p class="text-[13px] text-slate-500 dark:text-slate-400 text-center mb-8 font-medium">Baca panduan ini sebelum memulai simulasi.</p>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex gap-4 items-start bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="text-2xl shrink-0 mt-0.5">🖱️</div>
+                        <div>
+                            <h4 class="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1.5">Satu Ketukan (Point & Click)</h4>
+                            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">Jika disuruh blok kolom (misal A1 ke D5), <strong>jangan ditarik (drag)</strong>. Cukup <strong>KLIK SATU KALI</strong> pada sel tujuan (A1) atau sesuai petunjuk.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="text-2xl shrink-0 mt-0.5">🎯</div>
+                        <div>
+                            <h4 class="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-1.5">Area Klik Harus Presisi</h4>
+                            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">Pastikan kamu selalu menekan <strong>tepat di tengah-tengah ikon, tombol, atau kolom Excel</strong> yang dimaksud dalam instruksi agar tidak meleset.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button @click="showIntro = false" class="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-blue-500/30 transition-all active:scale-95 border-b-4 border-blue-700 active:border-b-0 active:translate-y-1">
+                    Saya Mengerti, Mulai Simulasi!
+                </button>
+            </div>
+        </div>
+    </div>
 
     {{-- Efek Layar Salah Klik --}}
     <template x-if="showErrorEffect">
@@ -218,7 +267,7 @@
     </template>
 
     {{-- 1. Landscape Rotary Guard --}}
-    <div id="landscape-notice">
+    <div id="landscape-notice" class="font-sans">
         <div class="phone-rotate mb-6 relative">
             <div class="absolute -inset-6 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
             <svg class="relative w-20 h-20 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -230,7 +279,7 @@
     </div>
 
     {{-- Toast System --}}
-    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3 neon-attention-container">
+    <div x-show="toast.show" x-cloak x-transition.opacity class="toast-top shadow-xl flex items-center space-x-3 neon-attention-container font-sans">
         <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-slate-900/50 shrink-0">
             <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain animate-bounce">
         </div>
@@ -241,7 +290,7 @@
     </div>
 
     {{-- HUD Instruksi --}}
-    <div class="hud-controller" :style="`top: ${boxY}px; left: ${boxX}px;`"
+    <div class="hud-controller font-sans" :style="`top: ${boxY}px; left: ${boxX}px;`"
          @mousedown.stop="startDragging($event)" @touchstart.stop="startDragging($event)">
         
         <div class="glass-ui-shared neon-attention-container">
@@ -260,19 +309,17 @@
                 <p class="text-white text-[15px] font-black leading-tight mb-4 tracking-tight" x-text="steps[currentStep] ? steps[currentStep].instruction : ''"></p>
 
                 <div class="flex flex-row gap-2" x-show="activeHotspot" x-transition.scale.origin.top>
-                    {{-- Tambahkan class animasi glow (btn-attention-glow) jika penjelasan belum dibaca --}}
                     <button @click="showModal = true; explanationRead = true; saveProgress();" 
                             @mousedown.stop @touchstart.stop
-                            class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg transition-all"
+                            class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg transition-all font-sans"
                             :class="!explanationRead ? 'btn-attention-glow' : ''">
                         Penjelasan
                     </button>
                     
                     <template x-if="allHotspotsInStepDone">
-                        {{-- FIX: Tombol Lanjut sekarang mengecek apakah penjelasan sudah dibaca --}}
                         <button @click="if(explanationRead) { nextStep(); } else { showToast('Perhatian', 'Wajib membuka Penjelasan terlebih dahulu sebelum lanjut.', 'alert.png'); playSound('salah'); }" 
                                 @mousedown.stop @touchstart.stop
-                                class="hud-btn flex-1 py-2.5 text-white rounded-xl font-black text-[9px] shadow-lg transition-all"
+                                class="hud-btn flex-1 py-2.5 text-white rounded-xl font-black text-[9px] shadow-lg transition-all font-sans"
                                 :class="explanationRead ? 'btn-pegas-emerald' : 'bg-slate-400 border-b-4 border-slate-500 opacity-90'">
                             Lanjut
                         </button>
@@ -282,8 +329,8 @@
         </div>
     </div>
 
-    {{-- FIX: Modifikasi Desain Modal Informasi Lab --}}
-    <div x-show="showModal" x-cloak class="modal-overlay" x-transition.opacity>
+    {{-- FIX: Modal Informasi Lab (Font Sans Jakarta) --}}
+    <div x-show="showModal" x-cloak class="modal-overlay font-sans" x-transition.opacity>
         <div class="glass-ui-shared w-full max-w-[90%] md:max-w-[650px] max-h-[85vh] flex flex-col shadow-2xl">
             <div class="p-4 md:p-5 border-b border-white/10 flex justify-between items-center bg-blue-500/20">
                 <div class="flex items-center space-x-3">
@@ -295,12 +342,11 @@
                 </button>
             </div>
             
-            {{-- FIX: Penyesuaian padding, teks rata kiri, spasi lebih lega, dan format baris baru --}}
             <div class="modal-scroll p-5 md:p-8 text-left">
-                <p class="text-slate-100 font-medium text-[13px] md:text-[15px] leading-loose whitespace-pre-line tracking-wide" x-text="activeHotspot?.content"></p>
+                <p class="text-slate-100 font-medium text-[13px] md:text-[15px] leading-loose whitespace-pre-line tracking-wide font-sans" x-text="activeHotspot?.content"></p>
                 
                 <template x-if="activeHotspot?.video">
-                    <button @click="showVideo = true" class="mt-8 w-full py-4 bg-slate-800/80 hover:bg-slate-700 text-blue-400 rounded-2xl font-black text-[11px] md:text-xs border-2 border-blue-500/30 border-b-4 transition-all">
+                    <button @click="showVideo = true" class="mt-8 w-full py-4 bg-slate-800/80 hover:bg-slate-700 text-blue-400 rounded-2xl font-black text-[11px] md:text-xs border-2 border-blue-500/30 border-b-4 transition-all font-sans">
                         ▶ Putar Tutorial Video
                     </button>
                 </template>
@@ -308,7 +354,7 @@
         </div>
     </div>
 
-    <div x-show="showVideo" x-cloak class="video-overlay" x-transition.fade>
+    <div x-show="showVideo" x-cloak class="video-overlay font-sans" x-transition.fade>
         <div class="relative w-full max-w-[450px]">
             <div class="glass-ui-shared video-window-small shadow-2xl w-full">
                 <div class="p-3 border-b border-white/10 flex items-center bg-blue-500/10">
@@ -332,8 +378,8 @@
                     :class="getMarkerClass(hs, index)"
                     :style="`top: ${hs.y}%; left: ${hs.x}%;`"
                     @click.stop="handleInteraction(hs, index, $event)">
-                    <span class="text-amber-500" x-show="!clickedHotspots.includes(hs.id)" x-text="index + 1"></span>
-                    <span class="text-emerald-500" x-show="clickedHotspots.includes(hs.id)">✔</span>
+                    <span class="text-amber-500 font-sans" x-show="!clickedHotspots.includes(hs.id)" x-text="index + 1"></span>
+                    <span class="text-emerald-500 font-sans check-icon" x-show="clickedHotspots.includes(hs.id)">✔</span>
                 </div>
             </template>
         </div>
@@ -351,10 +397,11 @@
             activeHotspot: null, isExpanded: true, showModal: false, showVideo: false,
             boxX: 20, boxY: 80, isDragging: false, offX: 0, offY: 0,
             showErrorEffect: false,
-            explanationRead: false, // State untuk memantau apakah penjelasan sudah dibaca
+            explanationRead: false,
             steps: @json($jsonData),
             toast: { show: false, title: '', message: '', icon: 'bintang.png' },
             storageKey: 'material_{{ $material->id }}_progress',
+            showIntro: true, // Variabel State Modal Peringatan Awal
             
             audioPlayers: {
                 click: null,
@@ -363,7 +410,6 @@
             },
 
             init() {
-                // INISIALISASI AUDIO (Pre-load file suara)
                 try {
                     this.audioPlayers.click = new Audio('{{ asset("audio/drop.mp3") }}'); 
                     this.audioPlayers.benar = new Audio('{{ asset("audio/benar.mp3") }}');
@@ -372,9 +418,7 @@
                     this.audioPlayers.click.preload = 'auto';
                     this.audioPlayers.benar.preload = 'auto';
                     this.audioPlayers.salah.preload = 'auto';
-                } catch(e) {
-                    console.log('Audio engine gagal di-load', e);
-                }
+                } catch(e) {}
 
                 const savedData = localStorage.getItem(this.storageKey);
                 if (savedData) {
@@ -387,13 +431,16 @@
                         if (this.currentOrder > 0 && this.steps[this.currentStep] && this.steps[this.currentStep].hotspots[this.currentOrder - 1]) {
                             this.activeHotspot = this.steps[this.currentStep].hotspots[this.currentOrder - 1];
                         }
+                        
+                        if (this.currentStep > 0 || this.clickedHotspots.length > 0) {
+                            this.showIntro = false;
+                        }
                     } catch (e) {
                         console.error("Gagal memuat progres:", e);
                     }
                 }
             },
             
-            // FUNGSI MEMUTAR AUDIO
             playSound(type) {
                 try {
                     let player = this.audioPlayers[type];
@@ -422,7 +469,6 @@
                 return currentStepData && this.clickedHotspots.length === currentStepData.hotspots.length;
             },
 
-            // Fitur Gamifikasi: Confetti (Sukses)
             fireConfetti() {
                 var duration = 4 * 1000;
                 var end = Date.now() + duration;
@@ -433,7 +479,6 @@
                 }());
             },
 
-            // Fitur Gamifikasi: Ledakan Merah (Gagal)
             fireCrossParticles() {
                 var defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.92, startVelocity: 40, colors: ['#ef4444', '#b91c1c', '#fca5a5'] };
                 function fire(particleRatio, opts) {
@@ -445,7 +490,6 @@
                 fire(0.1, { spread: 120, startVelocity: 30, decay: 0.92, scalar: 1.2 });
             },
 
-            // Fitur Gamifikasi: Floating Text
             spawnFloatingText(e, text, color = '#fbbf24') {
                 if (!e) return;
                 let clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
@@ -453,7 +497,7 @@
                 if (!clientX || !clientY) return;
 
                 const el = document.createElement('div');
-                el.className = 'floating-text';
+                el.className = 'floating-text font-sans';
                 el.innerText = text;
                 el.style.left = (clientX - 20) + 'px';
                 el.style.top = (clientY - 20) + 'px';
@@ -463,16 +507,14 @@
             },
 
             handleBackgroundClick(e) {
-                // Abaikan jika drag atau hotspot sudah selesai
-                if (this.allHotspotsInStepDone || this.isDragging) return;
+                if (this.allHotspotsInStepDone || this.isDragging || this.showIntro) return;
                 this.triggerError(e);
             },
 
             triggerError(e) {
-                if (this.showErrorEffect || this.isDragging) return;
+                if (this.showErrorEffect || this.isDragging || this.showIntro) return;
                 this.showErrorEffect = true;
                 
-                // MEMAINKAN AUDIO SALAH KLIK
                 this.playSound('salah');
                 
                 this.fireCrossParticles();
@@ -482,16 +524,15 @@
             },
 
             handleInteraction(hs, index, e) {
-                if (this.isDragging) return;
+                if (this.isDragging || this.showIntro) return;
                 if (index === this.currentOrder) {
                     this.activeHotspot = hs;
                     if (!this.clickedHotspots.includes(hs.id)) {
                         this.clickedHotspots = [...this.clickedHotspots, hs.id];
                         this.currentOrder++;
-                        this.explanationRead = false; // Reset agar wajib dibaca setiap ganti hotspot/step baru
+                        this.explanationRead = false; 
                         this.saveProgress();
                         
-                        // MEMAINKAN AUDIO BENAR KLIK
                         this.playSound('click');
                         
                         if(e) this.spawnFloatingText(e, '+Tepat 🎯', '#10b981');
@@ -513,16 +554,13 @@
                     this.clickedHotspots = [];
                     this.activeHotspot = null;
                     this.showModal = false;
-                    this.explanationRead = false; // Reset penjelasan saat naik step
+                    this.explanationRead = false;
                     this.saveProgress();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                     localStorage.removeItem(this.storageKey);
                     
-                    // MEMAINKAN AUDIO MISI SELESAI
                     this.playSound('benar');
-                    
-                    // Efek penyelesaian seluruh materi
                     this.fireConfetti();
                     this.showToast('Tepat Sekali! 🎉', 'Seluruh materi simulasi telah dipelajari.', 'bintang.png');
                     
@@ -537,8 +575,7 @@
             },
 
             startDragging(e) {
-                // FIX: Cek apakah yang diklik adalah tombol. Jika YA, jangan jalankan drag.
-                if (e.target.closest('button')) return;
+                if (e.target.closest('button') || this.showIntro) return;
 
                 e.preventDefault(); 
                 this.isDragging = true;

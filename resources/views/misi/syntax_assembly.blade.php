@@ -98,6 +98,12 @@
     .scenario-modal {
         position: fixed; inset: 0; z-index: 500; background: rgba(15, 23, 42, 0.98);
         backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+        overflow: auto; /* Memungkinkan scroll saat di zoom */
+    }
+
+    /* Zoom fix pada modal image */
+    .scenario-modal img {
+        touch-action: pinch-zoom;
     }
 
     .toast-top {
@@ -108,14 +114,14 @@
         z-index: 1000; 
         background: white; 
         border-radius: 1.2rem; 
-        border: 2px solid #6366f1; 
-        border-bottom: 4px solid #4f46e5; 
+        border: 2px solid #10b981; 
+        border-bottom: 4px solid #059669; 
         min-width: 220px; 
         padding: 0.5rem 1rem; 
         text-align: center;
         animation: toast-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .dark .toast-top { background: #1e293b; border-color: #3b82f6; border-bottom-color: #1e40af;}
+    .dark .toast-top { background: #1e293b; border-color: #10b981; border-bottom-color: #064e3b;}
     @keyframes toast-down { 
         from { transform: translate(-50%, -150%) scale(0.8); opacity: 0; } 
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
@@ -193,62 +199,68 @@
 @section('content')
 <div x-data="missionEngine()" x-init="initEngine()" class="relative h-full">
     
-    {{-- (GAMIFICATION) Duolingo Style Modal Feedback --}}
-    <div x-show="feedbackModal.show" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="translate-y-full opacity-0"
-         x-transition:enter-end="translate-y-0 opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="translate-y-0 opacity-100"
-         x-transition:leave-end="translate-y-full opacity-0"
-         x-cloak class="feedback-modal-wrapper">
-        
-        <div class="feedback-modal" :class="feedbackModal.type">
-            <div class="flex items-center gap-3 md:gap-4 mb-5 md:mb-6">
-                {{-- Icon Alert / Bintang --}}
-                <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 flex items-center justify-center rounded-full shadow-sm border-[3px]" 
-                     :class="feedbackModal.type === 'error' ? 'bg-red-50 border-red-100 dark:bg-red-900/30 dark:border-red-800' : 'bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800'">
-                    <img x-show="feedbackModal.type === 'error'" src="{{ asset('images/alert.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain drop-shadow-sm">
-                    <img x-show="feedbackModal.type === 'success'" src="{{ asset('images/bintang.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain drop-shadow-sm">
+    {{-- Modal PERHATIAN Awal (HANYA MENGGUNAKAN FONT SANS DI SINI) --}}
+    <div x-show="showIntro" x-cloak class="fixed inset-0 z-[1000] p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto flex font-sans">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl m-auto border-4 border-emerald-500 transform transition-all"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100">
+            
+            <div class="p-6 md:p-8 max-h-[85vh] overflow-y-auto scrollbar-hide">
+                <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-5 mx-auto shadow-inner border border-emerald-200 dark:border-emerald-800">
+                    <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 
-                {{-- Teks Hasil --}}
+                <h3 class="text-2xl md:text-3xl font-black text-emerald-600 dark:text-emerald-400 text-center mb-2 uppercase tracking-tight">PERHATIAN</h3>
+                <p class="text-[13px] text-slate-500 dark:text-slate-400 text-center mb-8 font-medium leading-relaxed">Pahami aturan perakitan berikut agar misi berhasil dengan XP penuh.</p>
+                
+                <div class="space-y-4 mb-8">
+                    <div class="flex gap-4 items-start bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="text-2xl shrink-0 mt-0.5">💲</div>
+                        <div>
+                            <h4 class="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1.5">Penulisan VLOOKUP / HLOOKUP</h4>
+                            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium">Ingat! Tambahkan tanda <strong>$</strong> secara lengkap. Misal harusnya <strong>$A$1</strong> (<code>$</code> + <code>A</code> + <code>$</code> + <code>1</code>), bukan hanya <strong>$A1</strong> (<code>$</code> + <code>A</code> + <code>1</code>).</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="text-2xl shrink-0 mt-0.5">🎮</div>
+                        <div>
+                            <h4 class="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1.5">Konsep Hapus & Geser</h4>
+                            <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium"><strong>Klik</strong> blok di kotak rakitan jika ingin menghapusnya. <strong>Tahan & Geser (Drag)</strong> blok jika ingin memindah urutannya.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button @click="showIntro = false" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-emerald-500/30 transition-all active:scale-95 border-b-4 border-emerald-700 active:border-b-0 active:translate-y-1">
+                    Mulai Merakit Rumus!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- (GAMIFICATION) Feedback Modal --}}
+    <div x-show="feedbackModal.show" x-cloak class="feedback-modal-wrapper font-sans">
+        <div class="feedback-modal" :class="feedbackModal.type">
+            <div class="flex items-center gap-3 md:gap-4 mb-5 md:mb-6">
+                <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 flex items-center justify-center rounded-full shadow-sm border-[3px]" 
+                     :class="feedbackModal.type === 'error' ? 'bg-red-50 border-red-100 dark:bg-red-900/30 dark:border-red-800' : 'bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800'">
+                    <img x-show="feedbackModal.type === 'error'" src="{{ asset('images/alert.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain">
+                    <img x-show="feedbackModal.type === 'success'" src="{{ asset('images/bintang.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain">
+                </div>
                 <div>
-                    <div class="text-xl md:text-2xl font-black tracking-wide" 
-                         :class="feedbackModal.type === 'error' ? 'text-red-500' : 'text-emerald-500'" 
-                         x-text="feedbackModal.title"></div>
-                    <div class="text-sm md:text-base font-bold opacity-90 mt-0.5" 
-                         :class="feedbackModal.type === 'error' ? 'text-red-400 dark:text-red-300' : 'text-emerald-400 dark:text-emerald-300'" 
-                         x-text="feedbackModal.subtitle"></div>
+                    <div class="text-xl md:text-2xl font-black tracking-wide" :class="feedbackModal.type === 'error' ? 'text-red-500' : 'text-emerald-500'" x-text="feedbackModal.title"></div>
+                    <div class="text-sm md:text-base font-bold opacity-90 mt-0.5" :class="feedbackModal.type === 'error' ? 'text-red-400 dark:text-red-300' : 'text-emerald-400 dark:text-emerald-300'" x-text="feedbackModal.subtitle"></div>
                 </div>
             </div>
-            
-            {{-- Tombol OKE / Lanjut --}}
-            <button @click="handleFeedbackButton()" 
-                    class="w-full py-3 md:py-3.5 rounded-xl font-black text-base md:text-lg text-white transition-all active:scale-95 border-b-[4px] active:border-b-0 active:translate-y-[4px]" 
+            <button @click="handleFeedbackButton()" class="w-full py-3 md:py-3.5 rounded-xl font-black text-base md:text-lg text-white transition-all active:scale-95 border-b-[4px] active:border-b-0 active:translate-y-[4px]" 
                     :class="feedbackModal.type === 'error' ? 'bg-red-500 hover:bg-red-600 border-red-700' : 'bg-emerald-500 hover:bg-emerald-600 border-emerald-700'" 
-                    x-text="feedbackModal.type === 'error' ? 'OKE' : 'LANJUT'">
-            </button>
+                    x-text="feedbackModal.type === 'error' ? 'OKE' : 'LANJUT'"></button>
         </div>
     </div>
 
-    {{-- Toast Notification (COMPACT) --}}
-    <div x-show="toast.show" x-cloak x-transition.opacity 
-        class="toast-top shadow-xl flex items-center space-x-3" 
-        :style="toast.type === 'error' ? 'border-color: #ef4444; border-bottom-color: #b91c1c;' : 'border-color: #10b981; border-bottom-color: #047857;'">
-        
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center animate-bounce bg-slate-50 dark:bg-slate-900/50 shadow-inner shrink-0">
-            <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain">
-        </div>
-        <div class="text-left flex-1">
-            <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
-            <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
-        </div>
-    </div>
-
-    {{-- Scenario Modal (FIXED CLOSE BUTTON) --}}
+    {{-- Scenario Modal (Zoom Enabled) --}}
     <div x-show="scenarioMaximized" x-transition.opacity x-cloak class="scenario-modal" @click="scenarioMaximized = false">
-        <button class="absolute top-8 right-8 mt-8 p-3 bg-white/10 hover:bg-red-500 text-white rounded-2xl transition-colors z-50">
+        <button class="absolute top-8 right-8 mt-8 p-3 bg-white/10 hover:bg-red-500 text-white rounded-2xl transition-colors z-[600]">
             <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
         <img src="{{ str_replace('/upload/', '/upload/f_auto,q_auto/', $mission->mission_image) }}" class="max-w-full max-h-full object-contain rounded-3xl shadow-2xl relative z-40">
@@ -285,7 +297,7 @@
                 
                 <div class="flex justify-between items-center mb-3 md:mb-5 px-1">
                     <h3 class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest text-left">Kotak Rakitan</h3>
-                    <span class="text-[7px] md:text-[8px] font-black text-blue-500 uppercase tracking-widest animate-pulse" x-show="answerBox.length > 0">Klik hapus | Geser</span>
+                    <span class="text-[7px] md:text-[8px] font-black text-emerald-500 uppercase tracking-widest animate-pulse" x-show="answerBox.length > 0">Klik hapus | Geser</span>
                 </div>
 
                 <div class="bg-slate-50 dark:bg-slate-950 rounded-[1.2rem] border-2 border-dashed border-slate-200 dark:border-slate-800 shadow-inner z-10 w-full">
@@ -338,6 +350,7 @@
             toast: { show: false, message: '', title: '', icon: 'bintang.png', type: 'info' }, 
             
             // State untuk Gamifikasi Modal & SFX
+            showIntro: true,
             feedbackModal: { show: false, type: '', title: '', subtitle: '', nextUrl: '' },
             sfxClick: null,
             sfxBenar: null,
@@ -368,6 +381,10 @@
                         this.answerBox = data.answerBox ?? [];
                         this.attempts = data.attempts ?? 0;
                         this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
+                        
+                        if(this.answerBox.length > 0 || this.attempts > 0) {
+                            this.showIntro = false;
+                        }
                     }
                 }
 
@@ -378,14 +395,28 @@
 
                 this.$watch('answerBox', () => { this.renderBox(); });
 
+                // FIX: Menangani mode Pinch-to-Zoom saat modal gambar dibuka
+                this.$watch('scenarioMaximized', v => { this.toggleZoom(v); });
+
                 const headerXp = document.getElementById('header-xp-display');
                 if(headerXp) headerXp.innerText = this.currentPotentialXP;
 
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
+                    this.showIntro = false;
                 }
 
                 this.initSortable();
+            },
+
+            // Fungsi baru untuk membuka kunci Viewport Zoom di HP
+            toggleZoom(isMaximized) {
+                let metaViewport = document.querySelector('meta[name="viewport"]');
+                if (isMaximized) {
+                    if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+                } else {
+                    if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                }
             },
 
             renderBox() {
@@ -443,10 +474,8 @@
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
 
-            // Fitur Gamifikasi: Button handler (Untuk tombol OKE / Lanjut di popup)
             handleFeedbackButton() {
                 this.feedbackModal.show = false;
-                // Jika sukses, lanjut ke halaman berikutnya saat diklik
                 if (this.feedbackModal.type === 'success' && this.feedbackModal.nextUrl) {
                     window.location.href = this.feedbackModal.nextUrl;
                 }
@@ -460,7 +489,6 @@
                 this.feedbackModal.show = true;
             },
 
-            // Fitur Gamifikasi: Confetti (Sukses)
             fireConfetti() {
                 var duration = 4 * 1000;
                 var end = Date.now() + duration;
@@ -471,7 +499,6 @@
                 }());
             },
 
-            // Fitur Gamifikasi: Ledakan Merah (Gagal)
             fireCrossParticles() {
                 var defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.92, startVelocity: 40, colors: ['#ef4444', '#b91c1c', '#fca5a5'] };
                 
@@ -488,7 +515,7 @@
             spawnFloatingText(e, text, color = '#fbbf24') {
                 if (!e) return;
                 const el = document.createElement('div');
-                el.className = 'floating-text';
+                el.className = 'floating-text font-sans';
                 el.innerText = text;
                 el.style.left = (e.clientX - 20) + 'px';
                 el.style.top = (e.clientY - 20) + 'px';
@@ -512,10 +539,10 @@
                 const stringRegex = /^".*"$/;
                 const digitRegex = /^[0-9]+%?$/;
 
-                if (funcRegex.test(block)) return 'bg-blue-50 text-blue-700 border-blue-200 border-b-blue-300 dark:bg-blue-900/60 dark:text-blue-300 dark:border-blue-800 dark:border-b-blue-500 shadow-blue-100/50';
-                if (cellRegex.test(block)) return 'bg-emerald-50 text-emerald-700 border-emerald-200 border-b-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-800 dark:border-b-emerald-500 shadow-emerald-100/50';
-                if (stringRegex.test(block) || digitRegex.test(block)) return 'bg-amber-50 text-amber-700 border-amber-200 border-b-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 dark:border-b-amber-500 shadow-amber-100/50';
-                return 'bg-slate-50 text-slate-500 border-slate-200 border-b-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:border-b-slate-500 shadow-slate-100/50';
+                if (funcRegex.test(block)) return 'bg-emerald-50 text-emerald-700 border-emerald-200 border-b-emerald-400 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-800';
+                if (cellRegex.test(block)) return 'bg-blue-50 text-blue-700 border-blue-200 border-b-blue-400 dark:bg-blue-900/60 dark:text-blue-300 dark:border-blue-800';
+                if (stringRegex.test(block) || digitRegex.test(block)) return 'bg-amber-50 text-amber-700 border-amber-200 border-b-amber-400 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800';
+                return 'bg-slate-50 text-slate-500 border-slate-200 border-b-slate-400 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
             },
 
             addToAnswer(block, e) { 
@@ -527,7 +554,6 @@
                 if(this.sfxClick && this.sfxClick.readyState >= 2) { 
                     this.sfxClick.currentTime = 0; this.sfxClick.play().catch(()=>{}); 
                 }
-                // DITAMBAHKAN EFEK BINTANG
                 this.spawnFloatingText(e, 'Pilih ⭐', '#10b981');
             },
 
@@ -538,7 +564,6 @@
                 if(this.sfxClick && this.sfxClick.readyState >= 2) { 
                     this.sfxClick.currentTime = 0; this.sfxClick.play().catch(()=>{}); 
                 }
-                // DITAMBAHKAN EFEK ANGIN
                 this.spawnFloatingText(e, 'Hapus 💥', '#ef4444');
             },
             
@@ -569,7 +594,6 @@
                         }
                         this.fireConfetti();
                         
-                        // DITAMBAHKAN EFEK PESTA PADA MODAL SUKSES
                         this.triggerFeedbackModal('success', 'Tepat Sekali! 🎉', '+ ' + this.currentPotentialXP + ' XP Berhasil Diraih', data.next_url);
                         
                     } else {
@@ -581,10 +605,8 @@
                             this.sfxSalah.currentTime = 0; this.sfxSalah.play().catch(()=>{}); 
                         }
                         
-                        // Partikel meledak
                         this.fireCrossParticles(); 
 
-                        // DITAMBAHKAN EMOJI NANGIS SAAT SALAH
                         if(e) this.spawnFloatingText(e, 'Masih salah! 😭', '#ef4444');
                         this.triggerFeedbackModal('error', 'Belum berhasil 😭', 'Ayo coba lagi!');
                         

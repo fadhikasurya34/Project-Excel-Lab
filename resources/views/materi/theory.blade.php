@@ -84,6 +84,14 @@
         padding-bottom: 0 !important;
         border-radius: 0 !important;
         border: none !important;
+        /* FIX ZOOM: Izinkan scroll saat di-zoom */
+        overflow: auto !important; 
+        -webkit-overflow-scrolling: touch !important; 
+    }
+
+    /* FIX ZOOM: Izinkan gesture zoom pada iframe saat layar penuh */
+    body.is-ios-fs .video-container iframe {
+        touch-action: pan-x pan-y pinch-zoom !important;
     }
 
     .btn-exit-fs {
@@ -125,29 +133,8 @@
         right: max(20px, env(safe-area-inset-right)) !important;
     }
 
-    /* =========================================================
-       CSS KLONINGAN KHUSUS UNTUK VIDEO AGAR TIDAK BENTROK
-       ========================================================= */
-    .yt-container {
-        position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; 
-        border-radius: 1.5rem; background: #000; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; 
-    }
-    .yt-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 10; }
-    .yt-container:fullscreen, .yt-container:-webkit-full-screen { padding-bottom: 0; height: 100dvh; width: 100vw; border-radius: 0; border: none; background: #000; }
-    
-    body.is-yt-fs { background-color: #000 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; height: 100dvh !important; width: 100vw !important; margin: 0 !important; padding: 0 !important; }
-    body.is-yt-fs header, body.is-yt-fs nav, body.is-yt-fs aside, body.is-yt-fs [class*="fixed top-0"], body.is-yt-fs .z-50, body.is-yt-fs .content-header, body.is-yt-fs .info-section, body.is-yt-fs .fullscreen-btn-container, body.is-yt-fs .multi-content-header { display: none !important; opacity: 0 !important; visibility: hidden !important; }
-    body.is-yt-fs .main-wrapper, body.is-yt-fs .inner-wrapper, body.is-yt-fs .video-section { padding: 0 !important; margin: 0 !important; max-width: 100% !important; width: 100% !important; height: auto !important; border: none !important; box-shadow: none !important; background: transparent !important; }
-    body.is-yt-fs .yt-container { width: 100vw !important; height: 100dvh !important; padding-bottom: 0 !important; border-radius: 0 !important; border: none !important; }
-    
-    .btn-exit-yt { display: none; position: absolute; top: 20px; right: 20px; z-index: 2147483647 !important; background: rgba(220, 38, 38, 0.7); color: white; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); pointer-events: auto !important; -webkit-tap-highlight-color: transparent; }
-    .btn-exit-yt:active { background: rgba(185, 28, 28, 1); transform: scale(0.90); }
-    .yt-container:fullscreen .btn-exit-yt, .yt-container:-webkit-full-screen .btn-exit-yt { display: flex !important; }
-    body.is-yt-fs .btn-exit-yt { display: flex !important; position: fixed !important; top: max(20px, env(safe-area-inset-top)) !important; right: max(20px, env(safe-area-inset-right)) !important; }
-
-    /* Mencegah tabrakan saat salah satu mode fullscreen aktif */
-    body.is-ios-fs .yt-container, body.is-ios-fs .text-content-block { display: none !important; }
-    body.is-yt-fs .video-container, body.is-yt-fs .text-content-block { display: none !important; }
+    /* Mencegah tabrakan saat fullscreen aktif */
+    body.is-ios-fs .text-content-block { display: none !important; }
 
     /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
     .description-card {
@@ -256,12 +243,24 @@
                 $pdfUrl = $material->pdf_url ?? null; 
                 $textContent = $material->text_content ?? null;
                 $legacyUrl = $material->activities->first()->step_image ?? null;
+                
+                // Konversi Legacy URL
                 if (empty($videoUrl) && empty($pdfUrl) && $legacyUrl) {
-                    if (str_contains(strtolower($legacyUrl), 'youtube') || str_contains(strtolower($legacyUrl), 'mp4')) { $videoUrl = $legacyUrl; } else { $pdfUrl = $legacyUrl; }
+                    if (str_contains(strtolower($legacyUrl), 'youtube') || str_contains(strtolower($legacyUrl), 'mp4') || str_contains(strtolower($legacyUrl), 'drive.google')) { 
+                        $videoUrl = $legacyUrl; 
+                    } else { 
+                        $pdfUrl = $legacyUrl; 
+                    }
                 }
                 if ($videoUrl && $pdfUrl === $videoUrl) { $pdfUrl = null; }
+
+                // FIX: Paksa Google Drive menjadi Embed Preview Bersih
+                if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
+                    $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
+                }
             @endphp
 
+            {{-- URUTAN 1: VIDEO TUTORIAL --}}
             @if($videoUrl)
             <div>
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -270,22 +269,19 @@
                     </span>
                     Video Tutorial
                 </h3>
-                <div id="yt-container" class="yt-container border-4 border-white dark:border-slate-800 shadow-xl">
-                    <button type="button" onclick="toggleYtFullscreen()" class="btn-exit-yt" aria-label="Tutup Layar">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                    {{-- Perbaikan atribut pada tag iframe di bawah ini --}}
-                    <iframe src="{{ $videoUrl }}" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+                
+                <div class="relative w-full overflow-hidden rounded-[1.5rem] border-4 border-white dark:border-slate-800 shadow-xl bg-black" style="padding-top: 56.25%;">
+                    <iframe src="{{ $videoUrl }}" class="absolute top-0 left-0 w-full h-full border-none" allow="autoplay; fullscreen" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
                 </div>
-                <div class="mt-4 flex justify-end fullscreen-btn-container">
-                    <button type="button" onclick="toggleYtFullscreen()" class="flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 text-white rounded-xl shadow-sm transition-all active:scale-95 text-[11px] font-bold uppercase tracking-widest">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l5-5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                        <span>Perbesar Video</span>
-                    </button>
-                </div>
+                
+                <p class="text-[10px] text-slate-500 mt-3 flex items-center gap-1.5 font-bold">
+                    <svg class="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Putar HP Anda ke mode horizontal atau gunakan tombol [ ] di dalam video untuk memperbesar layar.
+                </p>
             </div>
             @endif
 
+            {{-- URUTAN 2: MODUL PDF --}}
             @if($pdfUrl)
             <div>
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -309,6 +305,7 @@
             </div>
             @endif
 
+            {{-- URUTAN 3: TEKS MATERI --}}
             @if($textContent)
             <div class="text-content-block">
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -364,9 +361,8 @@
                 <div class="mb-10">
                     <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-4" onsubmit="submitAjax(event, this, 'Komentar dikirim!')">
                         @csrf
-                        {{-- Avatar Pengirim SINKRON --}}
                         <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
-                            <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                            <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                         </div>
 
                         <div class="flex-1 relative">
@@ -378,7 +374,7 @@
                     </form>
                 </div>
 
-                {{-- Thread Komentar (Dibungkus div id untuk AJAX Refresh) --}}
+                {{-- Thread Komentar --}}
                 <div id="diskusi-list" class="space-y-8">
                     @forelse($material->comments as $comment)
                         <div class="relative">
@@ -390,7 +386,7 @@
                             {{-- Komentar Utama --}}
                             <div class="flex gap-4 group">
                                 <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-white dark:border-slate-700 shadow-md flex items-center justify-center z-10 overflow-hidden" style="background-color: #{{ $comment->user->profile_color ?? '10b981' }}">
-                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $comment->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $comment->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                 </div>
 
                                 <div class="flex-1">
@@ -431,7 +427,7 @@
                                             @csrf
                                             <input type="hidden" name="parent_id" value="{{ $comment->id }}">
                                             <div class="shrink-0 w-8 h-8 rounded-xl border-2 border-slate-100 overflow-hidden" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
-                                                <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                                                <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                             </div>
                                             <div class="flex-1 relative">
                                                 <input type="text" name="body" class="w-full pl-4 pr-12 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-xl text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Balas {{ $comment->user->name }}..." required>
@@ -443,12 +439,12 @@
                                         </form>
                                     </div>
 
-                                    {{-- List Balasan (Menampilkan yang terbaru di atas) --}}
+                                    {{-- List Balasan --}}
                                     <div class="space-y-6 mt-4">
                                         @foreach($comment->replies->sortByDesc('created_at') as $reply)
                                             <div class="flex gap-3 ml-4 relative z-10">
                                                 <div class="shrink-0 w-8 h-8 rounded-xl border-2 border-white dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" style="background-color: #{{ $reply->user->profile_color ?? '10b981' }}">
-                                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $reply->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 transform scale-110">
+                                                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $reply->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                                 </div>
                                                 <div class="flex-1">
                                                     <div class="comment-bubble p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/30 {{ $reply->user_id === Auth::id() ? 'my-comment-bubble' : '' }}">
@@ -513,7 +509,7 @@
 
 @push('scripts')
 <script>
-    // --- FUNGSI FULLSCREEN ORIGINAL (SESUAI PERMINTAAN: TIDAK DIUBAH) ---
+    // --- FUNGSI FULLSCREEN ORIGINAL (KHUSUS UNTUK PDF SAJA) ---
     const container = document.getElementById("materi-container");
     function toggleCustomFullscreen() {
         const isCurrentlyIOSFS = document.body.classList.contains('is-ios-fs');
@@ -529,30 +525,29 @@
             if (extFS) { extFS.call(document); }
         }
     }
-    function enableIOSFallback() { window.scrollTo(0, 0); document.body.classList.add('is-ios-fs'); }
-    function disableIOSFallback() { document.body.classList.remove('is-ios-fs'); }
+    
+    function enableIOSFallback() { 
+        window.scrollTo(0, 0); 
+        document.body.classList.add('is-ios-fs'); 
+        
+        // FIX: Ubah meta viewport agar mengizinkan Zoom (Pinch/Double Click)
+        let metaViewport = document.querySelector('meta[name="viewport"]');
+        if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
+    }
+    
+    function disableIOSFallback() { 
+        document.body.classList.remove('is-ios-fs'); 
+        
+        // FIX: Kembalikan meta viewport ke awal (Kunci Zoom agar layout tidak rusak)
+        let metaViewport = document.querySelector('meta[name="viewport"]');
+        if(metaViewport) metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+    }
+    
     ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(eventType => {
         document.addEventListener(eventType, () => {
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { disableIOSFallback(); }
         });
     });
-
-    // --- KLONINGAN KHUSUS VIDEO ---
-    const ytContainer = document.getElementById("yt-container");
-    function toggleYtFullscreen() {
-        const isCurrentlyYtFS = document.body.classList.contains('is-yt-fs');
-        if (isCurrentlyYtFS) { disableYtFallback(); return; }
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            const reqFS = ytContainer.requestFullscreen || ytContainer.webkitRequestFullscreen || ytContainer.msRequestFullscreen;
-            if (reqFS && !isIOS) { reqFS.call(ytContainer).catch(err => { enableYtFallback(); }); } else { enableYtFallback(); }
-        } else {
-            const extFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
-            if (extFS) extFS.call(document);
-        }
-    }
-    function enableYtFallback() { window.scrollTo(0, 0); document.body.classList.add('is-yt-fs'); }
-    function disableYtFallback() { document.body.classList.remove('is-yt-fs'); }
 
     // --- FUNGSI BACA TEKS ---
     function toggleTextExpansion() {
