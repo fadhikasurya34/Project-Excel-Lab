@@ -41,7 +41,6 @@
 
     body.is-ios-fs {
         background-color: #000 !important;
-        /* FIX ZOOM: Ubah dari hidden ke auto agar bisa digeser saat di zoom */
         overflow: auto !important; 
         display: flex !important;
         flex-direction: column !important;
@@ -51,6 +50,8 @@
         width: 100vw !important;
         margin: 0 !important;
         padding: 0 !important;
+        /* Menonaktifkan gesture sistem agar tidak bentrok dengan zoom PDF */
+        touch-action: none; 
     }
 
     body.is-ios-fs header, 
@@ -85,14 +86,13 @@
         padding-bottom: 0 !important;
         border-radius: 0 !important;
         border: none !important;
-        /* FIX ZOOM: Izinkan scroll saat di-zoom */
         overflow: auto !important; 
         -webkit-overflow-scrolling: touch !important; 
+        touch-action: auto !important; 
     }
 
-    /* FIX ZOOM: Izinkan gesture zoom pada iframe saat layar penuh */
     body.is-ios-fs .video-container iframe {
-        touch-action: pan-x pan-y pinch-zoom !important;
+        touch-action: auto !important;
     }
 
     .btn-exit-fs {
@@ -134,10 +134,8 @@
         right: max(20px, env(safe-area-inset-right)) !important;
     }
 
-    /* Mencegah tabrakan saat fullscreen aktif */
     body.is-ios-fs .text-content-block { display: none !important; }
 
-    /* //* (Card) Glass Effect untuk Deskripsi dengan Support Dark Mode */
     .description-card {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(10px);
@@ -146,8 +144,8 @@
     }
     
     :is(.dark .description-card) {
-        background: rgba(30, 41, 59, 0.8); /* slate-800 */
-        border-color: #334155; /* slate-700 */
+        background: rgba(30, 41, 59, 0.8); 
+        border-color: #334155; 
     }
 
     .btn-back-pegas {
@@ -159,9 +157,6 @@
         border-bottom-width: 0px;
     }
 
-    /* =========================================================
-       CSS RUANG DISKUSI (MODERN CHAT / FB-YT STYLE)
-       ========================================================= */
     .comment-thread-line {
         position: absolute; left: 19px; top: 40px; bottom: 0;
         width: 2px; background: #e2e8f0; border-radius: 10px;
@@ -181,7 +176,6 @@
         border-color: rgba(99, 102, 241, 0.3) !important;
     }
 
-    /* Animasi Toast */
     @keyframes slideInUp {
         from { transform: translateY(100%); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
@@ -245,7 +239,6 @@
                 $textContent = $material->text_content ?? null;
                 $legacyUrl = $material->activities->first()->step_image ?? null;
                 
-                // Konversi Legacy URL
                 if (empty($videoUrl) && empty($pdfUrl) && $legacyUrl) {
                     if (str_contains(strtolower($legacyUrl), 'youtube') || str_contains(strtolower($legacyUrl), 'mp4') || str_contains(strtolower($legacyUrl), 'drive.google')) { 
                         $videoUrl = $legacyUrl; 
@@ -255,7 +248,6 @@
                 }
                 if ($videoUrl && $pdfUrl === $videoUrl) { $pdfUrl = null; }
 
-                // FIX: Paksa Google Drive menjadi Embed Preview Bersih
                 if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
                     $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
                 }
@@ -346,7 +338,7 @@
             </div>
         </div>
 
-        {{-- //* 4. Ruang Diskusi Kelas (FB/YT STYLE) --}}
+        {{-- //* 4. Ruang Diskusi Kelas --}}
         <div class="mt-12 info-section" x-data="{ replyTo: null, replyName: '' }" id="diskusi-section">
             
             <h3 id="diskusi-header" class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-6 flex items-center gap-3 multi-content-header">
@@ -357,8 +349,6 @@
             </h3>
 
             <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-[2.5rem] shadow-sm overflow-hidden p-6 md:p-8">
-                
-                {{-- Form Kirim Komentar Utama --}}
                 <div class="mb-10">
                     <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-4" onsubmit="submitAjax(event, this, 'Komentar dikirim!')">
                         @csrf
@@ -375,21 +365,16 @@
                     </form>
                 </div>
 
-                {{-- Thread Komentar --}}
                 <div id="diskusi-list" class="space-y-8">
                     @forelse($material->comments as $comment)
                         <div class="relative">
-                            {{-- Thread Line --}}
                             @if($comment->replies->count() > 0)
                                 <div class="comment-thread-line" style="bottom: -20px;"></div>
                             @endif
-
-                            {{-- Komentar Utama --}}
                             <div class="flex gap-4 group">
                                 <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-white dark:border-slate-700 shadow-md flex items-center justify-center z-10 overflow-hidden" style="background-color: #{{ $comment->user->profile_color ?? '10b981' }}">
                                     <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $comment->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                 </div>
-
                                 <div class="flex-1">
                                     <div class="comment-bubble p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 {{ $comment->user_id === Auth::id() ? 'my-comment-bubble' : '' }}">
                                         <div class="flex items-center gap-2 mb-1">
@@ -401,8 +386,6 @@
                                         </div>
                                         <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">{{ $comment->body }}</p>
                                     </div>
-
-                                    {{-- Actions --}}
                                     <div class="flex items-center gap-5 mt-2 ml-2 mb-4">
                                         <div class="flex items-center gap-1">
                                             <form action="{{ route('comment.react', [$comment->id, 'like']) }}" method="POST" onsubmit="submitAjax(event, this)">@csrf
@@ -413,7 +396,6 @@
                                             </form>
                                         </div>
                                         <button @click="replyTo = {{ $comment->id }}" class="text-[10px] font-black text-slate-500 hover:text-indigo-600 uppercase tracking-widest">Balas</button>
-                                        
                                         @if($comment->user_id === Auth::id())
                                             <form action="{{ route('materi.comment.destroy', $comment->id) }}" method="POST" onsubmit="event.preventDefault(); openDeleteModal(this, 'Komentar Utama Dihapus!');">
                                                 @csrf @method('DELETE')
@@ -421,8 +403,6 @@
                                             </form>
                                         @endif
                                     </div>
-
-                                    {{-- Form Balasan Inline --}}
                                     <div x-show="replyTo === {{ $comment->id }}" x-cloak class="mt-2 mb-6 ml-4">
                                         <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-3" onsubmit="submitAjax(event, this, 'Balasan dikirim!')">
                                             @csrf
@@ -439,8 +419,6 @@
                                             <button type="button" @click="replyTo = null" class="cancel-reply text-xs text-slate-400 hover:text-red-500 font-bold px-2">Batal</button>
                                         </form>
                                     </div>
-
-                                    {{-- List Balasan --}}
                                     <div class="space-y-6 mt-4">
                                         @foreach($comment->replies->sortByDesc('created_at') as $reply)
                                             <div class="flex gap-3 ml-4 relative z-10">
@@ -458,8 +436,6 @@
                                                         </div>
                                                         <p class="text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed">{{ $reply->body }}</p>
                                                     </div>
-
-                                                    {{-- Tombol Hapus Balasan --}}
                                                     @if($reply->user_id === Auth::id())
                                                         <div class="flex mt-1.5 ml-1">
                                                             <form action="{{ route('materi.comment.destroy', $reply->id) }}" method="POST" onsubmit="event.preventDefault(); openDeleteModal(this, 'Balasan dihapus!');">
@@ -487,10 +463,8 @@
     </div>
 </div>
 
-{{-- Container untuk Toast Notification Custom --}}
 <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
-{{-- Custom Delete Confirmation Modal --}}
 <div id="delete-modal" class="fixed inset-0 z-[99999] hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
     <div class="relative bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-200" id="delete-modal-content">
@@ -513,9 +487,30 @@
     // --- FUNGSI FULLSCREEN ORIGINAL (KHUSUS UNTUK PDF SAJA) ---
     const container = document.getElementById("materi-container");
     
+    function setViewport(zoomable) {
+        // Hapus meta viewport lama jika ada
+        const oldMeta = document.querySelector('meta[name="viewport"]');
+        if (oldMeta) oldMeta.remove();
+        
+        // Buat meta viewport baru
+        const newMeta = document.createElement('meta');
+        newMeta.name = "viewport";
+        newMeta.id = "viewport-manager";
+        
+        if (zoomable) {
+            newMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
+        } else {
+            newMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
+        }
+        document.head.appendChild(newMeta);
+    }
+
     function toggleCustomFullscreen() {
         const isCurrentlyIOSFS = document.body.classList.contains('is-ios-fs');
-        if (isCurrentlyIOSFS) { disableIOSFallback(); return; }
+        if (isCurrentlyIOSFS) { 
+            disableIOSFallback(); 
+            return; 
+        }
         
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
@@ -534,35 +529,22 @@
     function enableIOSFallback() { 
         window.scrollTo(0, 0); 
         document.body.classList.add('is-ios-fs'); 
-        
-        // FIX ZOOM PDF: Hapus tag meta lama dan buat baru agar HP (iOS/Android) mereset sensor zoom
-        let oldMeta = document.querySelector('meta[name="viewport"]');
-        if (oldMeta) oldMeta.remove();
-        
-        let newMeta = document.createElement('meta');
-        newMeta.name = "viewport";
-        newMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
-        document.head.appendChild(newMeta);
+        setViewport(true); // Buka kunci zoom
     }
     
     function disableIOSFallback() { 
         document.body.classList.remove('is-ios-fs'); 
-        
-        // FIX ZOOM PDF: Kunci kembali dan paksa browser reset zoom level ke 1.0
-        let oldMeta = document.querySelector('meta[name="viewport"]');
-        if (oldMeta) oldMeta.remove();
-        
-        let newMeta = document.createElement('meta');
-        newMeta.name = "viewport";
-        newMeta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
-        document.head.appendChild(newMeta);
-
-        // Paksa scroll reset agar halaman tidak tersangkut setelah zoom
-        setTimeout(() => {
-            window.scrollTo(0, 0);
-        }, 50);
+        setViewport(false); // Kunci kembali zoom
+        setTimeout(() => window.scrollTo(0, 0), 50);
     }
     
+    // Watcher detektor rotasi layar agar meta viewport ter-update paksa
+    window.addEventListener('resize', () => {
+        if (document.body.classList.contains('is-ios-fs')) {
+            setViewport(true);
+        }
+    });
+
     ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach(eventType => {
         document.addEventListener(eventType, () => {
             if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { 
@@ -645,33 +627,27 @@
         }
     });
 
-    // --- FUNGSI AJAX KIRIM/HAPUS KOMENTAR ---
     async function submitAjax(e, form, toastMessage = null) {
         e.preventDefault();
         const btn = form.querySelector('.submit-btn');
         if(btn) { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
-
         try {
             const formData = new FormData(form);
             const response = await fetch(form.action, {
-                method: 'POST', // Laravel HTTP Method Spoofing
+                method: 'POST',
                 body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
-
             if (response.ok) {
                 const freshPage = await fetch(window.location.href);
                 const htmlText = await freshPage.text();
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(htmlText, 'text/html');
-                
                 document.getElementById('diskusi-list').innerHTML = doc.getElementById('diskusi-list').innerHTML;
                 document.getElementById('diskusi-header').innerHTML = doc.getElementById('diskusi-header').innerHTML;
-                
                 form.reset();
                 const cancelBtn = form.querySelector('.cancel-reply');
                 if (cancelBtn) cancelBtn.click();
-
                 showToast(toastMessage);
             }
         } catch (error) {
