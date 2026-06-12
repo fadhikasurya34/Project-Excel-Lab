@@ -1,21 +1,18 @@
-{{-- //* (View) Dashboard Utama Admin --}}
-{{-- 
-    DATA: $stats (Summary), $topStudents (Leaderboard), $chartData (XP Growth)
-    LOGIC: Integrasi Chart.js untuk visualisasi data aktivitas lab.
---}}
+{{-- (View) Dashboard Utama Admin --}}
 
 <x-app-layout>
-    {{-- (Asset) Chart.js untuk rendering grafik analitik --}}
+    {{-- (Library) Chart.js untuk visualisasi data --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        {{-- (Style) Standarisasi UI Terminal: Radial Grid & Kartu Elevasi --}}
+        /* (Style) Latar belakang admin */
         .bg-admin {
             background-color: #f8fafc;
             background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
             background-size: 32px 32px;
         }
 
+        /* (Style) Komponen kartu admin */
         .admin-card {
             background: white;
             border: 1px solid #e2e8f0;
@@ -28,6 +25,7 @@
             transform: translateY(-2px);
         }
 
+        /* (Style) Komponen navigasi */
         .nav-card {
             background: white;
             border: 1px solid #f1f5f9;
@@ -42,7 +40,7 @@
 
     <div class="min-h-screen bg-admin p-6 sm:p-10">
         
-        {{-- (Section) Header: Status Koneksi & Profil Petugas --}}
+        {{-- (Section) Header dashboard --}}
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
             <div>
                 <div class="flex items-center space-x-2 mb-2">
@@ -64,9 +62,8 @@
             </div>
         </div>
 
-        {{-- (Section) Row 1: Key Performance Indicators (Statistik Ringkas) --}}
+        {{-- (Section) Indikator Kinerja Utama (Statistik) --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {{-- Counter Siswa --}}
             <div class="admin-card p-6">
                 <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-4">Total Praktikan</p>
                 <div class="flex items-end justify-between">
@@ -77,7 +74,6 @@
                 </div>
             </div>
 
-            {{-- Average XP & Max Possible XP --}}
             <div class="admin-card p-6 border-l-4 border-l-emerald-500">
                 <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-4">Rerata Skor (XP)</p>
                 <div class="flex items-end justify-between">
@@ -91,7 +87,6 @@
                 </div>
             </div>
 
-            {{-- Mission Completion & Global Rate --}}
             <div class="admin-card p-6 border-l-4 border-l-blue-500">
                 <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-4">Total Penyelesaian</p>
                 <div class="flex items-end justify-between">
@@ -107,7 +102,6 @@
                 </div>
             </div>
 
-            {{-- Ticket Usage/Remedial --}}
             <div class="admin-card p-6 border-l-4 border-l-amber-500">
                 <p class="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-4">Total Remedial</p>
                 <div class="flex items-end justify-between">
@@ -119,9 +113,8 @@
             </div>
         </div>
 
-        {{-- (Section) Row 2: Visual Analitik & Leaderboard --}}
+        {{-- (Section) Visualisasi Analitik & Leaderboard --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-            {{-- Grafik XP Pertumbuhan --}}
             <div class="lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="mb-8">
                     <h2 class="text-lg font-bold text-slate-800 tracking-tight">Grafik Pertumbuhan XP</h2>
@@ -132,7 +125,6 @@
                 </div>
             </div>
 
-            {{-- Daftar Top Siswa --}}
             <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                 <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-6">Top Performa</h2>
                 <div class="space-y-5">
@@ -166,11 +158,11 @@
             </div>
         </div>
 
-        {{-- (Section) Row 3: Navigasi Cepat ke Engine Modul --}}
+        {{-- (Section) Navigasi cepat modul --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <a href="{{ route('admin.materials.index') }}" class="nav-card group flex items-center space-x-4">
                 <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 </div>
                 <div>
                     <h4 class="font-bold text-slate-900 text-sm">Editor Materi</h4>
@@ -184,7 +176,7 @@
                 </div>
                 <div>
                     <h4 class="font-bold text-slate-900 text-sm">Engine Misi</h4>
-                    <p class="text-[10px] text-slate-400 font-medium  tracking-widest mt-1">Logika & Simulasi Lab</p>
+                    <p class="text-[10px] text-slate-400 font-medium tracking-widest mt-1">Logika & Simulasi Lab</p>
                 </div>
             </a>
 
@@ -199,39 +191,40 @@
             </a>
         </div>
 
-    {{-- (Logic) JavaScript: Engine Rendering Chart Pertumbuhan XP --}}
-    <script>
-        const ctx = document.getElementById('activityChart').getContext('2d');
-        const rawData = @json($chartData ?? []);
-        
-        const labels = rawData.length ? rawData.map(d => d.date) : ['No Data'];
-        const values = rawData.length ? rawData.map(d => d.total_xp) : [0];
+        {{-- (Process) Rendering grafik menggunakan Chart.js --}}
+        <script>
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            const rawData = @json($chartData ?? []);
+            
+            const labels = rawData.length ? rawData.map(d => d.date) : ['No Data'];
+            const values = rawData.length ? rawData.map(d => d.total_xp) : [0];
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Perolehan XP Harian',
-                    data: values,
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.05)',
-                    fill: true, tension: 0.4, borderWidth: 4, pointRadius: 4,
-                    pointBackgroundColor: '#6366f1'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true, 
-                        grid: { color: '#f1f5f9', borderDash: [4, 4] }
-                    },
-                    x: { grid: { display: false } }
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Perolehan XP Harian',
+                        data: values,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                        fill: true, tension: 0.4, borderWidth: 4, pointRadius: 4,
+                        pointBackgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#f1f5f9', borderDash: [4, 4] }
+                        },
+                        x: { grid: { display: false } }
+                    }
                 }
-            }
-        });
-    </script>
+            });
+        </script>
+    </div>
 </x-app-layout>

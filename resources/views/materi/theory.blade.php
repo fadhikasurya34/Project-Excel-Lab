@@ -1,4 +1,4 @@
-{{-- //* (View) Player Materi Teori (Sisi Siswa) --}}
+{{-- (View) Pemutar Materi Teori --}}
 
 @extends('layouts.siswa')
 
@@ -6,9 +6,7 @@
 
 @push('styles')
 <style>
-    /* =========================================================
-       CSS ORIGINAL PDF (100% PERSIS KODE ASLI ANDA, TIDAK DIUBAH)
-       ========================================================= */
+    /* (Style) Konfigurasi wadah penampil media */
     .video-container {
         position: relative;
         padding-bottom: 56.25%; /* Ratio 16:9 */
@@ -30,6 +28,7 @@
         z-index: 10;
     }
 
+    /* (Style) Konfigurasi tampilan layar penuh */
     .video-container:fullscreen, .video-container:-webkit-full-screen {
         padding-bottom: 0;
         height: 100dvh;
@@ -39,6 +38,7 @@
         background: #000;
     }
 
+    /* (Style) Modifikasi layout khusus mode layar penuh */
     body.is-ios-fs {
         background-color: #000 !important;
         overflow: auto !important; 
@@ -50,10 +50,10 @@
         width: 100vw !important;
         margin: 0 !important;
         padding: 0 !important;
-        /* Menonaktifkan gesture sistem agar tidak bentrok dengan zoom PDF */
         touch-action: none; 
     }
 
+    /* (Style) Menyembunyikan elemen non-esensial saat layar penuh */
     body.is-ios-fs header, 
     body.is-ios-fs nav, 
     body.is-ios-fs aside,
@@ -67,6 +67,7 @@
         visibility: hidden !important;
     }
 
+    /* (Style) Menghilangkan batasan margin pada wadah utama */
     body.is-ios-fs .main-wrapper,
     body.is-ios-fs .inner-wrapper,
     body.is-ios-fs .video-section {
@@ -80,6 +81,7 @@
         background: transparent !important;
     }
 
+    /* (Style) Memaksimalkan ukuran iframe */
     body.is-ios-fs .video-container {
         width: 100vw !important;
         height: 100dvh !important; 
@@ -88,13 +90,14 @@
         border: none !important;
         overflow: auto !important; 
         -webkit-overflow-scrolling: touch !important; 
-        touch-action: auto !important; 
     }
 
+    /* (Style) Mengizinkan gestur zoom pada dokumen */
     body.is-ios-fs .video-container iframe {
-        touch-action: auto !important;
+        touch-action: pan-x pan-y pinch-zoom !important;
     }
 
+    /* (Style) Tombol keluar dari layar penuh */
     .btn-exit-fs {
         display: none; 
         position: absolute;
@@ -136,6 +139,7 @@
 
     body.is-ios-fs .text-content-block { display: none !important; }
 
+    /* (Style) Efek kaca pada kartu deskripsi */
     .description-card {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(10px);
@@ -148,6 +152,7 @@
         border-color: #334155; 
     }
 
+    /* (Style) Tombol dengan efek pegas */
     .btn-back-pegas {
         transition: all 0.1s ease;
         border-bottom-width: 6px;
@@ -157,6 +162,7 @@
         border-bottom-width: 0px;
     }
 
+    /* (Style) Desain elemen ruang diskusi */
     .comment-thread-line {
         position: absolute; left: 19px; top: 40px; bottom: 0;
         width: 2px; background: #e2e8f0; border-radius: 10px;
@@ -176,6 +182,7 @@
         border-color: rgba(99, 102, 241, 0.3) !important;
     }
 
+    /* (Style) Animasi notifikasi */
     @keyframes slideInUp {
         from { transform: translateY(100%); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
@@ -210,7 +217,7 @@
 <div class="px-4 sm:px-10 py-8 main-wrapper">
     <div class="max-w-4xl mx-auto inner-wrapper">
         
-        {{-- //* 1. Header Konten --}}
+        {{-- (View) Header informasi materi --}}
         <div class="mb-6 content-header">
             <div class="flex items-center space-x-3 mb-4">
                 <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest">
@@ -231,7 +238,7 @@
             </div>
         </div>
 
-        {{-- //* 2. Area Multi-Konten Pembelajaran --}}
+        {{-- (View) Area utama pembelajaran materi --}}
         <div class="mb-10 space-y-12 video-section">
             @php
                 $videoUrl = $material->video_url ?? null; 
@@ -239,6 +246,7 @@
                 $textContent = $material->text_content ?? null;
                 $legacyUrl = $material->activities->first()->step_image ?? null;
                 
+                // (Process) Konversi URL format lama
                 if (empty($videoUrl) && empty($pdfUrl) && $legacyUrl) {
                     if (str_contains(strtolower($legacyUrl), 'youtube') || str_contains(strtolower($legacyUrl), 'mp4') || str_contains(strtolower($legacyUrl), 'drive.google')) { 
                         $videoUrl = $legacyUrl; 
@@ -248,12 +256,13 @@
                 }
                 if ($videoUrl && $pdfUrl === $videoUrl) { $pdfUrl = null; }
 
+                // (Process) Format URL Google Drive
                 if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
                     $videoUrl = preg_replace('/\/view.*/', '/preview', $videoUrl);
                 }
             @endphp
 
-            {{-- URUTAN 1: VIDEO TUTORIAL --}}
+            {{-- (View) Pemutar Video Tutorial --}}
             @if($videoUrl)
             <div>
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -274,7 +283,7 @@
             </div>
             @endif
 
-            {{-- URUTAN 2: MODUL PDF --}}
+            {{-- (View) Penampil Modul PDF --}}
             @if($pdfUrl)
             <div>
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -298,7 +307,7 @@
             </div>
             @endif
 
-            {{-- URUTAN 3: TEKS MATERI --}}
+            {{-- (View) Bagian Teks Bacaan --}}
             @if($textContent)
             <div class="text-content-block">
                 <h3 class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-4 flex items-center gap-3 multi-content-header">
@@ -323,7 +332,7 @@
             @endif
         </div>
 
-        {{-- //* 3. Instruksi & Info --}}
+        {{-- (View) Peringatan dan instruksi penutup --}}
         <div class="grid grid-cols-1 gap-6 info-section">
             <div class="description-card p-6 lg:p-8 shadow-sm">
                 <div class="flex items-center space-x-4">
@@ -338,7 +347,7 @@
             </div>
         </div>
 
-        {{-- //* 4. Ruang Diskusi Kelas --}}
+        {{-- (View) Ruang diskusi kelas --}}
         <div class="mt-12 info-section" x-data="{ replyTo: null, replyName: '' }" id="diskusi-section">
             
             <h3 id="diskusi-header" class="text-lg md:text-xl font-black text-slate-800 dark:text-white mb-6 flex items-center gap-3 multi-content-header">
@@ -349,6 +358,8 @@
             </h3>
 
             <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-[2.5rem] shadow-sm overflow-hidden p-6 md:p-8">
+                
+                {{-- (View) Form komentar utama --}}
                 <div class="mb-10">
                     <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-4" onsubmit="submitAjax(event, this, 'Komentar dikirim!')">
                         @csrf
@@ -365,16 +376,21 @@
                     </form>
                 </div>
 
+                {{-- (View) Daftar utas komentar --}}
                 <div id="diskusi-list" class="space-y-8">
                     @forelse($material->comments as $comment)
                         <div class="relative">
+                            {{-- (View) Garis penghubung utas --}}
                             @if($comment->replies->count() > 0)
                                 <div class="comment-thread-line" style="bottom: -20px;"></div>
                             @endif
+
+                            {{-- (View) Item komentar utama --}}
                             <div class="flex gap-4 group">
                                 <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-white dark:border-slate-700 shadow-md flex items-center justify-center z-10 overflow-hidden" style="background-color: #{{ $comment->user->profile_color ?? '10b981' }}">
                                     <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $comment->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5">
                                 </div>
+
                                 <div class="flex-1">
                                     <div class="comment-bubble p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 {{ $comment->user_id === Auth::id() ? 'my-comment-bubble' : '' }}">
                                         <div class="flex items-center gap-2 mb-1">
@@ -386,6 +402,8 @@
                                         </div>
                                         <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">{{ $comment->body }}</p>
                                     </div>
+
+                                    {{-- (View) Aksi komentar --}}
                                     <div class="flex items-center gap-5 mt-2 ml-2 mb-4">
                                         <div class="flex items-center gap-1">
                                             <form action="{{ route('comment.react', [$comment->id, 'like']) }}" method="POST" onsubmit="submitAjax(event, this)">@csrf
@@ -396,6 +414,7 @@
                                             </form>
                                         </div>
                                         <button @click="replyTo = {{ $comment->id }}" class="text-[10px] font-black text-slate-500 hover:text-indigo-600 uppercase tracking-widest">Balas</button>
+                                        
                                         @if($comment->user_id === Auth::id())
                                             <form action="{{ route('materi.comment.destroy', $comment->id) }}" method="POST" onsubmit="event.preventDefault(); openDeleteModal(this, 'Komentar Utama Dihapus!');">
                                                 @csrf @method('DELETE')
@@ -403,6 +422,8 @@
                                             </form>
                                         @endif
                                     </div>
+
+                                    {{-- (View) Form balasan --}}
                                     <div x-show="replyTo === {{ $comment->id }}" x-cloak class="mt-2 mb-6 ml-4">
                                         <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-3" onsubmit="submitAjax(event, this, 'Balasan dikirim!')">
                                             @csrf
@@ -419,6 +440,8 @@
                                             <button type="button" @click="replyTo = null" class="cancel-reply text-xs text-slate-400 hover:text-red-500 font-bold px-2">Batal</button>
                                         </form>
                                     </div>
+
+                                    {{-- (View) Daftar balasan --}}
                                     <div class="space-y-6 mt-4">
                                         @foreach($comment->replies->sortByDesc('created_at') as $reply)
                                             <div class="flex gap-3 ml-4 relative z-10">
@@ -436,6 +459,8 @@
                                                         </div>
                                                         <p class="text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed">{{ $reply->body }}</p>
                                                     </div>
+
+                                                    {{-- (View) Tombol hapus --}}
                                                     @if($reply->user_id === Auth::id())
                                                         <div class="flex mt-1.5 ml-1">
                                                             <form action="{{ route('materi.comment.destroy', $reply->id) }}" method="POST" onsubmit="event.preventDefault(); openDeleteModal(this, 'Balasan dihapus!');">
@@ -463,8 +488,10 @@
     </div>
 </div>
 
+{{-- (View) Wadah notifikasi toast --}}
 <div id="toast-container" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
 
+{{-- (View) Modal konfirmasi hapus --}}
 <div id="delete-modal" class="fixed inset-0 z-[99999] hidden items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
     <div class="relative bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl transform scale-95 opacity-0 transition-all duration-200" id="delete-modal-content">
@@ -484,15 +511,13 @@
 
 @push('scripts')
 <script>
-    // --- FUNGSI FULLSCREEN ORIGINAL (KHUSUS UNTUK PDF SAJA) ---
-    const container = document.getElementById("materi-container");
-    
+    // (Action) Mengatur konfigurasi viewport
     function setViewport(zoomable) {
-        // Hapus meta viewport lama jika ada
+        // (Process) Menghapus viewport lama
         const oldMeta = document.querySelector('meta[name="viewport"]');
         if (oldMeta) oldMeta.remove();
         
-        // Buat meta viewport baru
+        // (Process) Membuat viewport baru
         const newMeta = document.createElement('meta');
         newMeta.name = "viewport";
         newMeta.id = "viewport-manager";
@@ -505,6 +530,8 @@
         document.head.appendChild(newMeta);
     }
 
+    // (Action) Mengatur layar penuh untuk PDF
+    const container = document.getElementById("materi-container");
     function toggleCustomFullscreen() {
         const isCurrentlyIOSFS = document.body.classList.contains('is-ios-fs');
         if (isCurrentlyIOSFS) { 
@@ -526,19 +553,21 @@
         }
     }
     
+    // (Process) Terapkan viewport untuk zoom
     function enableIOSFallback() { 
         window.scrollTo(0, 0); 
         document.body.classList.add('is-ios-fs'); 
-        setViewport(true); // Buka kunci zoom
+        setViewport(true); 
     }
     
+    // (Process) Kembalikan viewport standar
     function disableIOSFallback() { 
         document.body.classList.remove('is-ios-fs'); 
-        setViewport(false); // Kunci kembali zoom
+        setViewport(false); 
         setTimeout(() => window.scrollTo(0, 0), 50);
     }
     
-    // Watcher detektor rotasi layar agar meta viewport ter-update paksa
+    // (Event) Pantau rotasi layar
     window.addEventListener('resize', () => {
         if (document.body.classList.contains('is-ios-fs')) {
             setViewport(true);
@@ -553,7 +582,7 @@
         });
     });
 
-    // --- FUNGSI BACA TEKS ---
+    // (Action) Buka tutup teks bacaan
     function toggleTextExpansion() {
         const textContainer = document.getElementById('textContainer');
         const overlay = document.getElementById('textOverlay');
@@ -573,7 +602,7 @@
         }
     }
 
-    // --- FUNGSI CUSTOM TOAST NOTIFICATION ---
+    // (Action) Tampilkan notifikasi toast
     function showToast(message) {
         if (!message) return; 
         const toast = document.createElement('div');
@@ -591,7 +620,7 @@
         }, 3000);
     }
 
-    // --- FUNGSI CUSTOM DELETE MODAL ---
+    // (Action) Kelola modal hapus
     let formToDelete = null;
     let deleteToastMsg = '';
 
@@ -627,6 +656,7 @@
         }
     });
 
+    // (Action) Kirim form via AJAX
     async function submitAjax(e, form, toastMessage = null) {
         e.preventDefault();
         const btn = form.querySelector('.submit-btn');

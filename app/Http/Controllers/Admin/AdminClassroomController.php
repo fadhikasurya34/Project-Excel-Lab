@@ -38,7 +38,7 @@ class AdminClassroomController extends Controller
         return back()->with('success', 'Squad baru berhasil dibuat.');
     }
 
-    /** (View) Detail Kelas & Pengambilan Nilai */
+    /** (View) Menampilkan detail kelas dan daftar tugas */
     public function show(string $id)
     {
         try {
@@ -51,7 +51,7 @@ class AdminClassroomController extends Controller
             ->withCount(['users']) 
             ->findOrFail($id);
             
-            // Ambil semua misi untuk checklist 'Ambil Nilai'
+            // Ambil semua misi untuk checklist pembuatan tugas
             $availableMissions = Mission::orderBy('title', 'asc')->get();
 
             return view('admin.classrooms.show', compact('classroom', 'availableMissions'));
@@ -64,7 +64,7 @@ class AdminClassroomController extends Controller
         }
     }
 
-    /** (Action) Menyimpan Checklist Misi menjadi Task Permanen */
+    /** (Action) Menyimpan checklist misi menjadi tugas permanen */
     public function storeTask(Request $request, string $id)
     {
         $request->validate([
@@ -88,7 +88,7 @@ class AdminClassroomController extends Controller
         }
     }
 
-    /** (Action) Update kelas */
+    /** (Action) Memperbarui data kelas */
     public function update(Request $request, string $id)
     {
         $request->validate([
@@ -102,14 +102,14 @@ class AdminClassroomController extends Controller
         return back()->with('success', 'Data squad berhasil diperbarui.');
     }
 
-    /** (Action) Hapus kelas */
+    /** (Action) Menghapus data kelas secara permanen */
     public function destroy(string $id)
     {
         Classroom::findOrFail($id)->delete();
         return back()->with('success', 'Squad kelas telah dihapus.');
     }
 
-    /** (Action) Kick siswa */
+    /** (Action) Mengeluarkan siswa dari kelas */
     public function kick(string $id, string $userId)
     {
         $classroom = Classroom::findOrFail($id);
@@ -117,7 +117,7 @@ class AdminClassroomController extends Controller
         return back()->with('success', 'Siswa berhasil dikeluarkan.');
     }
 
-    /** (Action) Update Nama Task */
+    /** (Action) Memperbarui nama tugas */
     public function updateTask(Request $request, string $id)
     {
         $task = Task::findOrFail($id);
@@ -125,7 +125,7 @@ class AdminClassroomController extends Controller
         return back()->with('success', 'Nama tugas berhasil diperbarui.');
     }
 
-    /** (Action) Hapus Task */
+    /** (Action) Menghapus tugas beserta relasi misinya */
     public function destroyTask(string $id)
     {
         $task = Task::findOrFail($id);
@@ -134,7 +134,7 @@ class AdminClassroomController extends Controller
         return back()->with('success', 'Tugas berhasil dihapus.');
     }
 
-    /** (Action) Export Nilai Task ke Excel/CSV */
+    /** (Action) Mengekspor nilai tugas siswa ke format CSV */
     public function exportTask(string $id)
     {
         $task = Task::with(['missions', 'classroom.users.progress'])->findOrFail($id);
@@ -151,11 +151,9 @@ class AdminClassroomController extends Controller
             "Expires"             => "0"
         ];
 
-
         $callback = function() use($task, $missionIds, $maxScore) {
             $file = fopen('php://output', 'w');
             
-
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($file, ['Nama Praktikan', 'Email', 'Total XP', 'Skor Akhir (1-100)'], ';');
@@ -163,7 +161,7 @@ class AdminClassroomController extends Controller
             foreach ($task->classroom->users as $user) {
                 $userScore = $user->progress->whereIn('mission_id', $missionIds)->sum('score');
                 
-                // Hitung nilai skala 100
+                // Hitung konversi nilai skala 1-100
                 $finalGrade = $maxScore > 0 ? round(($userScore / $maxScore) * 100, 2) : 0;
 
                 fputcsv($file, [

@@ -1,11 +1,11 @@
-{{-- //* (View) Editor Visual Target (Hotspot) - Cloudinary Version */ --}}
+{{-- (View) Editor Visual Target (Hotspot) - Menggunakan Infrastruktur Cloudinary --}}
 
 <x-app-layout>
-    {{-- //* (Asset) SortableJS untuk manajemen urutan drag & drop */ --}}
+    {{-- (Library) Mengimpor SortableJS untuk manajemen urutan geser dan letak (drag & drop) --}}
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* //* (Style) UI Theme & Marker Config */
+        /* (Style) Konfigurasi tema antarmuka (UI) dan marker target visual */
         .bg-admin {
             background-color: #f8fafc;
             background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
@@ -27,6 +27,7 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02);
         }
 
+        /* (Style) Desain penanda interaksi (marker) yang sudah disimpan pada koordinat kanvas */
         .hotspot-marker {
             position: absolute;
             width: 32px;
@@ -46,6 +47,7 @@
             pointer-events: none;
         }
 
+        /* (Style) Desain pratinjau penanda (marker) bayangan sebelum disimpan permanen */
         #preview-marker {
             position: absolute;
             width: 32px;
@@ -61,6 +63,7 @@
             pointer-events: none;
         }
 
+        /* (Style) Modifikasi penunjuk arah kursor berupa target sasaran saat kursor berada di atas area gambar */
         .custom-crosshair {
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><line x1="16" y1="8" x2="16" y2="24" stroke="%234f46e5" stroke-width="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="%234f46e5" stroke-width="2"/></svg>') 16 16, crosshair;
         }
@@ -70,7 +73,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 
-    {{-- //* (Notification) Toast System --}}
+    {{-- (Notification) Sistem notifikasi umpan balik (Toast) mengambang untuk pembaruan status sistem --}}
     @if(session('success') || session('error') || session('status'))
         <div x-data="{ show: true, progress: 100 }"
             x-show="show"
@@ -107,7 +110,7 @@
 
     <div class="min-h-screen bg-admin p-6 sm:p-10">
         
-        {{-- //* (Header) --}}
+        {{-- (View) Panel tajuk utama: Menampilkan tombol kembali ke storyboard dan informasi langkah berjalan --}}
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
             <div>
                 <div class="flex items-center space-x-2 mb-2">
@@ -134,11 +137,11 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             
-            {{-- //* Area Interaksi Plotting --}}
+            {{-- (View) Ruang Kanvas: Tempat merekam titik koordinat interaksi dari aksi tetikus --}}
             <div class="lg:col-span-8 space-y-4">
                 <div class="canvas-wrapper">
                     <div class="relative w-full overflow-hidden rounded-xl bg-slate-50 border border-slate-100 custom-crosshair shadow-inner" onclick="setPoint(event)">
-                        {{-- //*Direct Cloudinary URL --}}
+                        {{-- (View) Penarikan gambar tangkapan layar utama dari server penyimpanan cloud --}}
                         <img id="canvas" src="{{ $step->step_image }}" 
                              class="w-full h-auto block pointer-events-none select-none shadow-sm">
                         
@@ -163,8 +166,9 @@
                 </div>
             </div>
 
-            {{-- //* Sidebar Konfigurasi --}}
+            {{-- (View) Ruang Panel Konfigurasi --}}
             <div class="lg:col-span-4 space-y-6">
+                {{-- (View) Formulir input untuk menambahkan rincian titik sasaran baru --}}
                 <div class="admin-card p-8 border-t-4 border-t-indigo-600">
                     <h2 class="text-lg font-bold text-slate-800 tracking-tight mb-6">Konfigurasi Titik</h2>
                     
@@ -200,7 +204,7 @@
                     </form>
                 </div>
 
-                {{-- //* Daftar Urutan & Status Media --}}
+                {{-- (View) Panel urutan sasaran serta status unggahan media eksternal (Video Cloud) --}}
                 <div class="admin-card p-8">
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-lg font-bold text-slate-800 tracking-tight">Daftar Urutan</h2>
@@ -247,7 +251,7 @@
     </div>
 
     <script>
-        // //* (Logic) SortableJS
+        // (Action) Memulai fungsi interaksi ubah urutan target menggunakan SortableJS API
         const el = document.getElementById('sortable-list');
         if (el) {
             Sortable.create(el, {
@@ -261,6 +265,7 @@
                     
                     document.body.style.cursor = 'wait';
                     
+                    // (Process) Menyimpan pembaruan formasi urutan target melalui teknologi AJAX 
                     fetch("{{ route('admin.materials.reorder-hotspots') }}", {
                         method: "POST",
                         headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
@@ -270,7 +275,7 @@
             });
         }
 
-        // //* (Logic) Point Setter
+        // (Action) Memproses pendeteksian titik sentuh kursor pada penampang gambar
         function setPoint(event) {
             const img = document.getElementById('canvas');
             const previewMarker = document.getElementById('preview-marker');
@@ -280,6 +285,7 @@
             const offsetX = event.clientX - rect.left;
             const offsetY = event.clientY - rect.top;
 
+            // (Helper) Kalkulasi nilai persentase koordinat untuk memastikan adaptivitas resolusi layar
             const xPercent = (offsetX / rect.width) * 100;
             const yPercent = (offsetY / rect.height) * 100;
 

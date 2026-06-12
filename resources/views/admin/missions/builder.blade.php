@@ -1,21 +1,18 @@
-{{-- 
-    VIEW: Editor Multi-Target (Misi Admin) - Pure Plotting
-    DATA: $mission, $step (Langkah Misi)
-    DESC: Plotting koordinat jawaban tanpa fitur video (Murni Tantangan).
---}}
+{{-- (View) Editor Multi-Target (Hotspot) untuk mengatur koordinat jawaban misi interaktif --}}
 
-{{-- (Asset) SortableJS untuk manajemen urutan target --}}
+{{-- (Asset) Memuat library SortableJS untuk menangani fitur ubah urutan target (drag and drop) --}}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <x-app-layout>
     <style>
-        /* (Style) UI Theme & Emerald Markers */
+        /* (Style) Desain antarmuka utama halaman admin dengan tema titik-titik (polka) Emerald */
         .bg-admin {
             background-color: #f8fafc;
             background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
             background-size: 32px 32px;
         }
 
+        /* (Style) Format dasar kotak kartu untuk area form dan daftar target */
         .admin-card {
             background: white;
             border: 1px solid #e2e8f0;
@@ -23,6 +20,7 @@
             transition: all 0.3s ease;
         }
 
+        /* (Style) Area pembungkus tangkapan layar (kanvas gambar) */
         .canvas-wrapper {
             background: white;
             border: 1px solid #e2e8f0;
@@ -31,6 +29,7 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
         }
 
+        /* (Style) Desain penanda titik jawaban yang sudah tersimpan (Marker) */
         .hotspot-marker {
             position: absolute;
             width: 30px;
@@ -49,6 +48,7 @@
             z-index: 10;
         }
 
+        /* (Style) Desain penanda titik sementara sebelum disimpan (Preview Marker) */
         #preview-marker {
             position: absolute;
             width: 30px;
@@ -62,6 +62,7 @@
             display: none;
         }
 
+        /* (Style) Desain form input standar */
         .form-input-premium {
             width: 100%;
             border-radius: 1rem;
@@ -80,10 +81,12 @@
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.05);
         }
 
+        /* (Style) Mengubah kursor panah menjadi kursor bidik (crosshair) pada gambar kanvas */
         .custom-crosshair {
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><line x1="16" y1="8" x2="16" y2="24" stroke="%2310b981" stroke-width="2"/><line x1="8" y1="16" x2="24" y2="16" stroke="%2310b981" stroke-width="2"/></svg>') 16 16, crosshair;
         }
 
+        /* (Style) Tipografi tambahan dan kustomisasi area scroll */
         .text-header { letter-spacing: -0.02em; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -91,7 +94,7 @@
     </style>
 
     <div class="min-h-screen bg-admin p-6 sm:p-10">
-        {{-- (Notification) Toast System --}}
+        {{-- (Notification) Sistem notifikasi mengambang (Toast) untuk menampilkan umpan balik sukses/gagal --}}
         @if(session('success') || session('error') || session('status'))
             <div x-data="{ show: true, progress: 100 }"
                 x-show="show"
@@ -126,7 +129,7 @@
             </div>
         @endif
 
-        {{-- Header: Navigasi --}}
+        {{-- (View) Bagian header: Tautan kembali dan identitas langkah misi --}}
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
             <div>
                 <a href="{{ route('admin.missions.steps', $mission->id) }}" class="group flex items-center text-slate-400 hover:text-emerald-600 transition-colors mb-2 text-[10px] font-bold tracking-widest uppercase">
@@ -149,7 +152,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {{-- Canvas Area --}}
+            {{-- (View) Area Kanvas: Tempat admin mengeklik tangkapan layar untuk memetakan koordinat --}}
             <div class="lg:col-span-8 space-y-4">
                 <div class="canvas-wrapper">
                     <div class="relative overflow-hidden rounded-xl custom-crosshair shadow-inner" onclick="setPoint(event)">
@@ -179,9 +182,9 @@
                 </div>
             </div>
 
-            {{-- Sidebar Panel --}}
+            {{-- (View) Panel Samping (Sidebar) --}}
             <div class="lg:col-span-4 space-y-6">
-                {{-- Form Plotting --}}
+                {{-- (View) Formulir Penyimpanan Target Baru --}}
                 <div class="admin-card p-8 border-t-4 border-t-emerald-600 shadow-sm">
                     <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-6">Petakan Jawaban</h3>
                     <form action="{{ route('admin.missions.store-hotspot') }}" method="POST" id="hotspot-form">
@@ -203,7 +206,7 @@
                     </form>
                 </div>
 
-                {{-- List Urutan --}}
+                {{-- (View) Daftar Urutan Titik Target yang Sudah Tersimpan --}}
                 <div class="admin-card p-8 shadow-sm">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Urutan Jawaban</h3>
@@ -240,7 +243,7 @@
     
 
     <script>
-        {{-- Sortable JS Logic --}}
+        // (Action) Menerapkan fitur seret dan lepas (drag-and-drop) pada daftar urutan target menggunakan SortableJS
         const el = document.getElementById('sortable-list');
         if (el) {
             Sortable.create(el, {
@@ -252,6 +255,7 @@
                         order.push(item.getAttribute('data-id'));
                     });
                     
+                    // (Process) Menyinkronkan perubahan urutan target ke dalam basis data melalui AJAX
                     fetch("{{ route('admin.missions.reorder-hotspots') }}", {
                         method: "POST",
                         headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
@@ -261,7 +265,7 @@
             });
         }
 
-        {{-- Coordinate Setter Logic --}}
+        // (Action) Membaca dan mengatur posisi koordinat titik klik secara presisi berdasarkan persentase skala gambar
         function setPoint(event) {
             const img = document.getElementById('canvas');
             const previewMarker = document.getElementById('preview-marker');

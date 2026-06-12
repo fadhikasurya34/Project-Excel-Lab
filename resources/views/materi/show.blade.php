@@ -1,4 +1,4 @@
-{{-- //* (View) Engine Simulasi Materi - Optimized UI & Production Ready --}}
+{{-- (View) Engine Simulasi Materi Interaktif --}}
 @php
     $jsonData = $material->activities->sortBy('step_order')->values()->map(function($step) {
         return [
@@ -27,7 +27,7 @@
 <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
 <style>
-    /* //* (Guard) Mode Landscape Mobile - WAJIB */
+    /* (Guard) Mode Landscape Mobile */
     #landscape-notice { display: none; }
     @media screen and (orientation: portrait) and (max-width: 1024px) {
         #landscape-notice {
@@ -40,7 +40,7 @@
     .phone-rotate { animation: rotatePhone 2s ease-in-out infinite; }
     @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
 
-    /* //* (Layout) Scroll Fix & Anti-Gesture */
+    /* (Layout) Scroll Fix & Anti-Gesture */
     .simulation-wrapper { 
         position: relative; 
         width: 100%; 
@@ -58,14 +58,14 @@
         pointer-events: none !important; 
     }
 
-    /* //* (Visual) Glassmorphism Theme */
+    /* (Visual) Glassmorphism Theme */
     .glass-ui-shared {
         background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
         border: 2px solid #3b82f6; 
         border-radius: 1.8rem; overflow: hidden;
     }
 
-    /* //* (Visual Update) Compact HUD container */
+    /* (Visual) Compact HUD container */
     .hud-controller { position: fixed; z-index: 90; width: 280px; pointer-events: auto; }
     
     .modal-overlay {
@@ -74,7 +74,7 @@
     }
     .modal-scroll { overflow-y: auto; flex: 1; }
 
-    /* //* (Buttons) Gamified Pegas */
+    /* (Buttons) Efek Tombol Pegas */
     .btn-pegas-blue { background: #2563eb; border-bottom: 4px solid #1e3a8a; transition: all 0.1s; }
     .btn-pegas-blue:active { transform: translateY(2px); border-bottom-width: 1px; }
     .btn-pegas-emerald { background: #10b981; border-bottom: 4px solid #064e3b; transition: all 0.1s; }
@@ -85,7 +85,7 @@
     .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
     .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
 
-    /* //* (Buttons) Animasi Wajib Baca Penjelasan */
+    /* (Animation) Animasi Wajib Baca Penjelasan */
     @keyframes btn-glow-pulse {
         0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); filter: brightness(1); }
         50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.3); filter: brightness(1.25); }
@@ -105,21 +105,21 @@
             box-shadow: 0 0 35px rgba(59, 130, 246, 0.7), 0 0 15px rgba(168, 85, 247, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.4);
             border-color: #ffffff;
             filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.7));
-            transform: scale(1.01); /* Diperkecil agar lebih kalem */
+            transform: scale(1.01);
         }
     }
 
     .neon-attention-container {
-        animation: neon-materi-smooth 3.5s infinite ease-in-out; /* Diperlambat menjadi 3.5s */
+        animation: neon-materi-smooth 3.5s infinite ease-in-out;
     }
 
-    /* //* (Hotspot) Marker Ring - FIX PRESISI: Ukuran 40px, Center Absolut, Invisible & Hollow Green */
+    /* (Hotspot) Marker Ring Interaktif */
     .marker-ring {
         position: absolute; 
         width: 40px; 
         height: 40px; 
         margin: 0;
-        transform: translate(-50%, -50%); /* Fix kalibrasi presisi persis di titik klik admin */
+        transform: translate(-50%, -50%);
         border-radius: 50%; 
         border: 3px solid transparent; 
         display: flex; 
@@ -145,7 +145,7 @@
         cursor: pointer; 
     }
 
-    /* State hollow green (bolong) dengan centang saat berhasil */
+    /* State berlubang (hollow green) dengan centang saat berhasil */
     .marker-done { 
         border-color: #10b981 !important; 
         opacity: 1 !important;
@@ -185,7 +185,7 @@
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
     }
 
-    /* //* (FX Gamification) Animasi Layar Merah, Floating Teks */
+    /* (Gamification) Animasi Layar Merah dan Floating Teks */
     .flash-error {
         position: fixed; inset: 0; background-color: rgba(239, 68, 68, 0.2);
         pointer-events: none; z-index: 9999; animation: fade-out 0.4s forwards;
@@ -222,7 +222,7 @@
 @section('content')
 <div x-data="labInteraction()" class="relative w-full min-h-screen main-scroller bg-slate-950 font-sans">
 
-    {{-- FIX: MODAL PERINGATAN (Bersih, Font Sans Jakarta, Scrollable) --}}
+    {{-- (View) Modal Peringatan Awal --}}
     <div x-show="showIntro" x-cloak class="fixed inset-0 z-[1000] p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto flex font-sans">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl m-auto border-4 border-blue-500 transform transition-all"
              x-transition:enter="ease-out duration-300"
@@ -266,7 +266,7 @@
         <div class="flash-error"></div>
     </template>
 
-    {{-- 1. Landscape Rotary Guard --}}
+    {{-- Landscape Rotary Guard --}}
     <div id="landscape-notice" class="font-sans">
         <div class="phone-rotate mb-6 relative">
             <div class="absolute -inset-6 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -309,6 +309,7 @@
                 <p class="text-white text-[15px] font-black leading-tight mb-4 tracking-tight" x-text="steps[currentStep] ? steps[currentStep].instruction : ''"></p>
 
                 <div class="flex flex-row gap-2" x-show="activeHotspot" x-transition.scale.origin.top>
+                    {{-- Animasi glow (btn-attention-glow) jika penjelasan belum dibaca --}}
                     <button @click="showModal = true; explanationRead = true; saveProgress();" 
                             @mousedown.stop @touchstart.stop
                             class="hud-btn flex-1 py-2.5 btn-pegas-blue text-white rounded-xl font-black text-[9px] shadow-lg transition-all font-sans"
@@ -317,6 +318,7 @@
                     </button>
                     
                     <template x-if="allHotspotsInStepDone">
+                        {{-- Validasi tombol Lanjut untuk memastikan penjelasan sudah dibaca --}}
                         <button @click="if(explanationRead) { nextStep(); } else { showToast('Perhatian', 'Wajib membuka Penjelasan terlebih dahulu sebelum lanjut.', 'alert.png'); playSound('salah'); }" 
                                 @mousedown.stop @touchstart.stop
                                 class="hud-btn flex-1 py-2.5 text-white rounded-xl font-black text-[9px] shadow-lg transition-all font-sans"
@@ -329,7 +331,7 @@
         </div>
     </div>
 
-    {{-- FIX: Modal Informasi Lab (Font Sans Jakarta) --}}
+    {{-- (View) Modal Informasi Lab --}}
     <div x-show="showModal" x-cloak class="modal-overlay font-sans" x-transition.opacity>
         <div class="glass-ui-shared w-full max-w-[90%] md:max-w-[650px] max-h-[85vh] flex flex-col shadow-2xl">
             <div class="p-4 md:p-5 border-b border-white/10 flex justify-between items-center bg-blue-500/20">

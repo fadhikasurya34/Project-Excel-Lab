@@ -146,17 +146,55 @@
 
                 <form method="post" action="{{ route('profile.update') }}" class="w-full space-y-6 mt-2">
                     @csrf @method('patch')
-                    @php
-                        $avatars = ['Felix', 'Aneka', 'Oliver', 'Jasper', 'Luna', 'Zeus', 'Mimi', 'Buster'];
+@php
+                        // (Data) Koleksi Avatar dengan Parameter Spesifik (Query String)
+                        // Kunci: '[style].[parameter dari url web]' => 'Label'
+                        // Pastikan selalu diawali dengan 'miniavs.?'
+                        $avatars = [
+                            // Karakter Cowok
+                            'miniavs.?seed=iiii' => 'Boy 1',
+                            'miniavs.?seed=pmo' => 'Boy 2',
+                            'miniavs.?seed=Caleb' => 'Boy 3',
+                            'miniavs.?seed=aa' => 'Boy 4',
+                            'miniavs.?seed=uyt' => 'Boy 5',
+                            'miniavs.?seed=akc' => 'Boy 6',
+
+                            // Karakter Cewek (Pastikan parameter tambahan pas untuk cewek)
+                            'miniavs.?seed=bhg' => 'Girl 1',
+                            'miniavs.?seed=uytd' => 'Girl 2',
+                            'miniavs.?seed=kkh' => 'Girl 3',
+                            'miniavs.?seed=ododo' => 'Girl 4',
+                            'miniavs.?seed=garox' => 'Girl 5',
+                            'miniavs.?seed=asd' => 'Girl 6',
+                        ];
+                        
                         $colors = ['10b981', '3b82f6', 'f59e0b', 'a855f7', 'f43f5e', '0ea5e9'];
+                        $currentAvatar = Auth::user()->avatar;
                     @endphp
+
                     <div>
-                        <label class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-2">Avatar</label>
-                        <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
-                            @foreach($avatars as $avatar)
-                                <div class="option-box">
-                                    <input type="radio" name="avatar" id="avatar_{{ $avatar }}" value="{{ $avatar }}" {{ Auth::user()->avatar == $avatar ? 'checked' : '' }}>
-                                    <label for="avatar_{{ $avatar }}"><img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $avatar }}&backgroundColor=transparent" class="w-full h-auto"></label>
+                        <label class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-3">Avatar Karakter</label>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                            @foreach($avatars as $dbValue => $label)
+                                @php
+                                    // Ekstrak style dan parameternya
+                                    $parts = explode('.', $dbValue);
+                                    $style = $parts[0] ?? 'miniavs';
+                                    $params = $parts[1] ?? '';
+                                    
+                                    // Fallback jika format lama (misal cuma 'Felix' tanpa tanda '?')
+                                    if (!str_starts_with($params, '?')) {
+                                        $params = '?seed=' . $params;
+                                    }
+                                @endphp
+                                <div class="option-box relative group">
+                                    <input type="radio" name="avatar" id="avatar_{{ md5($dbValue) }}" value="{{ $dbValue }}" {{ $currentAvatar == $dbValue ? 'checked' : '' }}>
+                                    
+                                    <label for="avatar_{{ md5($dbValue) }}" class="p-2 flex flex-col items-center justify-between h-full bg-white dark:bg-slate-800">
+                                        {{-- (View) PANGGILAN API KEMBALI KE 9.x DENGAN PARAMETER LENGKAP --}}
+                                        <img src="https://api.dicebear.com/9.x/{{ $style }}/svg{{ $params }}&backgroundColor=transparent" class="w-full h-auto drop-shadow-md mb-2 transition-transform group-hover:scale-110">
+                                        <span class="text-[8px] font-black text-slate-400 group-hover:text-blue-500 uppercase tracking-tighter text-center leading-tight">{{ $label }}</span>
+                                    </label>
                                 </div>
                             @endforeach
                         </div>

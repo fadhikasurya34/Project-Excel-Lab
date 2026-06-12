@@ -148,6 +148,15 @@
                         $status = $user->rank_status; 
                         $isMe = $user->id == auth()->id();
                         $gridClass = ($item['rank'] == 1) ? 'col-span-2 md:col-span-1 order-1 md:order-2' : (($item['rank'] == 2) ? 'col-span-1 order-2 md:order-1' : 'col-span-1 order-3 md:order-3');
+                        
+                        // FIX SINKRONISASI AVATAR UNTUK PODIUM 3 BESAR
+                        $rawAvatar = $user->avatar ?? 'miniavs.?seed=Felix';
+                        $avatarParts = explode('.', $rawAvatar);
+                        $avatarStyle = $avatarParts[0] ?? 'miniavs';
+                        $avatarParams = $avatarParts[1] ?? '?seed=Felix';
+                        if (!str_starts_with($avatarParams, '?')) {
+                            $avatarParams = '?seed=' . $avatarParams;
+                        }
                     @endphp
 
                     <div class="podium-item glass-card-gamified card-rank-{{ $item['rank'] }} glow-rank-{{ $item['rank'] }} {{ $gridClass }} {{ $isMe ? 'is-me-card' : '' }} p-2.5 md:p-4 flex flex-col items-center justify-center text-center cursor-pointer select-none">
@@ -158,7 +167,7 @@
                         <div class="relative z-30 mb-2 md:mb-4 mt-3">
                             <div class="w-20 h-20 md:w-32 md:h-32 rounded-3xl md:rounded-[3.5rem] border-2 md:border-4 border-white dark:border-slate-800 shadow-xl overflow-hidden" 
                                 style="background-color: #{{ $user->profile_color ?? '3b82f6' }};">
-                                <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover scale-110">
+                                <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full object-cover scale-110">
                             </div>
 
                             <div class="absolute -bottom-3 -left-4 md:-bottom-5 md:-left-6 z-40 transition-transform hover:scale-125 duration-300 drop-shadow-[0_10px_15px_rgba(0,0,0,0.4)]">
@@ -168,7 +177,6 @@
                         </div>
 
                         <div class="relative z-30 w-full px-1">
-                            {{-- FIX: Hapus explode() agar nama tampil penuh --}}
                             <h3 class="text-slate-900 dark:text-white font-black text-xs md:text-lg leading-none truncate capitalize">
                                 {{ $user->name }}
                             </h3>
@@ -193,6 +201,15 @@
                     $realRank = $loop->iteration + 3; 
                     $isMe = $rank->user->id == auth()->id();
                     $status = $rank->user->rank_status; 
+
+                    // FIX SINKRONISASI AVATAR UNTUK LIST PERINGKAT
+                    $rawAvatarList = $rank->user->avatar ?? 'miniavs.?seed=Felix';
+                    $avatarPartsList = explode('.', $rawAvatarList);
+                    $avatarStyleList = $avatarPartsList[0] ?? 'miniavs';
+                    $avatarParamsList = $avatarPartsList[1] ?? '?seed=Felix';
+                    if (!str_starts_with($avatarParamsList, '?')) {
+                        $avatarParamsList = '?seed=' . $avatarParamsList;
+                    }
                 @endphp
                 <div class="list-item-rank glass-card-gamified {{ $isMe ? 'ring-2 ring-purple-500 border-transparent' : '' }} p-2 md:p-2.5 flex items-center justify-between group shadow-sm cursor-pointer select-none">
                     
@@ -204,11 +221,11 @@
                         </div>
 
                         <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-[2.2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm shrink-0" style="background-color: #{{ $rank->user->profile_color ?? '3b82f6' }};">
-                            <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $rank->user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover scale-110">
+                            {{-- PEMANGGILAN AVATAR HASIL SINKRONISASI --}}
+                            <img src="https://api.dicebear.com/9.x/{{ $avatarStyleList }}/svg{{ $avatarParamsList }}&backgroundColor=transparent" class="w-full h-full object-cover scale-110">
                         </div>
 
                         <div class="min-w-0 pr-2">
-                            {{-- FIX: Perlebar max-w di mobile agar nama lebih panjang tidak cepat terpotong --}}
                             <h4 class="text-[10px] md:text-sm font-bold text-slate-800 dark:text-white capitalize truncate max-w-[200px] sm:max-w-[300px] md:max-w-none flex items-center">
                                 {{ $rank->user->name }}
                                 @if($isMe) <span class="ml-1.5 px-1.5 py-0.5 bg-purple-600 text-white text-[6px] rounded-md uppercase font-black tracking-widest shrink-0">Kamu</span> @endif

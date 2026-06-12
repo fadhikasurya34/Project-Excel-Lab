@@ -4,7 +4,27 @@
 
 @section('title', 'Pusat Bantuan & Tutorial')
 
+@push('styles')
+<style>
+    /* Tombol Kembali Pegas */
+    .btn-back-pegas {
+        transition: all 0.1s ease;
+        border-bottom-width: 6px !important;
+    }
+    .btn-back-pegas:active {
+        transform: translateY(4px);
+        border-bottom-width: 0px !important;
+    }
+</style>
+@endpush
+
 @section('header_left')
+    {{-- //* (Nav) Kontrol navigasi kembali ke Dashboard --}}
+    <a href="{{ route('dashboard') }}" class="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-500 shadow-sm">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+            <path d="M15 19l-7-7 7-7" />
+        </svg>
+    </a>
     <div class="flex flex-col text-left ml-3 leading-none">
         <span class="text-base font-extrabold tracking-tight dark:text-white uppercase leading-none">Pusat Bantuan</span>
         <div class="flex items-center space-x-1.5 mt-1.5">
@@ -56,8 +76,8 @@
         <div x-show="activeTab === 'belajar'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-cloak>
             
             <div class="relative wrap overflow-hidden p-4 md:p-8">
-                {{-- Garis putus-putus penghubung alur --}}
-                <div class="absolute border-opacity-100 border-l-4 border-dashed border-slate-300 dark:border-slate-700 h-full" style="left: 36px;"></div>
+                {{-- Garis putus-putus penghubung alur dengan penyesuaian posisi responsif agar tetap di tengah ikon saat landscape --}}
+                <div class="absolute border-opacity-100 border-l-4 border-dashed border-slate-300 dark:border-slate-700 h-full left-[36px] md:left-[56px]"></div>
 
                 {{-- Step 1: Gabung Kelas --}}
                 <div class="mb-12 flex items-start w-full relative">

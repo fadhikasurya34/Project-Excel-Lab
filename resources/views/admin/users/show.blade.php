@@ -1,12 +1,12 @@
 {{-- 
-    VIEW: Profil Detail Praktikan (Admin)
-    DATA: $student, $completedMissions, $completedMaterials
-    LOGIC: Manajemen Tab & Live Search aktivitas praktikan via Alpine.js.
+    (View) Profil Detail Praktikan (Admin)
+    (Data) student, completedMissions, completedMaterials
+    (Logic) Manajemen Tab & Live Search aktivitas praktikan via Alpine.js.
 --}}
 
 <x-app-layout>
     <style>
-        {{-- (Style) Standarisasi UI Terminal Khusus Monitoring (Aksen Orange) --}}
+        /* (Style) Standarisasi UI Terminal Khusus Monitoring dengan Aksen Orange */
         .bg-admin {
             background-color: #f8fafc;
             background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
@@ -41,7 +41,7 @@
     <div class="min-h-screen bg-admin p-4 sm:p-10" x-data="{ tab: 'misi', search: '' }">
         <div class="max-w-7xl mx-auto relative">
             
-            {{-- (Notification) Toast System --}}
+            {{-- (Notification) Sistem Toast Umpan Balik Tindakan --}}
             @if(session('success') || session('error') || session('status'))
                 <div x-data="{ show: true, progress: 100 }"
                     x-show="show"
@@ -77,7 +77,7 @@
                 </div>
             @endif
 
-            {{-- (Section) Header --}}
+            {{-- (Section) Bagian Header Profil --}}
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-6">
                 <div>
                     <a href="{{ route('admin.users.index') }}" class="group inline-flex items-center text-orange-600 font-bold text-[10px] tracking-widest uppercase hover:text-orange-700 transition-colors mb-4">
@@ -101,11 +101,22 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
                 
-                {{-- (Section) Kolom Kiri: Ringkasan Identitas --}}
+                {{-- (Section) Panel Kiri: Ringkasan Identitas dan Status --}}
                 <div class="lg:col-span-1 space-y-6">
                     <div class="admin-card p-6 sm:p-8 flex flex-col items-center">
+                        @php
+                            $rawAvatar = $student->avatar ?? 'miniavs.?seed=Felix';
+                            $avatarParts = explode('.', $rawAvatar);
+                            
+                            $avatarStyle = $avatarParts[0] ?? 'miniavs';
+                            $avatarParams = $avatarParts[1] ?? '?seed=Felix';
+                            
+                            if (!str_starts_with($avatarParams, '?')) {
+                                $avatarParams = '?seed=' . $avatarParams;
+                            }
+                        @endphp
                         <div class="w-24 h-24 rounded-[2rem] border-4 border-slate-50 shadow-md overflow-hidden mb-6" style="background-color: #{{ $student->profile_color ?? 'f97316' }}">
-                            <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $student->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full pt-2">
+                            <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full pt-0.5 scale-110">
                         </div>
                         <h2 class="text-xl font-black text-slate-800 text-center leading-tight capitalize">{{ $student->name }}</h2>
                         <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wider mt-2 mb-8 truncate w-full text-center">{{ $student->email }}</p>
@@ -127,7 +138,7 @@
                         </div>
                     </div>
 
-                    {{-- (Action) Navigasi Tab --}}
+                    {{-- (Action) Navigasi pergantian panel Riwayat Aktivitas --}}
                     <div class="bg-white rounded-2xl border border-slate-200 p-2 flex flex-col space-y-1 shadow-sm">
                         <button @click="tab = 'misi'" :class="tab === 'misi' ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'" 
                             class="flex items-center space-x-3 px-5 py-4 rounded-xl transition-all font-bold text-xs uppercase tracking-widest text-left">
@@ -136,12 +147,12 @@
                         </button>
                         <button @click="tab = 'materi'" :class="tab === 'materi' ? 'bg-orange-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'" 
                             class="flex items-center space-x-3 px-5 py-4 rounded-xl transition-all font-bold text-xs uppercase tracking-widest text-left">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                             <span>Materi Dibaca</span>
                         </button>
                     </div>
 
-                    {{-- (Action) Tombol Administrator --}}
+                    {{-- (Action) Kendali Cepat Administrator --}}
                     <div class="space-y-3 pt-2">
                         <form action="{{ route('admin.users.reset-tickets', $student->id) }}" method="POST" onsubmit="return confirm('Kembalikan 3 tiket remedial?')">
                             @csrf
@@ -169,11 +180,11 @@
                     </div>
                 </div>
 
-                {{-- (Section) Kolom Kanan: Riwayat Aktivitas --}}
+                {{-- (Section) Panel Kanan: Daftar Riwayat Pengerjaan dan Aktivitas --}}
                 <div class="lg:col-span-3">
                     <div class="admin-card overflow-hidden min-h-[600px] flex flex-col">
                         
-                        {{-- Tab Misi --}}
+                        {{-- (View) Panel Riwayat Misi --}}
                         <div x-show="tab === 'misi'" x-transition class="flex flex-col h-full">
                             <div class="px-6 sm:px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                 <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Misi Selesai</h3>
@@ -216,7 +227,7 @@
                             </div>
                         </div>
 
-                        {{-- Tab Materi --}}
+                        {{-- (View) Panel Riwayat Pembacaan Materi --}}
                         <div x-show="tab === 'materi'" x-cloak x-transition class="flex flex-col h-full">
                             <div class="px-6 sm:px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                 <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Materi Dibaca</h3>
@@ -229,7 +240,7 @@
                                         
                                         <div class="flex items-center space-x-4 min-w-0 flex-1">
                                             <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                                             </div>
                                             <div class="min-w-0">
                                                 <p class="font-bold text-slate-800 text-sm truncate capitalize leading-tight">{{ $mProg->material->title ?? 'Materi Tidak Ditemukan' }}</p>

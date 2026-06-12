@@ -1,17 +1,15 @@
-{{-- 
-    VIEW: Editor Materi Teori (Admin)
-    DATA: $material (With activities)
-    DESC: Halaman khusus untuk mengelola konten PDF, Teks, atau Video via Link External.
---}}
+{{-- (View) Editor Materi Teori: Mengelola konten PDF, bacaan teks, atau sematan video tutorial --}}
 
 <x-app-layout>
     <style>
+        /* (Style) Tema latar belakang admin dengan motif titik (polkadot) */
         .bg-admin {
             background-color: #f8fafc;
             background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
             background-size: 32px 32px;
         }
 
+        /* (Style) Desain wadah kartu komponen antarmuka admin */
         .admin-card {
             background: white;
             border: 1px solid #e2e8f0;
@@ -23,6 +21,7 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04);
         }
 
+        /* (Style) Konfigurasi tampilan form input */
         .form-input-premium {
             width: 100%;
             border-radius: 1rem;
@@ -41,6 +40,7 @@
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.05);
         }
 
+        /* (Style) Desain interaktif tombol aksi utama */
         .btn-blue-main {
             background-color: #2563eb;
             color: white;
@@ -60,7 +60,7 @@
     <div class="min-h-screen bg-admin p-4 sm:p-10">
         <div class="max-w-7xl mx-auto">
             
-            {{-- (Section) Header --}}
+            {{-- (View) Panel Header Informasi Modul --}}
             <div class="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
                     <a href="{{ route('admin.materials.topic', $material->category_id) }}" class="group inline-flex items-center text-blue-600 font-bold text-[10px] tracking-widest uppercase hover:text-blue-800 transition-colors mb-3">
@@ -84,15 +84,13 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
-                {{-- (Panel Kiri) Form Konfigurasi --}}
+                {{-- (View) Panel Kiri: Konfigurasi Input Media --}}
                 <div class="lg:col-span-4 space-y-6">
                     <div class="admin-card p-8">
                         <form action="{{ route('admin.materials.store-step', $material->id) }}" method="POST" class="space-y-6">
                             @csrf
                             
-                            {{-- FIX: Form dipecah menjadi 3 untuk mendukung Multi-Konten --}}
-                            
-                            {{-- 1. Video URL --}}
+                            {{-- (View) Input sematan video eksternal --}}
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Link Video Tutorial (Opsional)</label>
                                 <input type="url" name="video_url" id="input_video"
@@ -101,18 +99,17 @@
                                     placeholder="Tempel link Embed YouTube / GDrive...">
                             </div>
 
-                            {{-- 2. Teks Materi --}}
+                            {{-- (View) Input teks bacaan panduan materi --}}
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Bahan Bacaan / Teks Materi (Opsional)</label>
                                 <textarea name="text_content" rows="6" class="form-input-premium" placeholder="Tuliskan materi teks disini (Support Enter/Baris Baru)...">{{ $material->text_content ?? '' }}</textarea>
                             </div>
 
-                            {{-- 3. PDF URL --}}
+                            {{-- (View) Input sematan dokumen format PDF --}}
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Link Dokumen PDF (Opsional)</label>
                                 <input type="url" name="pdf_url" id="input_pdf"
                                     class="form-input-premium" 
-                                    {{-- FIX: Value hanya mengambil dari pdf_url agar tidak kecampur dengan video/step_image --}}
                                     value="{{ $material->pdf_url ?? '' }}"
                                     placeholder="Tempel link Preview GDrive / PDF...">
                                 <div class="mt-3 flex items-start space-x-2 opacity-70">
@@ -129,7 +126,7 @@
                         </form>
                     </div>
 
-                    {{-- Tips Card --}}
+                    {{-- (View) Papan panduan tips penggunaan akses Google Drive --}}
                     <div class="bg-slate-900 rounded-[1.5rem] p-6 text-white shadow-xl shadow-slate-200 relative overflow-hidden">
                         <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-600/20 rounded-full blur-2xl"></div>
                         <h4 class="text-xs font-black uppercase tracking-widest mb-3 relative z-10 flex items-center">
@@ -145,10 +142,10 @@
                     </div>
                 </div>
 
-                {{-- (Panel Kanan) Browser Preview --}}
+                {{-- (View) Panel Kanan: Jendela Pratinjau Sematan Media --}}
                 <div class="lg:col-span-8">
                     <div class="admin-card overflow-hidden h-full flex flex-col min-h-[600px]">
-                        {{-- Fake Browser Header --}}
+                        {{-- (View) Manipulasi antarmuka menyerupai bingkai peramban --}}
                         <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between px-6">
                             <div class="flex space-x-1.5">
                                 <div class="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
@@ -156,11 +153,11 @@
                                 <div class="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
                             </div>
                             <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Live Content Preview</span>
-                            <div class="w-10"></div> {{-- Spacer --}}
+                            <div class="w-10"></div>
                         </div>
 
                         <div class="flex-1 p-6 bg-slate-50 relative">
-                            {{-- Logika Penampil Preview: Memprioritaskan PDF, lalu Video --}}
+                            {{-- (Process) Menetapkan hierarki prioritas pratinjau antara format PDF dan Video --}}
                             @php
                                 $previewUrl = $material->pdf_url ?? ($material->activities->first()->step_image ?? ($material->video_url ?? null));
                             @endphp
@@ -186,7 +183,7 @@
         </div>
     </div>
 
-    {{-- Script untuk Live Preview Sederhana --}}
+    {{-- (Action) Menerapkan pratinjau media dinamis sesaat setelah kolom input dilepas --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const inputPdf = document.getElementById('input_pdf');
@@ -196,7 +193,6 @@
             function updatePreview() {
                 if (!previewFrame) return;
                 
-                // Prioritaskan PDF untuk preview, jika kosong, ambil Video.
                 let newUrl = inputPdf.value.trim();
                 if (!newUrl) {
                     newUrl = inputVideo.value.trim();

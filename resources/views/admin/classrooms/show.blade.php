@@ -1,11 +1,13 @@
 <x-app-layout>
     <style>
+        /* (Style) Konfigurasi tema antarmuka dan kartu admin */
         .bg-admin { background-color: #f8fafc; background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px); background-size: 32px 32px; }
         .admin-card { background: white; border: 1px solid #e2e8f0; border-radius: 1.5rem; transition: all 0.3s ease; }
         .form-input-premium { width: 100%; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 0.875rem 1rem; font-size: 0.875rem; font-weight: 600; color: #334155; }
         .btn-tab { padding: 0.625rem 1.25rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; }
         .mission-checkbox:checked + label { border-color: #a855f7; background-color: #faf5ff; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1); }
         
+        /* (Style) Utilitas untuk menyembunyikan bilah gulir (scrollbar) */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -29,6 +31,18 @@
             activeTaskProgress: { name: '', mission_ids: [], max_score: 0 },
             availableMissions: @js($availableMissions),
             users: {{ $classroom->users->map(function($user) {
+                // LOGIKA SINKRONISASI AVATAR DINAMIS UNTUK SISI ADMIN
+                $rawAvatar = $user->avatar ?? 'miniavs.?seed=Felix'; 
+                $avatarParts = explode('.', $rawAvatar);
+                
+                $avatarStyle = $avatarParts[0] ?? 'miniavs';
+                $avatarParams = $avatarParts[1] ?? '?seed=' . ($user->name ?? 'Felix');
+                
+                if (!str_starts_with($avatarParams, '?')) {
+                    $avatarParams = '?seed=' . $avatarParams;
+                }
+                $finalAvatarUrl = 'https://api.dicebear.com/9.x/' . $avatarStyle . '/svg' . $avatarParams . '&backgroundColor=transparent';
+
                 return [
                     'id' => $user->id,
                     'name' => (string) $user->name,
@@ -38,7 +52,7 @@
                     'missions' => (int) $user->progress->where('status', 'completed')->count(),
                     'badge_medal' => (string) ($user->rank_status['medal'] ?? '-'),
                     'badge_title' => (string) ($user->rank_status['title'] ?? 'Newbie'),
-                    'avatar' => 'https://api.dicebear.com/9.x/bottts/svg?seed='.($user->avatar ?? $user->name).'&backgroundColor=transparent',
+                    'avatar' => $finalAvatarUrl,
                     'profile_color' => (string) ($user->profile_color ?? 'a855f7'),
                     'scores' => $user->progress->pluck('score', 'mission_id')->toArray() 
                 ];
@@ -93,7 +107,7 @@
             }
          }">
 
-        {{-- Toast Notification --}}
+        {{-- (Notification) Sistem Toast untuk Umpan Balik --}}
         @if(session('success') || session('error'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" class="fixed bottom-6 right-4 sm:bottom-10 sm:right-10 z-[200]">
                 <div class="bg-slate-900 border {{ session('error') ? 'border-red-500' : 'border-purple-500' }} p-4 rounded-2xl shadow-2xl flex items-center space-x-3">
@@ -103,7 +117,7 @@
             </div>
         @endif
 
-        {{-- Header Section --}}
+        {{-- (View) Bagian Header Halaman --}}
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-6">
             <div>
                 <a href="{{ route('admin.classrooms.index') }}" class="group inline-flex items-center text-purple-600 font-bold text-[10px] tracking-widest uppercase mb-4">
@@ -114,7 +128,7 @@
                 <p class="text-slate-500 font-medium text-xs sm:text-sm mt-1 leading-relaxed">Kelola progres, ambil nilai konversi 1-100, dan buat tugas.</p>
             </div>
 
-            {{-- FIXED: Menambahkan class no-scrollbar --}}
+            {{-- (View) Navigasi Tab Panel --}}
             <div class="flex bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto no-scrollbar md:overflow-visible">
                 <button @click="activeTab = 'monitoring'" :class="activeTab === 'monitoring' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'" class="btn-tab whitespace-nowrap">Monitoring</button>
                 <button @click="activeTab = 'grades'" :class="activeTab === 'grades' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'" class="btn-tab ml-1 whitespace-nowrap">Ambil Nilai</button>
@@ -122,7 +136,7 @@
             </div>
         </div>
 
-        {{-- TAB 1: MONITORING --}}
+        {{-- (View) Panel Tab 1: Tabel Monitoring Siswa --}}
         <div x-show="activeTab === 'monitoring'" x-transition>
             <div class="admin-card overflow-hidden">
                 <div class="p-4 sm:p-6 border-b border-slate-50 bg-white">
@@ -147,7 +161,7 @@
                                 <td class="block md:table-cell py-2 md:py-5 md:px-8">
                                     <div class="flex items-center space-x-4">
                                         <div class="w-10 h-10 rounded-xl shrink-0" :style="'background-color: #' + siswa.profile_color">
-                                            <img :src="siswa.avatar" class="w-full h-full">
+                                            <img :src="siswa.avatar" class="w-full h-full scale-110 pt-0.5">
                                         </div>
                                         <div class="flex flex-col leading-tight min-w-0">
                                             <span class="text-slate-800 truncate" x-text="siswa.name"></span>
@@ -189,7 +203,7 @@
                                         <form :action="'/admin/classrooms/{{ $classroom->id }}/kick/' + siswa.id" method="POST" onsubmit="return confirm('Keluarkan?')">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="p-2 text-slate-300 hover:text-red-500 transition-colors">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3 3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                                             </button>
                                         </form>
                                     </div>
@@ -201,7 +215,7 @@
             </div>
         </div>
 
-        {{-- TAB 2: AMBIL NILAI --}}
+        {{-- (View) Panel Tab 2: Konfigurasi Pengambilan Nilai --}}
         <div x-show="activeTab === 'grades'" x-transition x-cloak>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div class="lg:col-span-4">
@@ -263,7 +277,7 @@
             </div>
         </div>
 
-        {{-- TAB 3: DAFTAR TASK --}}
+        {{-- (View) Panel Tab 3: Manajemen Daftar Tugas --}}
         <div x-show="activeTab === 'tasks'" x-transition x-cloak>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse($classroom->tasks as $task)
@@ -304,7 +318,7 @@
             </div>
         </div>
         
-        {{-- MODAL BARU: PROGRES TASK --}}
+        {{-- (View) Modal Progres Detail Tugas --}}
         <div x-show="showProgressModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak x-transition>
             <div class="bg-white rounded-[2rem] p-6 sm:p-8 w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]" @click.away="showProgressModal = false">
                 <div class="flex justify-between items-center mb-4">
@@ -333,7 +347,7 @@
                                     <td class="px-4 py-3">
                                         <div class="flex items-center space-x-3">
                                             <div class="w-8 h-8 rounded-lg shrink-0" :style="'background-color: #' + siswa.profile_color">
-                                                <img :src="siswa.avatar" class="w-full h-full">
+                                                <img :src="siswa.avatar" class="w-full h-full scale-110 pt-0.5">
                                             </div>
                                             <div class="flex flex-col min-w-0">
                                                 <span class="text-xs font-bold text-slate-800 truncate" x-text="siswa.name"></span>
@@ -360,6 +374,7 @@
             </div>
         </div>
 
+        {{-- (View) Modal Form Penyimpanan Tugas Baru --}}
         <div x-show="showTaskModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak x-transition>
             <div class="bg-white rounded-[2.5rem] p-6 sm:p-10 w-full max-w-md shadow-2xl" @click.away="showTaskModal = false">
                 <h3 class="text-xl sm:text-2xl font-black text-slate-900 mb-2">Simpan Task Baru</h3>
@@ -378,6 +393,7 @@
             </div>
         </div>
 
+        {{-- (View) Modal Form Pembaruan Nama Tugas --}}
         <div x-show="showEditTaskModal" class="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak x-transition>
             <div class="bg-white rounded-[2.5rem] p-6 sm:p-10 w-full max-w-md shadow-2xl" @click.away="showEditTaskModal = false">
                 <h3 class="text-xl sm:text-2xl font-black text-slate-900 mb-2">Perbarui Nama Task</h3>

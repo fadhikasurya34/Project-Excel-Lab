@@ -1,6 +1,7 @@
 {{-- 
-    VIEW: Detail Squad (Sisi Siswa) - Ultra Fluid UI
-    FIX: Menghilangkan efek kepotong, standarisasi warna, & Deep Button konsisten.
+    (View) Detail Squad (Sisi Siswa)
+    (Data) classroom, sortedUsers
+    (Desc) Menampilkan peringkat, statistik individu, daftar evaluasi, dan leaderboard internal squad.
 --}}
 
 @extends('layouts.siswa')
@@ -9,9 +10,9 @@
 
 @push('styles')
 <style>
-    /* 1. Global Card Logic - Fix Shadows and Cutting */
+    /* (Style) Konfigurasi wadah kartu utama (Glass Card) */
     .glass-card-wrapper {
-        padding: 5px; /* Memberi ruang agar shadow tidak terpotong */
+        padding: 5px; 
         width: 100%;
     }
 
@@ -21,31 +22,31 @@
         background: white;
         border-radius: 2.5rem;
         border-width: 2px;
-        border-bottom-width: 8px !important; /* Standarisasi Hero Card */
+        border-bottom-width: 8px !important; 
     }
     
-    .dark .glass-card { background: #0f172a; } /* slate-900 */
+    .dark .glass-card { background: #0f172a; } 
 
-    /* Efek Hover: Mengangkat dan memberi Glow */
+    /* (Style) Efek hover interaktif */
     .glass-card:hover { 
         border-color: #a855f7; 
         box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.2);
         transform: translateY(-6px);
     }
 
-    /* Efek Click: Deep Feedback */
+    /* (Style) Efek sentuhan klik */
     .glass-card:active { 
         transform: scale(0.98) translateY(2px);
         border-bottom-width: 4px !important;
     }
 
-    /* Khusus Kartu "SAYA" (Glow Purple) */
+    /* (Style) Penanda khusus untuk baris peringkat pengguna (user login) */
     .active-user-glow {
         border-color: #a855f7 !important;
         box-shadow: 0 0 20px rgba(168, 85, 247, 0.1);
     }
 
-    /* 2. Standarisasi Siluet Teks */
+    /* (Style) Siluet teks tipografi dekoratif */
     .card-silhouette {
         position: absolute; top: -0.5rem; right: -0.5rem;
         font-family: 'Bangers', cursive; font-size: 6rem;
@@ -56,7 +57,7 @@
     
     .glass-card:hover .card-silhouette { opacity: 0.12; transform: rotate(10deg) scale(1.1); color: #a855f7; }
 
-    /* 3. Deep Button System (Ref: Theme Toggle Logic) */
+    /* (Style) Tombol aksi bergaya 3D (Deep Button) */
     .btn-deep {
         transition: all 0.15s ease;
         border-width: 2px;
@@ -80,7 +81,7 @@
         background-color: #9333ea; border-color: #7e22ce; color: #ffffff;
     }
 
-    /* XP Badge Fluidity */
+    /* (Style) Lencana XP (XP Badge) responsif */
     .xp-badge-fluid {
         background: #f8fafc; border: 2px solid #e2e8f0;
         border-radius: 1.5rem; transition: all 0.3s ease;
@@ -91,7 +92,7 @@
 
 @section('header_left')
     <div class="flex items-center">
-        {{-- Tombol Back - Deep Style --}}
+        {{-- (View) Navigasi kembali --}}
         <a href="{{ route('kelas.index') }}" 
            class="w-10 h-10 md:w-11 md:h-11 rounded-xl btn-deep btn-deep-white">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
@@ -118,7 +119,7 @@
 <div class="px-4 sm:px-10 py-8 flex flex-col items-center">
     <div class="w-full max-w-5xl mx-auto">
         
-        {{-- SECTION 1: HERO (Halo User) --}}
+        {{-- (Section) Penampang Utama (Hero Card) - Identitas Siswa --}}
         <div class="glass-card-wrapper mb-10">
             <div class="glass-card border-slate-200 dark:border-slate-800 p-8 flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden">
                 <div class="card-silhouette">HELLO</div>
@@ -135,7 +136,7 @@
             </div>
         </div>
 
-        {{-- SECTION 2: MINI STATS (Efek Deep & Fluid) --}}
+        {{-- (Section) Panel Statistik Singkat (Mini Stats) --}}
         <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-12">
             @php
                 $stats = [
@@ -149,7 +150,6 @@
                 <div class="glass-card border-slate-100 dark:border-slate-800 p-6 flex items-center gap-4 overflow-hidden">
                     <div class="card-silhouette text-5xl">{{ $stat['sil'] }}</div>
                     
-                    {{-- Bagian Ikon yang Diperbaiki --}}
                     <div class="w-12 h-12 lg:w-14 lg:h-14 bg-{{ $stat['bg'] }}-50 dark:bg-{{ $stat['bg'] }}-900/20 rounded-2xl flex items-center justify-center shadow-inner border border-{{ $stat['bg'] }}-100 dark:border-{{ $stat['bg'] }}-800 relative z-10">
                         <img src="{{ asset('images/' . $stat['icon']) }}" 
                             alt="{{ $stat['label'] }}" 
@@ -165,7 +165,7 @@
             @endforeach
         </div>
 
-        {{-- SECTION 3: TUGAS EVALUASI (PURPLE THEME) --}}
+        {{-- (Section) Penampang Daftar Tugas Evaluasi --}}
         <div class="mb-6 text-left px-4">
             <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase">Tugas Evaluasi</h2>
             <p class="text-[12px] text-slate-500 dark:text-slate-400 font-medium">Daftar misi khusus untuk penilaian dosen.</p>
@@ -199,7 +199,7 @@
             @endforelse
         </div>
 
-        {{-- SECTION 4: LEADERBOARD --}}
+        {{-- (Section) Papan Peringkat (Leaderboard) --}}
         <div class="mb-6 text-left px-4">
             <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase leading-tight">Klasemen Squad</h2>
             <p class="text-[12px] text-slate-500 dark:text-slate-400 font-medium mt-1">Persaingan poin antar anggota kelas.</p>
@@ -210,6 +210,16 @@
                 @php 
                     $rank = $index + 1;
                     $isMe = $siswa->id == auth()->id();
+                    
+                    // SINKRONISASI AVATAR DINAMIS
+                    $rawAvatar = $siswa->avatar ?? 'miniavs.?seed=Felix';
+                    $avatarParts = explode('.', $rawAvatar);
+                    $avatarStyle = $avatarParts[0] ?? 'miniavs';
+                    $avatarParams = $avatarParts[1] ?? '?seed=Felix';
+                    
+                    if (!str_starts_with($avatarParams, '?')) {
+                        $avatarParams = '?seed=' . $avatarParams;
+                    }
                 @endphp
                 
                 <div class="glass-card-wrapper">
@@ -226,7 +236,7 @@
                             </div>
 
                             <div class="w-14 h-14 rounded-[1.4rem] border-4 border-white dark:border-slate-800 shadow-md shrink-0 overflow-hidden" style="background-color: #{{ $siswa->profile_color ?? 'a855f7' }};">
-                                <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $siswa->avatar ?? $siswa->name }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 scale-110">
+                                <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 scale-110">
                             </div>
 
                             <div class="min-w-0">
@@ -236,9 +246,7 @@
                                         <span class="ml-2 px-2 py-0.5 bg-purple-600 text-white text-[8px] rounded-lg uppercase font-black tracking-widest shadow-lg shadow-purple-200">ME</span> 
                                     @endif
                                 </h4>
-                                    {{-- Di dalam loop @foreach($sortedUsers as $siswa) --}}
                                     <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight">
-                                        {{-- Hitung langsung dari koleksi yang sudah di-load di Controller --}}
                                         {{ $siswa->completedMaterials->count() }} Modul • {{ $siswa->progress->where('status', 'completed')->count() }} Misi
                                     </p>
                             </div>

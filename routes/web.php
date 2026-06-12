@@ -18,12 +18,14 @@ use App\Http\Controllers\Admin\DashboardController;
 | Web Routes - Virtual Lab Excel
 |--------------------------------------------------------------------------
 */
+
 // --- 1. PUBLIC & AUTHENTICATION ---
+
 Route::get('/', function () {
     return Auth::check() ? redirect('/dashboard') : view('auth.login');
 });
 
-// Dashboard Utama: Distribusi Role (Admin vs Siswa)
+// Dashboard Utama
 Route::get('/dashboard', function () {
     $user = Auth::user();
     if ($user->role === 'admin') {
@@ -32,7 +34,7 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Manajemen Profil (Laravel Breeze)
+// Manajemen Profil
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -41,6 +43,7 @@ Route::middleware('auth')->group(function () {
 
 
 // --- 2. STUDENT / SISWA ROUTES ---
+
 Route::middleware(['auth'])->group(function () {
     
     // Pusat Bantuan & Tutorial
@@ -48,10 +51,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Eksplorasi Materi
     Route::get('/materi', [MateriController::class, 'index'])->name('materi.index');
-    // --- BARU: Menampilkan daftar materi di kategori tertentu ---
     Route::get('/materi/topik/{category}', [MateriController::class, 'showByCategory'])->name('materi.category.list');
     Route::get('/materi/{id}', [MateriController::class, 'show'])->name('materi.show');
-    // --- BARU: Menyimpan komentar diskusi di materi teori ---
+    
+    // Diskusi Materi
     Route::post('/materi/{id}/comment', [MateriController::class, 'storeComment'])->name('materi.comment');
     Route::post('/comment/{id}/react/{type}', [MateriController::class, 'reactComment'])->name('comment.react');
     Route::delete('/comment/{id}/destroy', [MateriController::class, 'destroyComment'])->name('materi.comment.destroy');
@@ -61,11 +64,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/misi/materi/{category}', [MisiController::class, 'showLevels'])->name('misi.category.levels'); 
     Route::get('/misi/level/{id}', [MisiController::class, 'show'])->name('misi.show'); 
     Route::post('/misi/check/{id}', [MisiController::class, 'checkAnswer'])->name('misi.check');
-    
-    // Fitur Tiket Remedial (Ulangi Misi)
     Route::post('/misi/retry/{id}', [MisiController::class, 'retryMission'])->name('misi.retry');
     
-    // Squad Kelas (Sisi Siswa)
+    // Squad Kelas
     Route::get('/kelas', [KelasController::class, 'index'])->name('kelas.index');
     Route::get('/kelas/{id}', [KelasController::class, 'show'])->name('kelas.show');
     Route::post('/kelas/gabung', [KelasController::class, 'store'])->name('kelas.store');
@@ -78,68 +79,66 @@ Route::middleware(['auth'])->group(function () {
 
 
 // --- 3. ADMIN ROUTES (MANAGEMENT PANEL) ---
+
 Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Dashboard Statistik
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // A. MANAJEMEN MATERI (AdminMateriController)
+    // Manajemen Materi Terpusat
     Route::controller(AdminMateriController::class)->group(function () {
         Route::get('/materials', 'index')->name('materials.index');
         
-        // --- UPDATE & TAMBAHAN CRUD FOLDER (TOPIC) ---
+        // Kategori / Topik Materi
         Route::get('/materials/topic/{id}', 'listByTopic')->name('materials.topic');
         Route::post('/materials/topic', 'storeTopic')->name('materials.store-topic');
         Route::patch('/materials/topic/{id}', 'updateTopic')->name('materials.update-topic');
         Route::delete('/materials/topic/{id}', 'destroyTopic')->name('materials.destroy-topic');
-        
         Route::post('/materials/store-quick', 'storeQuick')->name('materials.store-quick');
-        // ----------------------------------------------
 
+        // CRUD Materi Inti
         Route::get('/materials/create', 'create')->name('materials.create');
         Route::post('/materials', 'store')->name('materials.store');
         Route::get('/materials/{id}/edit', 'edit')->name('materials.edit');
         Route::patch('/materials/{id}', 'update')->name('materials.update');
         Route::delete('/materials/{id}', 'destroy')->name('materials.destroy');
         
-        // Step Management (Storyboard)
+        // Manajemen Langkah Simulasi
         Route::get('/materials/{id}/steps', 'showSteps')->name('materials.steps');
         Route::post('/materials/{id}/steps', 'storeStep')->name('materials.store-step');
         Route::delete('/materials/steps/{id}', 'destroyStep')->name('materials.steps.destroy');
         Route::post('/materials/steps/reorder', 'reorderSteps')->name('materials.reorder-steps');
         Route::patch('/materials/steps/{id}/update', 'updateStep')->name('materials.update-step');
 
-        // Hotspot Management (Visual Builder)
+        // Visual Builder Materi
         Route::get('/materials/steps/{stepId}/builder', 'builder')->name('materials.builder');
         Route::post('/materials/hotspots/store', 'storeHotspot')->name('materials.store-hotspot');
         Route::post('/materials/hotspots/reorder', 'reorderHotspots')->name('materials.reorder-hotspots');
         Route::delete('/materials/hotspots/{id}', 'destroyHotspot')->name('materials.destroy-hotspot');
     });
 
-    // B. MANAJEMEN MISI (AdminMissionController)
+    // Manajemen Misi Terpusat
     Route::controller(AdminMissionController::class)->group(function () {
         Route::get('/missions', 'index')->name('missions.index');
+        
+        // Kategori / Topik Misi
         Route::get('/missions/topic/{category}', 'listByTopic')->name('missions.topic');
         Route::patch('/missions/topic/{old_category}/update', 'updateTopic')->name('missions.update-topic');
         Route::delete('/missions/topic/{category}/destroy', 'destroyTopic')->name('missions.destroy-topic');
 
+        // CRUD Misi Inti
         Route::get('/missions/create', 'create')->name('missions.create');
         Route::post('/missions/create', 'store')->name('missions.store-step1');
-        
-        // --- TAMBAHAN BARU UNTUK WIZARD FLOW ---
         Route::get('/missions/create-detail/{level_id}', 'createDetail')->name('missions.create-detail');
         Route::post('/missions/store-detail', 'storeDetail')->name('missions.store-detail');
-        // ----------------------------------------
-
         Route::post('/missions/store-quick', 'storeQuick')->name('missions.store-quick');
         Route::get('/missions/{id}/edit', 'edit')->name('missions.edit');
         Route::patch('/missions/{id}', 'update')->name('missions.update');
         Route::delete('/missions/{id}', 'destroy')->name('missions.destroy');
         Route::post('/missions/reorder-levels', 'reorderLevels')->name('missions.reorder-levels');
-
         Route::patch('/missions/{id}/content', 'updateContent')->name('missions.update-content');
         
-        // Step Management (Storyboard & Reorder)
+        // Manajemen Langkah Misi
         Route::get('/missions/{id}/steps', 'showSteps')->name('missions.steps');
         Route::post('/missions/{id}/steps', 'storeStep')->name('missions.store-step');
         Route::delete('/missions/steps/{id}', 'destroyStep')->name('missions.destroy-step');
@@ -153,7 +152,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
         Route::delete('/missions/hotspots/{id}', 'destroyHotspot')->name('missions.destroy-hotspot');
     });
 
-    // C. MANAJEMEN KELAS (AdminClassroomController)
+    // Manajemen Kelas
     Route::controller(AdminClassroomController::class)->group(function () {
         Route::get('/classrooms', 'index')->name('classrooms.index');
         Route::post('/classrooms', 'store')->name('classrooms.store');
@@ -167,7 +166,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
         Route::get('/tasks/{id}/export', 'exportTask')->name('tasks.export');
     });
 
-    // D. MANAJEMEN SISWA (AdminUserController)
+    // Manajemen Akun & Progres Siswa
     Route::controller(AdminUserController::class)->group(function () {
         Route::get('/users', 'index')->name('users.index');
         Route::get('/users/{id}', 'show')->name('users.show');

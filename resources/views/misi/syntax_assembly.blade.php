@@ -1,4 +1,4 @@
-{{-- //* (View) Lab Perakitan Rumus (Syntax Assembly) - Cloudinary Ready & Optimized Layout */ --}}
+{{-- (View) Halaman Lab Perakitan Rumus (Syntax Assembly) --}}
 
 @extends('layouts.siswa')
 
@@ -6,7 +6,7 @@
 
 @push('styles')
 <style>
-    /* //* (Lockdown) Stabilisasi layout utama */
+    /* (Style) Stabilisasi layout utama */
     .split-grid { 
         display: grid; 
         grid-template-columns: 1fr; 
@@ -27,20 +27,20 @@
         }
     }
 
-    /* //* (Tactile) Desain blok sintaks - Mobile Optimized */
+    /* (Style) Desain blok sintaks untuk kemudahan sentuhan di perangkat mobile */
     .token-block {
         transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         border-bottom-width: 3px !important;
         user-select: none; 
-        touch-action: pan-y; /* FIX: Memperbaiki respon sentuhan di HP */
-        padding: 0.6rem 0.8rem; /* Padding sedikit dibesarkan agar mudah disentuh di HP */
+        touch-action: pan-y; 
+        padding: 0.6rem 0.8rem;
         font-size: 11px;
         border-radius: 0.6rem;
-        margin: 0.1rem; /* Memberi sedikit jarak bernapas antar blok */
-        /* Memperbesar area sentuh transparan (Touch Target) */
+        margin: 0.1rem; 
         position: relative;
     }
     
+    /* (Style) Perluasan area target sentuhan tak kasat mata */
     .token-block::after {
         content: '';
         position: absolute;
@@ -63,16 +63,16 @@
         filter: brightness(0.9);
     }
     
-    /* //* (Motion) Drag Visuals - Lebih fluid */
+    /* (Style) Efek visual saat blok digeser (drag) */
     .sortable-drag { 
         opacity: 0.9 !important; 
-        transform: scale(1.1) rotate(2deg) !important; /* Diperbesar saat didrag agar jelas */
+        transform: scale(1.1) rotate(2deg) !important; 
         z-index: 1000 !important; cursor: grabbing !important;
         box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.3) !important;
     }
     .sortable-ghost { opacity: 0.2; background: #10b981 !important; border: 2px dashed #059669 !important; border-radius: 0.8rem;}
 
-    /* //* (UI) Mekanik pegas & Card Styling */
+    /* (Style) Efek animasi pegas pada tombol */
     .btn-menu-pegas {transition: all 0.1s ease; border-bottom-width: 6px;}
     .btn-menu-pegas:active {transform: translateY(4px);border-bottom-width: 2px;}
     .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
@@ -82,7 +82,7 @@
         box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
     }
 
-    /* //* (Feedback) Animasi Flash Error Normal */
+    /* (Style) Animasi kilatan merah saat terjadi kesalahan */
     .flash-error {
         position: fixed; inset: 0; background-color: rgba(239, 68, 68, 0.2);
         pointer-events: none; z-index: 9999; animation: fade-out 0.4s forwards;
@@ -98,10 +98,10 @@
     .scenario-modal {
         position: fixed; inset: 0; z-index: 500; background: rgba(15, 23, 42, 0.98);
         backdrop-filter: blur(15px); display: flex; align-items: center; justify-content: center; padding: 1.5rem;
-        overflow: auto; /* Memungkinkan scroll saat di zoom */
+        overflow: auto; 
     }
 
-    /* Zoom fix pada modal image */
+    /* (Style) Penyesuaian gesture zoom pada gambar */
     .scenario-modal img {
         touch-action: pinch-zoom;
     }
@@ -127,11 +127,11 @@
         to { transform: translate(-50%, 0) scale(1); opacity: 1; } 
     }
 
-    /* FIX KOTAK RAKITAN AGAR COMPACT DAN MUAT BANYAK */
+    /* (Style) Desain responsif kotak area perakitan */
     .compact-dropzone {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.4rem; /* Gap sedikit dilebarkan di HP agar tidak terlalu rapat saat didrag */
+        gap: 0.4rem; 
         align-content: flex-start; 
         min-height: 80px; 
         padding: 0.5rem;
@@ -140,7 +140,7 @@
         .compact-dropzone { gap: 0.4rem; min-height: 100px; }
     }
 
-    /* //* (GAMIFICATION UPDATE) Duolingo Style Bottom Sheet Modal */
+    /* (Style) Tampilan modal notifikasi penyelesaian misi */
     .feedback-modal-wrapper {
         position: fixed; inset: 0; z-index: 10000;
         display: flex; align-items: flex-end; justify-content: center;
@@ -159,7 +159,7 @@
     }
     .dark .feedback-modal { background: #0f172a; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6); }
 
-    /* //* (GAMIFICATION) Floating Text Effect */
+    /* (Style) Animasi teks melayang pada titik aksi */
     .floating-text {
         position: fixed; z-index: 10000; font-weight: 900; font-size: 1.5rem;
         color: #fbbf24; text-shadow: 0 4px 6px rgba(0,0,0,0.4); pointer-events: none;
@@ -177,7 +177,7 @@
         $backUrl = request('from_task') ? route('kelas.task.show', request('from_task')) : route('misi.category.levels', $mission->level->category);
     @endphp
     
-    <div class="flex items-center w-full max-w-[80vw] overflow-hidden">
+    <div class="flex items-center w-full max-w-[80vw] overflow-hidden font-sans">
         <a href="{{ $backUrl }}" class="shrink-0 p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-back-pegas text-slate-600 dark:text-slate-300 shadow-sm active:translate-y-1 transition-all">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5"><path d="M15 19l-7-7 7-7" /></svg>
         </a>
@@ -190,16 +190,16 @@
             </div>
         </div>
         
-        <div class="shrink-0 ml-3 md:ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 font-game text-emerald-600 text-lg md:text-xl tracking-wider">
+        <div class="shrink-0 ml-3 md:ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-emerald-600 text-lg md:text-xl font-bold tracking-wider">
             <span id="header-xp-display">{{ $mission->max_score }}</span> XP
         </div>
     </div>
 @endsection
 
 @section('content')
-<div x-data="missionEngine()" x-init="initEngine()" class="relative h-full">
+<div x-data="missionEngine()" x-init="initEngine()" class="relative h-full font-sans">
     
-    {{-- Modal PERHATIAN Awal (HANYA MENGGUNAKAN FONT SANS DI SINI) --}}
+    {{-- (View) Modal Peringatan Awal Tata Cara Merakit --}}
     <div x-show="showIntro" x-cloak class="fixed inset-0 z-[1000] p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto flex font-sans">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl m-auto border-4 border-emerald-500 transform transition-all"
              x-transition:enter="ease-out duration-300"
@@ -238,27 +238,30 @@
         </div>
     </div>
 
-    {{-- (GAMIFICATION) Feedback Modal --}}
+    {{-- (View) Modal Notifikasi Hasil Pemeriksaan (Feedback) --}}
     <div x-show="feedbackModal.show" x-cloak class="feedback-modal-wrapper font-sans">
         <div class="feedback-modal" :class="feedbackModal.type">
             <div class="flex items-center gap-3 md:gap-4 mb-5 md:mb-6">
+                {{-- (View) Ikon status jawaban --}}
                 <div class="w-12 h-12 md:w-14 md:h-14 shrink-0 flex items-center justify-center rounded-full shadow-sm border-[3px]" 
                      :class="feedbackModal.type === 'error' ? 'bg-red-50 border-red-100 dark:bg-red-900/30 dark:border-red-800' : 'bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:border-emerald-800'">
                     <img x-show="feedbackModal.type === 'error'" src="{{ asset('images/alert.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain">
                     <img x-show="feedbackModal.type === 'success'" src="{{ asset('images/bintang.png') }}" class="w-7 h-7 md:w-8 md:h-8 object-contain">
                 </div>
+                {{-- (View) Teks informasi hasil --}}
                 <div>
                     <div class="text-xl md:text-2xl font-black tracking-wide" :class="feedbackModal.type === 'error' ? 'text-red-500' : 'text-emerald-500'" x-text="feedbackModal.title"></div>
                     <div class="text-sm md:text-base font-bold opacity-90 mt-0.5" :class="feedbackModal.type === 'error' ? 'text-red-400 dark:text-red-300' : 'text-emerald-400 dark:text-emerald-300'" x-text="feedbackModal.subtitle"></div>
                 </div>
             </div>
+            {{-- (View) Tombol aksi lanjutan --}}
             <button @click="handleFeedbackButton()" class="w-full py-3 md:py-3.5 rounded-xl font-black text-base md:text-lg text-white transition-all active:scale-95 border-b-[4px] active:border-b-0 active:translate-y-[4px]" 
                     :class="feedbackModal.type === 'error' ? 'bg-red-500 hover:bg-red-600 border-red-700' : 'bg-emerald-500 hover:bg-emerald-600 border-emerald-700'" 
                     x-text="feedbackModal.type === 'error' ? 'OKE' : 'LANJUT'"></button>
         </div>
     </div>
 
-    {{-- Scenario Modal (Zoom Enabled) --}}
+    {{-- (View) Modal pembesaran gambar skenario soal --}}
     <div x-show="scenarioMaximized" x-transition.opacity x-cloak class="scenario-modal" @click="scenarioMaximized = false">
         <button class="absolute top-8 right-8 mt-8 p-3 bg-white/10 hover:bg-red-500 text-white rounded-2xl transition-colors z-[600]">
             <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 18L18 6M6 6l12 12"/></svg>
@@ -271,7 +274,7 @@
     </template>
 
     <div class="split-grid max-w-7xl mx-auto"> 
-        {{-- Monitor & Instruksi --}}
+        {{-- (View) Area gambar monitor dan teks instruksi --}}
         <div class="scroll-column space-y-4 md:space-y-6">
             <div class="bg-white dark:bg-slate-900 p-3 md:p-4 rounded-[2rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px] relative group">
                 <div class="absolute top-5 left-5 px-3 py-1 bg-slate-900 text-white text-[7px] font-black uppercase rounded-lg z-10">Monitor</div>
@@ -290,7 +293,7 @@
             </div>
         </div>
 
-        {{-- Workspace Perakitan --}}
+        {{-- (View) Area kerja perakitan rumus --}}
         <div class="scroll-column space-y-4 md:space-y-6">
             <div class="bg-white dark:bg-slate-900 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px] flex flex-col transition-all duration-300" 
                  :class="status === 'wrong' ? 'shake-error shadow-red-100' : ''">
@@ -305,7 +308,7 @@
                     </div>
                 </div>
 
-                {{-- Hint Bantuan --}}
+                {{-- (View) Kotak informasi bantuan (Hint) --}}
                 <div x-show="hint" x-transition class="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-100 dark:border-amber-800 rounded-xl text-[10px] font-extrabold text-amber-700 dark:text-amber-400 text-center uppercase leading-snug">
                     <span x-text="hint"></span>
                 </div>
@@ -315,7 +318,7 @@
                 </button>
             </div>
 
-            {{-- Gudang Komponen --}}
+            {{-- (View) Area daftar blok komponen rumus yang tersedia --}}
             <div class="bg-white dark:bg-slate-900 p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-sm border-2 border-slate-200 dark:border-slate-800 border-b-[8px]">
                 <h3 class="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 mb-4">Gudang Komponen</h3>
                 <div class="flex flex-wrap gap-1.5 md:gap-2 justify-center">
@@ -330,10 +333,25 @@
         </div>
     </div>
 </div>
+
+{{-- (View) Notifikasi pop-up (Toast) --}}
+<div x-show="toast.show" x-cloak x-transition.opacity 
+    class="toast-top shadow-xl flex items-center space-x-3" 
+    :style="toast.type === 'error' ? 'border-color: #ef4444; border-bottom-color: #b91c1c;' : 'border-color: #10b981; border-bottom-color: #047857;'">
+    
+    <div class="w-8 h-8 rounded-lg flex items-center justify-center animate-bounce bg-slate-50 dark:bg-slate-900/50 shadow-inner shrink-0">
+        <img :src="'{{ asset('images') }}/' + toast.icon" class="w-5 h-5 object-contain">
+    </div>
+    <div class="text-left flex-1">
+        <p class="text-[10px] font-black text-slate-900 dark:text-white uppercase leading-none" x-text="toast.title"></p>
+        <p class="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-1 leading-tight" x-text="toast.message"></p>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
-{{-- Library pendukung --}}
+{{-- (Library) Memuat script eksternal pendukung --}}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -349,7 +367,7 @@
             attempts: 0,
             toast: { show: false, message: '', title: '', icon: 'bintang.png', type: 'info' }, 
             
-            // State untuk Gamifikasi Modal & SFX
+            // (State) Properti untuk tampilan modal dan efek suara
             showIntro: true,
             feedbackModal: { show: false, type: '', title: '', subtitle: '', nextUrl: '' },
             sfxClick: null,
@@ -359,6 +377,7 @@
             storageKey: 'mission_{{ $mission->id }}_syntax_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
+            // (Action) Inisialisasi engine misi, memuat progres, dan mempersiapkan fitur audio
             initEngine() {
                 try {
                     let audioClick = new Audio('{{ asset("audio/drop.mp3") }}');
@@ -395,7 +414,7 @@
 
                 this.$watch('answerBox', () => { this.renderBox(); });
 
-                // FIX: Menangani mode Pinch-to-Zoom saat modal gambar dibuka
+                // (Event) Memantau perubahan status zoom gambar layar
                 this.$watch('scenarioMaximized', v => { this.toggleZoom(v); });
 
                 const headerXp = document.getElementById('header-xp-display');
@@ -409,7 +428,7 @@
                 this.initSortable();
             },
 
-            // Fungsi baru untuk membuka kunci Viewport Zoom di HP
+            // (Helper) Mengatur konfigurasi viewport agar mengizinkan zoom in/out di perangkat mobile
             toggleZoom(isMaximized) {
                 let metaViewport = document.querySelector('meta[name="viewport"]');
                 if (isMaximized) {
@@ -419,6 +438,7 @@
                 }
             },
 
+            // (Process) Merender ulang tampilan blok rumus di dalam area kotak perakitan
             renderBox() {
                 const dropzone = this.$refs.dropzone;
                 dropzone.innerHTML = ''; 
@@ -432,14 +452,15 @@
                 });
             },
 
+            // (Action) Library SortableJS fitur geser-letak (drag-and-drop) blok rumus
             initSortable() {
                 new Sortable(this.$refs.dropzone, {
-                    animation: 150, // FIX: Dipercepat agar lebih responsif di HP
+                    animation: 150, 
                     easing: "cubic-bezier(0.25, 1, 0.5, 1)", 
                     ghostClass: 'sortable-ghost', 
                     dragClass: 'sortable-drag',
-                    delay: 100, // FIX: Memberikan delay kecil agar tidak bentrok dengan klik hapus di HP
-                    delayOnTouchOnly: true, // Hanya berlaku di layar sentuh
+                    delay: 100, 
+                    delayOnTouchOnly: true,
                     swapThreshold: 0.65, 
                     onEnd: (evt) => {
                         if (evt.oldIndex === evt.newIndex) return;
@@ -457,6 +478,7 @@
                 this.renderBox();
             },
 
+            // (Process) Menyimpan progres perakitan sementara ke penyimpanan lokal browser (Local Storage)
             saveToLocal() {
                 if (this.isReview) return;
                 const payload = {
@@ -465,6 +487,7 @@
                 localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
 
+            // (Helper) Menampilkan notifikasi popup sementara
             triggerToast(title, message, icon = 'alert.png', type = 'info') {
                 this.toast.title = title;
                 this.toast.message = message;
@@ -474,6 +497,7 @@
                 setTimeout(() => { this.toast.show = false; }, 3500);
             },
 
+            // (Action) Menangani kejadian saat tombol pada modal umpan balik ditekan
             handleFeedbackButton() {
                 this.feedbackModal.show = false;
                 if (this.feedbackModal.type === 'success' && this.feedbackModal.nextUrl) {
@@ -481,6 +505,7 @@
                 }
             },
 
+            // (Helper) Membuka modal umpan balik dengan status sukses atau gagal
             triggerFeedbackModal(type, title, subtitle, nextUrl = '') {
                 this.feedbackModal.type = type;
                 this.feedbackModal.title = title;
@@ -489,6 +514,7 @@
                 this.feedbackModal.show = true;
             },
 
+            // (Helper) Menampilkan animasi perayaan kertas warna-warni
             fireConfetti() {
                 var duration = 4 * 1000;
                 var end = Date.now() + duration;
@@ -499,6 +525,7 @@
                 }());
             },
 
+            // (Helper) Menampilkan animasi partikel kegagalan berwarna merah
             fireCrossParticles() {
                 var defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.92, startVelocity: 40, colors: ['#ef4444', '#b91c1c', '#fca5a5'] };
                 
@@ -512,6 +539,7 @@
                 fire(0.1, { spread: 120, startVelocity: 50 });
             },
 
+            // (Helper) Membuat efek teks melayang sesaat pada posisi klik kursor
             spawnFloatingText(e, text, color = '#fbbf24') {
                 if (!e) return;
                 const el = document.createElement('div');
@@ -524,6 +552,7 @@
                 setTimeout(() => el.remove(), 1000);
             },
 
+            // (Process) Menyusun dan mengacak daftar blok komponen rumus yang siap digunakan
             get availableBlocks() {
                 let result = [];
                 this.rawAvailableBlocks.forEach(block => {
@@ -533,6 +562,7 @@
                 return [...new Set(result)].sort();
             },
 
+            // (Helper) Menentukan warna tema blok berdasarkan jenis konten teksnya (fungsi, sel, string)
             getBlockClass(block) {
                 const funcRegex = /^(IF|SUM|AVERAGE|MIN|MAX|AND|OR|NOT|COUNT|VLOOKUP|HLOOKUP)$/i;
                 const cellRegex = /^[A-Z]+\$?[0-9]+$/i;
@@ -545,6 +575,7 @@
                 return 'bg-slate-50 text-slate-500 border-slate-200 border-b-slate-400 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
             },
 
+            // (Action) Menambahkan blok komponen dari gudang ke dalam kotak rakitan saat diklik
             addToAnswer(block, e) { 
                 this.answerBox.push(block); 
                 this.status = 'idle'; 
@@ -557,6 +588,7 @@
                 this.spawnFloatingText(e, 'Pilih ⭐', '#10b981');
             },
 
+            // (Action) Menghapus blok komponen dari kotak rakitan saat diklik
             removeFromAnswer(index, e) { 
                 this.answerBox.splice(index, 1); 
                 this.saveToLocal();
@@ -567,6 +599,7 @@
                 this.spawnFloatingText(e, 'Hapus 💥', '#ef4444');
             },
             
+            // (Action) Mengirim susunan rumus ke server untuk divalidasi
             submitSyntax(e) {
                 if(this.answerBox.length === 0) { 
                     this.status = 'wrong'; 
@@ -594,6 +627,7 @@
                         }
                         this.fireConfetti();
                         
+                        // (Process) Menampilkan modal keberhasilan saat rumus tepat
                         this.triggerFeedbackModal('success', 'Tepat Sekali! 🎉', '+ ' + this.currentPotentialXP + ' XP Berhasil Diraih', data.next_url);
                         
                     } else {
@@ -605,8 +639,10 @@
                             this.sfxSalah.currentTime = 0; this.sfxSalah.play().catch(()=>{}); 
                         }
                         
+                        // (Process) Memicu efek partikel silang saat jawaban salah
                         this.fireCrossParticles(); 
 
+                        // (Process) Menampilkan teks melayang tanda kesalahan
                         if(e) this.spawnFloatingText(e, 'Masih salah! 😭', '#ef4444');
                         this.triggerFeedbackModal('error', 'Belum berhasil 😭', 'Ayo coba lagi!');
                         

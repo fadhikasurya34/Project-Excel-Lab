@@ -1,12 +1,12 @@
 {{-- 
-    VIEW: Monitoring Aktivitas Siswa (Admin)
-    DATA: $students (Siswa terdaftar), $allTopics (Untuk filter/info)
-    LOGIC: Client-side mapping, filtering, dan sorting via Alpine.js.
+    (View) Monitoring Aktivitas Siswa (Admin)
+    (Data) students, allTopics
+    (Logic) Client-side mapping, filtering, dan sorting via Alpine.js
 --}}
 
 <x-app-layout>
     <style>
-        {{-- (Style) Standarisasi UI Terminal Khusus Monitoring (Aksen Orange) --}}
+        /* (Style) Standarisasi antarmuka khusus monitoring dengan aksen oranye */
         .bg-admin {
             background-color: #f8fafc;
             background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
@@ -30,6 +30,7 @@
             box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
         }
 
+        /* (Style) Konfigurasi tampilan form input */
         .form-input-premium {
             width: 100%;
             border-radius: 1rem;
@@ -47,6 +48,7 @@
             box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.05);
         }
 
+        /* (Style) Desain tombol aksi pada tabel */
         .btn-action {
             width: 2.5rem;
             height: 2.5rem;
@@ -69,12 +71,24 @@
             sortOrder: 'desc',
             selectedRow: null,
             users: {{ $students->map(function($user) {
+                // LOGIKA SINKRONISASI AVATAR DINAMIS
+                $rawAvatar = $user->avatar ?? 'miniavs.?seed=Felix'; 
+                $avatarParts = explode('.', $rawAvatar);
+                
+                $avatarStyle = $avatarParts[0] ?? 'miniavs';
+                $avatarParams = $avatarParts[1] ?? '?seed=Felix';
+                
+                if (!str_starts_with($avatarParams, '?')) {
+                    $avatarParams = '?seed=' . $avatarParams;
+                }
+                $finalAvatarUrl = 'https://api.dicebear.com/9.x/' . $avatarStyle . '/svg' . $avatarParams . '&backgroundColor=transparent';
+
                 return [
                     'id' => $user->id,
                     'name' => (string) $user->name,
                     'email' => (string) $user->email,
                     'xp' => (int) $user->total_xp,
-                    'avatar' => 'https://api.dicebear.com/9.x/bottts/svg?seed='.($user->avatar ?? 'Felix').'&backgroundColor=transparent',
+                    'avatar' => $finalAvatarUrl,
                     'profile_color' => (string) ($user->profile_color ?? 'f97316'),
                     'classroom' => (string) ($user->classrooms->first()->name ?? 'Tanpa Squad'),
                     'show_url' => route('admin.users.show', $user->id),
@@ -102,7 +116,7 @@
             }
          }">
         
-        {{-- (Notification) Toast System --}}
+        {{-- (Notification) Sistem Notifikasi Toast --}}
         @if(session('success') || session('error') || session('status'))
             <div x-data="{ show: true, progress: 100 }"
                 x-show="show"
@@ -137,7 +151,7 @@
             </div>
         @endif
 
-        {{-- (Section) Header --}}
+        {{-- (Section) Panel Judul Halaman --}}
         <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 sm:mb-10 gap-6">
             <div>
                 <div class="flex items-center space-x-2 mb-2">
@@ -159,7 +173,7 @@
             </div>
         </div>
 
-        {{-- (Section) Statistik --}}
+        {{-- (Section) Panel Statistik Global --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-10">
             <div class="admin-card p-5 sm:p-6 flex items-center justify-between">
                 <div>
@@ -192,7 +206,7 @@
             </div>
         </div>
 
-        {{-- (Section) Controls --}}
+        {{-- (Section) Panel Navigasi dan Kontrol Filter --}}
         <div class="mb-8 grid grid-cols-1 lg:grid-cols-4 gap-4">
             <div class="lg:col-span-2 relative group">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-orange-500 transition-colors">
@@ -216,7 +230,7 @@
             </button>
         </div>
 
-        {{-- (Section) Tabel Data Siswa - FIXED PORTRAIT & NO SCROLL --}}
+        {{-- (Section) Tabel Data Siswa --}}
         <div class="admin-card overflow-hidden shadow-sm !cursor-default border-none md:border md:border-slate-200">
             <table class="w-full text-left border-collapse block md:table">
                 <thead class="bg-slate-50/80 border-b border-slate-100 hidden md:table-header-group">
@@ -234,12 +248,12 @@
                             :class="selectedRow === siswa.id ? 'bg-orange-50/50' : 'hover:bg-slate-50/50'"
                             class="transition-all cursor-pointer block md:table-row p-4 mb-4 md:mb-0 bg-white md:bg-transparent rounded-2xl md:rounded-none border border-slate-100 md:border-none shadow-sm md:shadow-none">
                             
-                            {{-- No (Desktop Only) --}}
+                            {{-- (View) Kolom Nomor Urut --}}
                             <td class="hidden md:table-cell pl-8 py-6 text-center">
                                 <span class="text-xs font-black text-slate-300" x-text="index + 1"></span>
                             </td>
 
-                            {{-- Identitas --}}
+                            {{-- (View) Kolom Identitas Pribadi --}}
                             <td class="block md:table-cell py-2 md:py-6 md:px-8">
                                 <div class="flex items-center space-x-4">
                                     <div class="w-12 h-12 rounded-2xl border-2 border-white shadow-md overflow-hidden shrink-0 transition-transform group-hover:scale-110" 
@@ -253,7 +267,7 @@
                                 </div>
                             </td>
 
-                            {{-- Squad & XP (Portrait Grouped) --}}
+                            {{-- (View) Kolom Squad & XP --}}
                             <td class="block md:table-cell py-3 md:py-6 md:px-8">
                                 <div class="flex md:contents items-center justify-between">
                                     <span class="md:hidden text-[10px] font-bold text-slate-400 uppercase tracking-widest">Atribut</span>
@@ -267,7 +281,7 @@
                                 </div>
                             </td>
 
-                            {{-- XP (Desktop Only) --}}
+                            {{-- (View) Kolom XP --}}
                             <td class="hidden md:table-cell px-8 py-6 text-center">
                                 <div class="inline-flex items-center px-4 py-1.5 bg-white border border-slate-100 rounded-xl transition-all">
                                     <span class="font-black text-slate-700 text-sm mr-1.5" x-text="new Intl.NumberFormat().format(siswa.xp)"></span>
@@ -275,7 +289,7 @@
                                 </div>
                             </td>
 
-                            {{-- Manajemen --}}
+                            {{-- (View) Kolom Manajemen --}}
                             <td class="block md:table-cell py-4 md:py-6 md:pr-8 md:text-right border-t border-slate-50 md:border-none mt-4 md:mt-0">
                                 <div class="flex items-center justify-between md:justify-end md:space-x-2">
                                     <span class="md:hidden text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aksi Akun</span>

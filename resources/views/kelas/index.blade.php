@@ -1,8 +1,4 @@
-{{-- 
-    VIEW: Squad Kelas (Hub Komunitas)
-    DATA: $classrooms (Daftar squad yang diikuti)
-    DESC: Area bagi siswa untuk bergabung ke kelas baru via kode akses dan memantau squad aktif.
---}}
+{{-- (View) Squad Kelas (Hub Komunitas): Area bagi siswa untuk bergabung ke kelas baru via kode akses dan memantau squad aktif. --}}
 
 @extends('layouts.siswa')
 
@@ -10,15 +6,15 @@
 
 @push('styles')
 <style>
-    {{-- (Style) Standarisasi Visual: Identik dengan Dashboard Utama --}}
+    {{-- (Style) Standarisasi visual antarmuka selaras dengan dasbor utama --}}
     .glass-card {
         transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
-    {{-- Hover Glows: Identitas Ungu untuk fitur Kelas --}}
+    {{-- (Style) Efek pendaran ungu khusus untuk identitas fitur kelas --}}
     .card-purple:hover { border-color: #a855f7; box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.4); }
 
-    {{-- (Style) Efek Siluet: Teks latar belakang besar dengan Active State 0.4 --}}
+    {{-- (Style) Efek siluet teks latar belakang --}}
     .card-silhouette {
         position: absolute;
         top: -0.5rem;
@@ -45,7 +41,7 @@
         color: #475569;
     }
 
-    {{-- (Style) Tombol Pegas: Ketebalan border 6px untuk feedback fisik --}}
+    {{-- (Style) Animasi tombol pegas interaktif --}}
     .btn-menu-pegas {
         transition: all 0.1s ease;
         border-bottom-width: 6px;
@@ -58,7 +54,7 @@
 @endpush
 
 @section('header_left')
-    {{-- (Header) Navigasi Kembali & Status Hub --}}
+    {{-- (View) Navigasi kembali dan status hub --}}
     <div class="flex items-center">
         <a href="{{ route('dashboard') }}" class="p-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl btn-menu-pegas text-slate-600 dark:text-slate-300 shadow-sm mr-3 active:scale-90 transition-transform">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
@@ -80,7 +76,7 @@
     
     <div class="w-full max-w-md sm:max-w-3xl lg:max-w-5xl mx-auto transition-all duration-500">
         
-        {{-- (Section) Hero Card: Input Kode Akses Squad --}}
+        {{-- (View) Kartu utama untuk form input kode akses squad --}}
         <div class="glass-card card-purple bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 lg:p-8 border-b-[8px] relative overflow-hidden mb-12 shadow-sm">
             <div class="card-silhouette">JOIN</div>
             
@@ -95,7 +91,7 @@
                     </div>
                 </div>
 
-                {{-- Form Join: Sinkronisasi ke Controller --}}
+                {{-- (Action) Form untuk bergabung dengan squad baru --}}
                 <form action="{{ route('kelas.store') }}" method="POST" class="w-full lg:w-auto flex items-center gap-2.5">
                     @csrf
                     <input type="text" name="class_code" placeholder="KODE-SQUAD" required
@@ -107,13 +103,13 @@
             </div>
         </div>
 
-        {{-- (Section) List Content: Daftar Squad Terdaftar --}}
+        {{-- (View) Daftar squad kelas yang telah diikuti --}}
         <div class="mb-10 text-left px-2">
             <h1 class="text-2xl lg:text-2xl font-black text-slate-900 dark:text-white leading-tight uppercase">Daftar Squad Terdaftar</h1>
             <p class="text-sm lg:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Kelola keanggotaan laboratorium anda di sini.</p>
         </div>
 
-        {{-- Grid 2x2: Pola yang sama dengan Dashboard --}}
+        {{-- (View) Tata letak grid untuk kartu squad --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8 mb-16">
             @forelse($classrooms as $kelas)
                 <div class="glass-card card-purple bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-6 lg:p-8 border-b-[8px] flex flex-col items-start relative overflow-hidden h-full shadow-sm hover:-translate-y-2 active:scale-[0.98]">
@@ -134,14 +130,14 @@
                         </div>
                     </div>
 
-                    {{-- Tombol Buka --}}
+                    {{-- (Action) Tombol navigasi masuk ke detail squad --}}
                     <a href="{{ route('kelas.show', $kelas->id) }}" 
                        class="btn-menu-pegas w-36 lg:w-40 mt-6 lg:mt-8 py-3 bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 font-black rounded-2xl text-[9px] lg:text-[10px] tracking-widest border-slate-200 dark:border-slate-700 uppercase text-center z-10">
                         Buka Squad
                     </a>
                 </div>
             @empty
-                {{-- State Kosong --}}
+                {{-- (View) Tampilan alternatif jika belum bergabung dengan squad manapun --}}
                 <div class="col-span-full glass-card border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-12 flex flex-col items-center justify-center text-center opacity-50">
                     <img src="{{ asset('images/kelas.png') }}" class="w-16 h-16 object-contain grayscale opacity-30 mb-4">
                     <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Belum Ada Squad Terdeteksi</p>

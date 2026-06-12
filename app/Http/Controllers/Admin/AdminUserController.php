@@ -11,10 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class AdminUserController extends Controller
 {
-    /** (View) Menampilkan daftar siswa beserta peringkat dan kelasnya */
+    /** (View) Menampilkan daftar siswa beserta peringkat dan kelasnya. */
     public function index()
     {
-        // Ambil user bukan admin
         $students = User::where('role', '!=', 'admin')
             ->with(['ranking', 'classrooms'])
             ->latest()
@@ -23,7 +22,7 @@ class AdminUserController extends Controller
         return view('admin.users.index', compact('students'));
     }
 
-    /** (Action) Reset total XP, progres misi, dan mengembalikan tiket remedial hari ini */
+    /** (Action) Mereset total XP, progres misi, dan mengembalikan tiket remedial hari ini. */
     public function resetXP(string $id)
     {
         return DB::transaction(function () use ($id) {
@@ -47,7 +46,7 @@ class AdminUserController extends Controller
         });
     }
 
-    /** (Action) Mereset kuota tiket retry harian untuk siswa spesifik (Tanpa menghapus XP) */
+    /** (Action) Mereset kuota tiket remedial harian siswa tanpa menghapus XP. */
     public function resetRetryTickets(string $id)
     {
         $today = now()->toDateString();
@@ -60,7 +59,7 @@ class AdminUserController extends Controller
         return back()->with('success', 'Jatah tiket remedial siswa hari ini berhasil di-reset menjadi 3.');
     }
 
-    /** (Action) Menghapus akun siswa secara total beserta data terkait */
+    /** (Action) Menghapus akun siswa secara permanen beserta seluruh data terkait. */
     public function destroy(string $id)
     {
         return DB::transaction(function () use ($id) {
@@ -76,7 +75,7 @@ class AdminUserController extends Controller
         });
     }
 
-    /** (View) Menampilkan profil detail, riwayat misi, dan progres materi siswa */
+    /** (View) Menampilkan profil detail, riwayat misi, dan progres materi siswa. */
     public function show(string $id)
     {
         $student = User::with(['ranking', 'classrooms'])->findOrFail($id);
@@ -97,7 +96,7 @@ class AdminUserController extends Controller
         return view('admin.users.show', compact('student', 'completedMissions', 'completedMaterials'));
     }
 
-    /** (Action) Menghapus progres satu misi dan Recalculate XP secara otomatis */
+    /** (Action) Menghapus progres satu misi dan menghitung ulang total XP siswa secara otomatis. */
     public function destroyMissionProgress(string $id)
     {
         return DB::transaction(function () use ($id) {
@@ -107,7 +106,7 @@ class AdminUserController extends Controller
             // 1. Hapus riwayat progres misi yang dipilih
             $progress->delete();
 
-            // 2. RECALCULATION METHOD: Hitung ulang XP dari sisa misi yang ada
+            // 2. Hitung ulang XP dari sisa misi yang ada
             $totalXpNow = Progress::where('user_id', $userId)
                 ->where('status', 'completed')
                 ->sum('score');
@@ -122,7 +121,7 @@ class AdminUserController extends Controller
         });
     }
 
-    /** (Action) Menghapus riwayat pengerjaan materi individu */
+    /** (Action) Menghapus riwayat penyelesaian materi secara individu. */
     public function destroyMaterialProgress(string $id)
     {
         $progress = \App\Models\MaterialCompletion::findOrFail($id);

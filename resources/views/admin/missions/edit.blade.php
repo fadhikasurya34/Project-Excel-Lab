@@ -1,12 +1,8 @@
-{{-- 
-    VIEW: Editor Konten Misi
-    DATA: $mission, $step (Optional)
-    DESC: Mengatur aset visual, instruksi naratif, dan kunci jawaban rumus Excel.
---}}
+{{-- (View) Editor Konten Misi: Mengatur aset visual, instruksi naratif, dan kunci jawaban rumus Excel --}}
 
 <x-app-layout>
     <style>
-        {{-- (Style) Standarisasi UI Terminal Emerald --}}
+        {{-- (Style) Standarisasi antarmuka (UI) bernuansa Emerald --}}
         .bg-admin {
             background-color: #f8fafc;
             background-image: radial-gradient(#e2e8f0 0.8px, transparent 0.8px);
@@ -59,7 +55,7 @@
 
         .text-header { letter-spacing: -0.02em; }
 
-        /* Style bantuan tooltip sederhana */
+        /* (Style) Desain kotak bantuan (tooltip) informasi tambahan */
         .help-box {
             background: #0f172a;
             color: white;
@@ -73,7 +69,7 @@
     </style>
 
     <div class="min-h-screen bg-admin p-6 sm:p-10" x-data="missionEditor()">
-        {{-- (Notification) Toast System: Feedback sinkronisasi data --}}
+        {{-- (Notification) Sistem Toast untuk umpan balik aksi form --}}
         @if(session('success') || session('error') || session('status'))
             <div x-data="{ show: true, progress: 100 }"
                 x-show="show"
@@ -109,7 +105,7 @@
         @endif
 
         <div class="max-w-6xl mx-auto">
-            {{-- Header: Navigasi & Identitas Misi --}}
+            {{-- (View) Header bagian navigasi dan identitas misi --}}
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
                 <div>
                     <a href="{{ route('admin.missions.topic', $mission->level->category) }}" class="group inline-flex items-center text-emerald-600 font-bold text-[10px] tracking-widest uppercase hover:text-emerald-800 transition-colors mb-4">
@@ -123,12 +119,12 @@
                 </div>
             </div>
 
-            {{-- Form Utama --}}
+            {{-- (View) Form utama pembaruan konten misi --}}
             <form action="{{ route('admin.missions.update-content', $mission->id) }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 @csrf
                 @method('PATCH')
 
-                {{-- Kolom Kiri: Manajemen Media --}}
+                {{-- (View) Area Kiri: Manajemen Media Gambar Skenario --}}
                 <div class="lg:col-span-7 space-y-6">
                     <div class="admin-card p-8 h-full flex flex-col">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 ml-2 text-center">Screenshot Tabel Excel (Skenario Utama)</label>
@@ -152,7 +148,7 @@
                     </div>
                 </div>
 
-                {{-- Kolom Kanan: Narasi & Kunci Jawaban --}}
+                {{-- (View) Area Kanan: Pengaturan Instruksi dan Kunci Jawaban --}}
                 <div class="lg:col-span-5 space-y-6">
                     <div class="admin-card p-8 space-y-8 border-t-4 border-t-emerald-600">
                         <div>
@@ -221,6 +217,7 @@
     </div>
 
     <script>
+        // (Action) Membaca dan menampilkan pratinjau gambar yang diunggah
         function previewFile(event) {
             const reader = new FileReader();
             const preview = document.getElementById('img-preview');
@@ -234,6 +231,7 @@
             }
         }
 
+        // (State) Menginisialisasi variabel state untuk Alpine.js
         function missionEditor() {
             return {
                 type: "{{ $mission->mission_type }}",

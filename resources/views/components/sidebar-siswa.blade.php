@@ -67,6 +67,27 @@
         $remainingTickets = 3 - ($todayTicket ? $todayTicket->used_count : 0);
         $userClasses = $user->classrooms ?? collect();
         $firstClass = $userClasses->first();
+
+        // *---------------------------------------------------*
+        // * LOGIKA SINKRONISASI AVATAR DINAMIS
+        // *---------------------------------------------------*
+        $rawAvatar = $user->avatar ?? 'miniavs.?seed=Felix'; 
+        $avatarParts = explode('.', $rawAvatar);
+        
+        if (count($avatarParts) > 1) {
+            // Format baru: "miniavs.?seed=xxxx"
+            $avatarStyle = $avatarParts[0];
+            $avatarParams = $avatarParts[1];
+        } else {
+            // Format lawas: "Felix"
+            $avatarStyle = 'miniavs';
+            $avatarParams = $avatarParts[0];
+        }
+
+        // Pastikan parameter diawali dengan '?seed=' jika belum ada
+        if (!str_starts_with($avatarParams, '?')) {
+            $avatarParams = '?seed=' . $avatarParams;
+        }
     @endphp
 
     <div class="flex-1 overflow-y-auto scrollbar-hide p-5 md:p-6 pb-10">
@@ -96,7 +117,9 @@
             <div class="relative w-24 h-24 mx-auto mb-4 profile-float">
                 <div class="absolute inset-0 rounded-[2.2rem] border-[3px] border-dashed opacity-40 profile-ring" style="border-color: #{{ $userColor }};"></div>
                 <div class="absolute inset-1.5 rounded-[2rem] flex items-center justify-center shadow-xl overflow-hidden border-4 border-white dark:border-slate-800" style="background: #{{ $userColor }};">
-                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ $user->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-cover transform scale-110 pt-2">
+                    
+                    <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full object-cover transform scale-110 pt-2">
+                
                 </div>
             </div>
             <p class="text-xl font-black text-slate-800 dark:text-white leading-tight capitalize truncate px-2">{{ $user->name }}</p>

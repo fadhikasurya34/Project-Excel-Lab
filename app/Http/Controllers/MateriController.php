@@ -5,20 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Material;
 use App\Models\MaterialCategory;
 use App\Models\MaterialCompletion;
-use App\Models\MaterialComment; // Tambahkan ini
+use App\Models\MaterialComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MateriController extends Controller
 {
-    /** * (View) Menampilkan daftar FOLDER/TOPIK materi */
+    /** (View) Menampilkan daftar kategori/topik materi */
     public function index()
     {
         $categories = MaterialCategory::withCount('materials')->get();
         return view('materi.index', compact('categories'));
     }
 
-    /** * (View) Menampilkan daftar modul materi di dalam folder tertentu */
+    /** (View) Menampilkan daftar modul materi dalam kategori tertentu */
     public function showByCategory(string $id)
     {
         $category = MaterialCategory::findOrFail($id);
@@ -35,11 +35,9 @@ class MateriController extends Controller
         return view('materi.category', compact('materials', 'category', 'userProgress'));
     }
 
-    /** * (View) Player Materi: Menampilkan detail konten */
+    /** (View) Menampilkan detail konten materi */
     public function show(string $id)
     {
-        // FIX: Eager loading hanya untuk komentar UTAMA (parent_id null) 
-        // dan memuat balasan (replies) di dalamnya beserta data user masing-masing.
         $material = Material::with([
             'activities.hotspots' => function($q) {
                 $q->orderBy('order', 'asc');
@@ -65,25 +63,25 @@ class MateriController extends Controller
         return view('materi.show', compact('material'));
     }
 
-    /** * (Action) Menyimpan komentar atau balasan baru */
+    /** (Action) Menyimpan komentar atau balasan baru ke database */
     public function storeComment(Request $request, string $id)
     {
         $request->validate([
             'body' => 'required|string|max:1000',
-            'parent_id' => 'nullable|exists:material_comments,id' // Validasi untuk reply
+            'parent_id' => 'nullable|exists:material_comments,id'
         ]);
 
         MaterialComment::create([
             'material_id' => $id,
             'user_id'     => Auth::id(),
             'body'        => $request->body,
-            'parent_id'   => $request->parent_id // Simpan parent_id jika ada
+            'parent_id'   => $request->parent_id
         ]);
 
         return back()->with('success', 'Komentar berhasil dikirim!');
     }
 
-    /** * (Action) Menangani Like dan Dislike komentar */
+    /** (Action) Menangani reaksi Like atau Dislike pada komentar */
     public function reactComment(string $id, string $type)
     {
         $comment = MaterialComment::findOrFail($id);
@@ -97,7 +95,7 @@ class MateriController extends Controller
         return back();
     }
     
-    /** * (Action) Menghapus Komentar/Balasan */
+    /** (Action) Menghapus komentar atau balasan milik pengguna */
     public function destroyComment(string $id)
     {
         $comment = \App\Models\MaterialComment::findOrFail($id);

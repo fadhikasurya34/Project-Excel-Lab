@@ -15,7 +15,7 @@ use Cloudinary\Api\Upload\UploadApi;
 
 class AdminMateriController extends Controller
 {
-    /** (View) Menampilkan statistik & daftar semua modul untuk di-grouping di Blade */
+    /** (View) Menampilkan halaman dashboard statistik admin. */
     public function adminDashboard() {
         $stats = [
             'total_materi'  => Material::count(),
@@ -26,9 +26,8 @@ class AdminMateriController extends Controller
         return view('admin.dashboard', compact('stats'));
     }
 
-    /** (View) Menampilkan DAFTAR FOLDER (Topik)*/
+    /** (View) Menampilkan daftar kategori (folder) materi. */
     public function index() {
-        // WithCount untuk menghitung relasi, diurutkan agar stabil
         $categories = MaterialCategory::withCount('materials')->orderBy('id', 'asc')->get();
 
         $stats = [
@@ -41,15 +40,13 @@ class AdminMateriController extends Controller
         return view('admin.materials.index', compact('categories', 'stats'));
     }
 
-    /**(View) Menampilkan daftar materi di dalam satu kategori (Folder) 
-     */
+    /** (View) Menampilkan daftar materi berdasarkan kategori tertentu. */
     public function listByTopic(string $id) {
         $category = MaterialCategory::findOrFail($id);
         
-        // FIX: Tarik data melalui relasi Eloquent agar konsisten dan tidak ada yang hilang
         $materials = $category->materials()
             ->withCount('activities')
-            ->orderBy('created_at', 'asc') // Urutkan berdasarkan waktu pembuatan
+            ->orderBy('created_at', 'asc')
             ->get();
 
         $allTopics = MaterialCategory::orderBy('id', 'asc')->get();
@@ -71,12 +68,12 @@ class AdminMateriController extends Controller
         ]);
     }
 
-    /** (View) Form pembuatan modul materi baru */
+    /** (View) Menampilkan form pembuatan modul materi baru. */
     public function create() { 
         return view('admin.materials.create'); 
     }
 
-    /** (Action) Simpan FOLDER BARU (Topik) */
+    /** (Action) Menyimpan kategori (folder) baru ke database. */
     public function storeTopic(Request $request) {
         $request->validate([
             'name'        => 'required|string|max:255', 
@@ -92,26 +89,27 @@ class AdminMateriController extends Controller
                          ->with('success', 'Folder Topik berhasil dibuat!');
     }
 
-    /** (Action) Update Informasi Folder */
+    /** (Action) Memperbarui data kategori (folder) di database. */
     public function updateTopic(Request $request, string $id) {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required'
         ]);
+        
         $category = MaterialCategory::findOrFail($id);
         $category->update($request->only('name', 'description'));
+        
         return back()->with('success', 'Folder berhasil diperbarui.');
     }
 
-    /** (Action) Hapus Folder */
+    /** (Action) Menghapus kategori (folder) beserta isinya. */
     public function destroyTopic(string $id){
         $category = MaterialCategory::findOrFail($id);
         $category->delete(); 
         return back()->with('success', 'Folder beserta isinya berhasil dihapus.');
     }
 
-    /** (Action) Simpan materi secara cepat dari halaman Topik 
-     */
+    /** (Action) Menyimpan modul materi baru secara cepat dari halaman kategori. */
     public function storeQuick(Request $request) {
         $request->validate([
             'title'         => 'required|string|max:255',
@@ -137,13 +135,13 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Modul berhasil ditambahkan ke folder ini.');
     }
 
-    /** (View) Form edit identitas modul materi */
+    /** (View) Menampilkan form edit identitas modul materi. */
     public function edit(string $id) {
         $material = Material::findOrFail($id);
         return view('admin.materials.edit', compact('material'));
     }
 
-    /** (Action) Memperbarui informasi modul */
+    /** (Action) Memperbarui data identitas modul materi di database. */
     public function update(Request $request, string $id) {
         $request->validate([
             'title'           => 'required|string|max:255', 
@@ -164,7 +162,7 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Identitas modul diperbarui.');
     }
 
-    /** (Action) Menghapus modul secara total */
+    /** (Action) Menghapus modul materi beserta file medianya secara permanen. */
     public function destroy(string $id) {
         DB::transaction(function () use ($id) {
             $material = Material::with('activities.hotspots')->findOrFail($id);
@@ -183,7 +181,7 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Modul berhasil dihapus.');
     }
 
-    /** (View) Menampilkan editor sesuai tipe materi */
+    /** (View) Menampilkan halaman editor langkah atau konten materi. */
     public function showSteps(string $id) {
         $material = Material::with(['activities' => fn($q) => $q->orderBy('step_order', 'asc')])->findOrFail($id);
 
@@ -194,42 +192,37 @@ class AdminMateriController extends Controller
         return view('admin.materials.steps', compact('material'));
     }
 
-    /** (Action) Unggah Langkah (Hybrid Support) - Diupdate untuk Multi-Konten Teori */
+    /** (Action) Menyimpan langkah atau konten materi ke database. */
     public function storeStep(Request $request, string $id) {
         $material = Material::findOrFail($id);
 
         if ($material->material_type === 'teori') {
-            // FIX: Validasi khusus untuk 3 komponen Teori (Bisa salah satu saja)
             $request->validate([
                 'video_url'    => 'nullable|url',
                 'text_content' => 'nullable|string',
                 'pdf_url'      => 'nullable|url'
             ]);
 
-            // Normalisasi Link GDrive untuk Preview (jika ada PDF)
             $pdfUrl = $request->pdf_url;
             if ($pdfUrl && str_contains($pdfUrl, 'drive.google.com')) {
                 $pdfUrl = str_replace(['/view?usp=sharing', '/view'], '/preview', $pdfUrl);
             }
 
-            // Normalisasi Link GDrive untuk Video (Jika menggunakan GDrive)
             $videoUrl = $request->video_url;
             if ($videoUrl && str_contains($videoUrl, 'drive.google.com')) {
                 $videoUrl = str_replace(['/view?usp=sharing', '/view'], '/preview', $videoUrl);
             }
 
-            // 1. Simpan ke tabel Material (Kolom baru)
             $material->update([
                 'video_url'    => $videoUrl,
                 'text_content' => $request->text_content,
                 'pdf_url'      => $pdfUrl
             ]);
 
-            // 2. Fallback Compatibility ke tabel activities (Agar tidak error kalau ada relasi lain yang butuh)
             MaterialActivity::updateOrCreate(
                 ['material_id' => $id],
                 [
-                    'step_image'  => $pdfUrl ?? $videoUrl, // Simpan salah satu sebagai fallback image
+                    'step_image'  => $pdfUrl ?? $videoUrl, 
                     'instruction' => 'Silakan pelajari materi berikut.',
                     'step_order'  => 1
                 ]
@@ -237,10 +230,6 @@ class AdminMateriController extends Controller
 
             return back()->with('success', 'Konten Materi Teori berhasil diperbarui.');
         }
-
-        // ============================================
-        // LOGIKA UNTUK TIPE PRAKTIKUM (KODE LAMA TETAP SAMA)
-        // ============================================
 
         $request->validate([
             'image'        => 'nullable|image|max:2048',
@@ -279,7 +268,7 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Langkah praktikum berhasil ditambahkan.');
     }
 
-    /** (Action) Update Langkah Materi (Tetap dipertahankan untuk Praktikum) */
+    /** (Action) Memperbarui data langkah materi praktikum di database. */
     public function updateStep(Request $request, string $id) {
         $step = MaterialActivity::findOrFail($id);
         
@@ -315,7 +304,7 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Langkah materi berhasil diperbarui.');
     }
 
-    /** (Process) Sinkronisasi urutan langkah */
+    /** (Action) Memperbarui urutan langkah materi di database. */
     public function reorderSteps(Request $request) {
         try {
             $order = $request->order;
@@ -328,7 +317,7 @@ class AdminMateriController extends Controller
         }
     }
 
-    /** (Action) Menghapus satu langkah materi */
+    /** (Action) Menghapus langkah materi beserta file medianya. */
     public function destroyStep(string $id) {
         $step = MaterialActivity::with('hotspots')->findOrFail($id);
         $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
@@ -345,14 +334,14 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Langkah dihapus.');
     }
 
-    /** (View) Editor visual hotspot */
+    /** (View) Menampilkan halaman editor visual interaktif (hotspot). */
     public function builder(string $stepId) {
         $step = MaterialActivity::with(['hotspots' => fn($q) => $q->orderBy('order', 'asc')])->findOrFail($stepId);
         $material = Material::findOrFail($step->material_id);
         return view('admin.materials.builder', compact('step', 'material'));
     }
 
-    /** (Action) Simpan hotspot */
+    /** (Action) Menyimpan titik interaksi (hotspot) baru ke database. */
     public function storeHotspot(Request $request)
     {
         $request->validate([
@@ -397,7 +386,7 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Titik interaksi dan video berhasil disimpan!');
     }
 
-    /** (Process) Update urutan hotspot */
+    /** (Action) Memperbarui urutan titik interaksi (hotspot). */
     public function reorderHotspots(Request $request) {
         try {
             $order = $request->order;
@@ -410,7 +399,7 @@ class AdminMateriController extends Controller
         }
     }
 
-    /** (Action) Menghapus titik hotspot */
+    /** (Action) Menghapus titik interaksi (hotspot) beserta file videonya. */
     public function destroyHotspot(string $id) {
         $hotspot = Hotspot::findOrFail($id);
         if ($hotspot->video_path) {
@@ -421,7 +410,7 @@ class AdminMateriController extends Controller
         return back()->with('success', 'Titik hotspot dihapus.');
     }
 
-    /** (Helper) Mengambil Public ID Cloudinary */
+    /** (Helper) Mengambil Public ID dari URL Cloudinary untuk proses penghapusan file. */
     private function getPublicId(string $url) {
         $path = parse_url($url, PHP_URL_PATH);
         $segments = explode('/', $path);

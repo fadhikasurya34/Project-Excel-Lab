@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class MisiController extends Controller
 {
-    /** * //* (View) Menampilkan menu utama daftar kategori materi 
-     */
+    /** (View) Menampilkan menu utama daftar kategori materi. */
     public function index()
     {
         $categories = Level::where('level_order', '>', 0)
@@ -25,8 +24,7 @@ class MisiController extends Controller
         return view('misi.index', compact('categories'));
     }
 
-    /** * //* (View) Menampilkan peta level dan sisa tiket remedial harian 
-     */
+    /** (View) Menampilkan peta level dan sisa tiket remedial harian pengguna. */
     public function showLevels(string $category) 
     {
         $levels = Level::where('category', $category)
@@ -53,8 +51,7 @@ class MisiController extends Controller
         return view('misi.levels', compact('levels', 'category', 'userProgress', 'remainingTickets'));
     }
 
-    /** * //* (View) Menampilkan simulasi lab interaktif 
-     */
+    /** (View) Menampilkan simulasi lab interaktif berdasarkan tipe misi. */
     public function show(string $id)
     {
         $mission = Mission::with(['level', 'steps.hotspots' => function($q) {
@@ -93,8 +90,7 @@ class MisiController extends Controller
         ]);
     }
 
-    /** * //* (Action) Proses penukaran tiket remedial 
-     */
+    /** (Action) Memproses penukaran tiket remedial untuk mengulangi misi. */
     public function retryMission(string $id)
     {
         $userId = Auth::id();
@@ -126,8 +122,7 @@ class MisiController extends Controller
         });
     }
 
-    /** * //* (Process) Validasi jawaban siswa via AJAX 
-     */
+    /** (Process) Memvalidasi jawaban siswa melalui permintaan AJAX. */
     public function checkAnswer(Request $request, string $id)
     {
         try {
@@ -171,8 +166,7 @@ class MisiController extends Controller
         }
     }
 
-    /** * //* (Helper) Kalkulasi skor dengan penalti 5% setelah percobaan ke-3 
-     */
+    /** (Helper) Menghitung skor dengan penalti 5% setelah percobaan ke-3. */
     private function calculateFinalScore(int $maxScore, int $attempts)
     {
         if ($attempts <= 3) return $maxScore;
@@ -180,8 +174,7 @@ class MisiController extends Controller
         return max($maxScore - $penalty, $maxScore * 0.4);
     }
 
-    /** * //* (Action) KUNCI UTAMA: Penanganan sukses & Sinkronisasi XP absolut + Statistik
-     */
+    /** (Process) Menangani penyelesaian misi, sinkronisasi XP, dan update statistik. */
     private function handleSuccess(Mission $mission, float $earnedScore) {
         return DB::transaction(function () use ($mission, $earnedScore) {
             $userId = Auth::id();
@@ -208,19 +201,16 @@ class MisiController extends Controller
                 ]
             );
 
-            // 4. HITUNG ULANG STATISTIK UNTUK RANKING & SQUAD DETAIL
+            // 4. Hitung ulang statistik XP dan metrik penyelesaian
             
-            // A. Total XP Akumulatif
             $totalXpNow = Progress::where('user_id', $userId)
                 ->where('status', 'completed')
                 ->sum('score');
 
-            // B. Jumlah Misi Selesai
             $missionsCount = Progress::where('user_id', $userId)
                 ->where('status', 'completed')
                 ->count();
 
-            // C. Jumlah Modul (Level) Selesai
             $modulesCount = Level::where('level_order', '>', 0)
                 ->whereDoesntHave('missions', function($query) use ($userId) {
                     $query->whereNotIn('id', function($sub) use ($userId) {
@@ -230,7 +220,7 @@ class MisiController extends Controller
                     });
                 })->count();
 
-            // 5. Simpan ke Tabel ScoresAndRanking
+            // 5. Simpan ke Tabel Skor & Ranking
             $scoreRecord = ScoresAndRanking::firstOrNew(['user_id' => $userId]);
             $scoreRecord->total_xp = $totalXpNow;
             $scoreRecord->completed_missions_count = $missionsCount;
@@ -249,8 +239,7 @@ class MisiController extends Controller
         });
     }
 
-    /** * //* (Helper) Standarisasi rumus Excel
-     */
+    /** (Helper) Standarisasi rumus Excel untuk proses validasi yang akurat. */
     private function normalizeFormula(?string $formula) {
         if (!$formula) return "";
         $search  = ["'", '“', '”', '‘', '’', ' '];
@@ -260,9 +249,7 @@ class MisiController extends Controller
         return $clean;
     }
 
-    /**
-     * //* (Helper) Hierarki Feedback (Nudge) - Super Akurat & Cerdas
-     */
+    /** (Helper) Hierarki umpan balik (Nudge) cerdas berdasarkan analisis perbandingan sintaks. */
     private function generateFeedback(string $userAnswer, string $correctAnswer)
     {
         if (empty($userAnswer)) return "KOTAK RAKITAN MASIH KOSONG. MULAI RAKIT RUMUSMU!";
@@ -299,7 +286,7 @@ class MisiController extends Controller
         // 4. PRIORITAS 4: Deteksi Komponen yang Kurang (Missing)
         foreach ($countsCorrect as $token => $count) {
             if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
-                // Hint pintar untuk $ (Absolute Reference)
+                // Hint pintar untuk referensi absolut ($)
                 if ($token === '$') {
                     return "ADA REFERENSI SEL YANG HARUS DIKUNCI (ABSOLUT). JANGAN LUPA TANDA DOLLAR ($).";
                 }
@@ -331,9 +318,7 @@ class MisiController extends Controller
         return "KOMPONEN SUDAH LENGKAP, PERIKSA KEMBALI POSISI DETAILNYA.";
     }
 
-    /**
-     * //* (Admin Sync) Opsional: Jika Admin mengubah max_score misi 
-     */
+    /** (Action) Sinkronisasi XP global jika Admin melakukan perubahan skor maksimal misi. */
     public function syncGlobalXpAfterAdminChange(string $missionId)
     {
         $mission = Mission::findOrFail($missionId);

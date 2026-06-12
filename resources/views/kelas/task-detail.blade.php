@@ -1,7 +1,4 @@
-{{-- 
-    VIEW: Detail Evaluasi (Task Detail) - Student Side
-    STYLE: Premium Standardized Purple UI (Anti-Cutting Shadow)
---}}
+{{-- (View) Detail Evaluasi (Task Detail) - Sisi Siswa --}}
 
 @extends('layouts.siswa')
 
@@ -9,7 +6,7 @@
 
 @push('styles')
 <style>
-    /* 1. Global Card Logic - Fix Shadows and Cutting */
+    /* (Style) Konfigurasi wadah kartu utama (Glass Card) */
     .glass-card-wrapper {
         padding: 8px; 
         width: 100%;
@@ -32,7 +29,7 @@
         transform: translateY(-4px);
     }
 
-    /* 2. Standarisasi Siluet Teks */
+    /* (Style) Standarisasi siluet teks latar belakang */
     .card-silhouette {
         position: absolute; top: -0.5rem; right: -0.5rem;
         font-family: 'Bangers', cursive; font-size: 6rem;
@@ -40,7 +37,7 @@
         pointer-events: none; z-index: 0; color: #64748b;
     }
 
-    /* 3. Deep Button System */
+    /* (Style) Desain tombol bergaya tiga dimensi (Deep Button) */
     .btn-deep {
         transition: all 0.15s ease;
         border-width: 2px;
@@ -64,7 +61,7 @@
         background-color: #9333ea; border-color: #7e22ce; color: #ffffff;
     }
 
-    /* 4. Progress Track Purple Style */
+    /* (Style) Desain bilah progres (Progress Track) */
     .progress-track { background: #f1f5f9; border-radius: 2rem; height: 12px; overflow: hidden; border: 2px solid #f1f5f9; }
     .dark .progress-track { background: #1e293b; border-color: #1e293b; }
     .progress-bar-fill { background: linear-gradient(90deg, #a855f7, #6366f1); height: 100%; border-radius: 2rem; transition: width 1.5s ease-in-out; }
@@ -73,7 +70,7 @@
 
 @section('header_left')
     <div class="flex items-center">
-        {{-- Tombol Back - Deep Style --}}
+        {{-- (View) Tombol navigasi kembali --}}
         <a href="{{ route('kelas.show', $task->classroom_id) }}" 
            class="w-10 h-10 md:w-11 md:h-11 rounded-xl btn-deep btn-deep-white">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
@@ -94,7 +91,7 @@
 <div class="px-4 sm:px-10 py-8 flex flex-col items-center">
     <div class="w-full max-w-4xl mx-auto">
         
-        {{-- SECTION 1: CAPAIAN EVALUASI (Hero Style) --}}
+        {{-- (View) Panel Capaian Evaluasi Utama --}}
         @php
             $totalSkorUser = $userProgress->sum('score'); 
             $totalMaxSkor = $task->missions->sum('max_score');
@@ -135,7 +132,7 @@
             </div>
         </div>
 
-        {{-- SECTION 2: DAFTAR MISI --}}
+        {{-- (View) Daftar Rincian Misi Evaluasi --}}
         <div class="mb-6 text-left px-4">
             <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase leading-tight">Daftar Misi Wajib</h2>
             <p class="text-[12px] text-slate-500 dark:text-slate-400 font-medium mt-1">Selesaikan seluruh misi untuk mendapatkan hasil maksimal.</p>

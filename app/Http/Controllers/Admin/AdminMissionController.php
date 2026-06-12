@@ -16,9 +16,7 @@ use Cloudinary\Api\Upload\UploadApi;
 
 class AdminMissionController extends Controller
 {
-    /**
-     * (View) Dashboard statistik kategori misi dan tipe tantangan
-     */
+    /** (View) Menampilkan dashboard statistik misi dan daftar kategori level. */
     public function index() {
         $categories = Level::whereNotNull('category')
             ->select('category')
@@ -42,9 +40,7 @@ class AdminMissionController extends Controller
         return view('admin.missions.index', compact('categories', 'missions'));
     }
 
-    /**
-     * (View) Daftar misi per topik + Auto-repair urutan level
-     */
+    /** (View) Menampilkan daftar misi per topik/kategori beserta perbaikan urutan level otomatis. */
     public function listByTopic(string $category) {
         $rawMissions = Mission::with('level')
             ->join('levels', 'missions.level_id', '=', 'levels.id')
@@ -77,9 +73,7 @@ class AdminMissionController extends Controller
         return view('admin.missions.topic', compact('missions', 'category', 'allTopics', 'topicData'));
     }
 
-    /**
-     * (Action) Update Data Topik (Nama Kategori & Deskripsi)
-     */
+    /** (Action) Memperbarui data nama kategori/topik dan deskripsinya di database. */
     public function updateTopic(Request $request, string $old_category) {
         $request->validate([
             'new_category' => 'required|string',
@@ -94,9 +88,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Data topik berhasil diperbarui.');
     }
 
-    /**
-     * (Action) Menghapus seluruh topik beserta level dan misinya (Cloudinary Sync)
-     */
+    /** (Action) Menghapus seluruh topik beserta level, misi, dan aset Cloudinary terkait secara permanen. */
     public function destroyTopic(string $category) {
         DB::transaction(function () use ($category) {
             $levels = Level::where('category', $category)->get();
@@ -112,17 +104,13 @@ class AdminMissionController extends Controller
         return redirect()->route('admin.missions.index')->with('success', 'Topik dan seluruh aset cloud berhasil dihapus.');
     }
 
-    /**
-     * (View) Wizard Step 1: Form Topik Baru
-     */
+    /** (View) Menampilkan form Wizard Step 1 untuk pembuatan topik misi baru. */
     public function create() {
         $allTopics = Level::select('category')->distinct()->pluck('category');
         return view('admin.missions.create', compact('allTopics'));
     }
 
-    /**
-     * (Action) Simpan Step 1 & Lanjut ke Step 2
-     */
+    /** (Action) Menyimpan data pembuatan topik awal dan mengarahkan ke form Wizard Step 2. */
     public function store(Request $request) {
         $request->validate([
             'category' => 'required|string|max:255',
@@ -139,12 +127,10 @@ class AdminMissionController extends Controller
         });
 
         return redirect()->route('admin.missions.topic', $request->category)
-                        ->with('success', 'Topik berhasil dibuat!');
+                         ->with('success', 'Topik berhasil dibuat!');
     }
 
-    /**
-     * (View) Wizard Step 2: Form Isi Soal Misi
-     */
+    /** (View) Menampilkan form Wizard Step 2 untuk pengaturan detail dan isi soal misi. */
     public function createDetail(string $level_id) {
         $level = Level::findOrFail($level_id);
         $category = $level->category;
@@ -159,9 +145,7 @@ class AdminMissionController extends Controller
         return view('admin.missions.levels', compact('level', 'groupedLevels'));
     }
 
-    /**
-     * (Action) Simpan Soal Misi Final
-     */
+    /** (Action) Menyimpan data detail soal misi akhir ke database. */
     public function storeDetail(Request $request) {
         $request->validate([
             'level_id'     => 'required|exists:levels,id',
@@ -169,12 +153,11 @@ class AdminMissionController extends Controller
             'mission_type' => 'required|in:Syntax Assembly,Point & Click,Direct Typing',
             'max_score'    => 'required|integer',
             'question'     => 'required',
-            'key_answer'   => 'required' // Menambahkan validasi key_answer
+            'key_answer'   => 'required' 
         ]);
 
         $data = $request->all();
         
-        // Memastikan key_answer selalu diawali dengan '='
         if (!str_starts_with($data['key_answer'], '=')) {
             $data['key_answer'] = '=' . $data['key_answer'];
         }
@@ -182,12 +165,10 @@ class AdminMissionController extends Controller
         Mission::create($data);
 
         return redirect()->route('admin.missions.index')
-                        ->with('success', 'Misi pertama berhasil dipublikasikan!');
+                         ->with('success', 'Misi pertama berhasil dipublikasikan!');
     }
 
-    /**
-     * (Action) Tambah misi cepat via Modal
-     */
+    /** (Action) Menyimpan pembuatan misi baru secara cepat menggunakan pop-up modal. */
     public function storeQuick(Request $request) {
         $level = Level::create([
             'category' => $request->category,
@@ -202,24 +183,20 @@ class AdminMissionController extends Controller
             'mission_type' => $request->mission_type,
             'max_score' => $request->max_score,
             'question' => 'Instruksi belum diatur.',
-            'key_answer' => '=0', // Default aman
+            'key_answer' => '=0', 
         ]);
 
         return back()->with('success', 'Misi ditambahkan.');
     }
 
-    /**
-     * (View) Form Edit Misi
-     */
+    /** (View) Menampilkan form untuk mengedit informasi dasar sebuah misi. */
     public function edit(string $id) {
         $mission = Mission::with('level')->findOrFail($id);
         $allTopics = Level::select('category')->distinct()->pluck('category');
         return view('admin.missions.edit', compact('mission', 'allTopics'));
     }
 
-    /**
-     * (Action) Update Informasi Dasar Misi
-     */
+    /** (Action) Memperbarui data informasi dasar misi serta merevisi distribusi XP siswa jika skor diubah. */
     public function update(Request $request, string $id) {
         $mission = Mission::findOrFail($id);
         $oldMaxScore = $mission->max_score;
@@ -233,9 +210,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Data misi diperbarui.');
     }
 
-    /**
-     * (Action) Hapus Misi Satuan (Cloudinary Sync)
-     */
+    /** (Action) Menghapus misi tunggal beserta seluruh aset medianya dari Cloudinary. */
     public function destroy(string $id) {
         DB::transaction(function () use ($id) {
             $mission = Mission::with('level', 'steps.hotspots')->findOrFail($id);
@@ -251,17 +226,13 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Misi dan aset Cloudinary dihapus.');
     }
 
-    /**
-     * (View) Tampilkan Storyboard Langkah Misi
-     */
+    /** (View) Menampilkan halaman storyboard pengaturan langkah-langkah dalam sebuah misi. */
     public function showSteps(string $id) {
         $mission = Mission::with(['steps' => fn($q) => $q->orderBy('step_order', 'asc')])->findOrFail($id);
         return view('admin.missions.steps', compact('mission'));
     }
 
-    /**
-     * (Action) Update Langkah Misi (Edit Gambar & Instruksi)
-     */
+    /** (Action) Memperbarui gambar instruksional atau teks panduan pada sebuah langkah misi. */
     public function updateStep(Request $request, string $id) {
         $step = MissionStep::findOrFail($id);
         
@@ -290,9 +261,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Langkah prosedur berhasil diperbarui.');
     }
 
-    /**
-     * (Action) Simpan Langkah Misi Baru (Sudah Disederhanakan)
-     */
+    /** (Action) Mengunggah dan menambahkan langkah (gambar instruksi) baru ke dalam misi. */
     public function storeStep(Request $request, string $id) {
         if (!env('CLOUDINARY_URL')) {
             abort(500, 'Woi Lan, CLOUDINARY_URL belum ada di Vercel!');
@@ -319,9 +288,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Langkah berhasil diunggah ke cloud.');
     }
 
-    /**
-     * (Action) Hapus Langkah Misi (Clean Cloudinary)
-     */
+    /** (Action) Menghapus langkah misi secara spesifik dari database dan Cloudinary. */
     public function destroyStep(string $id) {
         $step = MissionStep::findOrFail($id);
         if ($step->step_image) {
@@ -332,6 +299,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Langkah dan gambar di cloud dihapus.');
     }
 
+    /** (Process) Memperbarui dan menyinkronkan urutan langkah-langkah dalam misi. */
     public function reorderSteps(Request $request) {
         foreach ($request->order as $index => $id) {
             MissionStep::where('id', $id)->update(['step_order' => $index + 1]);
@@ -339,6 +307,7 @@ class AdminMissionController extends Controller
         return response()->json(['status' => 'success']);
     }
 
+    /** (Process) Memperbarui dan menyinkronkan urutan tingkat kesulitan (level) antar misi. */
     public function reorderLevels(Request $request) {
         try {
             DB::transaction(function () use ($request) {
@@ -357,9 +326,7 @@ class AdminMissionController extends Controller
         } catch (\Exception $e) { return response()->json(['status' => 'error'], 500); }
     }
 
-    /**
-     * (Action) Update Konten Soal & Gambar Utama Misi (Cloudinary Sync)
-     */
+    /** (Action) Memperbarui soal ujian utama dan kunci jawaban misi beserta gambar latar belakangnya. */
     public function updateContent(Request $request, string $id) {
         $mission = Mission::findOrFail($id);
         $data = $request->validate([
@@ -367,7 +334,6 @@ class AdminMissionController extends Controller
             'distractors' => 'nullable', 'mission_image' => 'nullable|image|max:2048'
         ]);
 
-        // Memastikan key_answer selalu diawali dengan '=' saat disimpan
         if (!str_starts_with($data['key_answer'], '=')) {
             $data['key_answer'] = '=' . $data['key_answer'];
         }
@@ -388,15 +354,14 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Konten misi diperbarui.');
     }
 
+    /** (View) Menampilkan halaman editor visual (hotspot) untuk titik interaksi misi point & click. */
     public function builder(string $stepId) {
         $step = MissionStep::with('hotspots')->findOrFail($stepId);
         $mission = Mission::findOrFail($step->mission_id);
         return view('admin.missions.builder', compact('step', 'mission'));
     }
 
-    /**
-     * (Action) Plotting Hotspot & Upload Video (Anti-Nguwer)
-     */
+    /** (Action) Menyimpan posisi koordinat titik interaksi beserta video panduannya. */
     public function storeHotspot(Request $request) {
         $request->validate([
             'step_id' => 'required', 
@@ -432,9 +397,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Titik target berhasil dipetakan.');
     }
 
-    /**
-     * (Action) Hapus Hotspot (Hapus Video di cloud)
-     */
+    /** (Action) Menghapus titik interaksi beserta video dari Cloudinary. */
     public function destroyHotspot(string $id) { 
         $hs = MissionHotspot::findOrFail($id);
         if ($hs->video_path) {
@@ -445,6 +408,7 @@ class AdminMissionController extends Controller
         return back()->with('success', 'Titik berhasil dihapus.'); 
     }
 
+    /** (Process) Memperbarui urutan klik untuk titik interaksi (hotspots). */
     public function reorderHotspots(Request $request) {
         DB::transaction(function () use ($request) {
             foreach ($request->order as $index => $id) {
@@ -454,8 +418,14 @@ class AdminMissionController extends Controller
         return response()->json(['status' => 'success']);
     }
 
-    // --- LOGIKA HELPER ---
 
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIKA HELPER (Fungsi Internal)
+    |--------------------------------------------------------------------------
+    */
+
+    /** (Helper) Mengkalibrasi ulang perolehan XP siswa jika skor maksimal misi diturunkan oleh admin. */
     private function syncUserXpForMission(string $missionId) {
         $mission = Mission::findOrFail($missionId);
         Progress::where('mission_id', $missionId)->where('score', '>', $mission->max_score)->update(['score' => $mission->max_score]);
@@ -463,11 +433,13 @@ class AdminMissionController extends Controller
         foreach ($userIds as $userId) { $this->recalculateUserTotalXp($userId); }
     }
 
+    /** (Helper) Menghitung ulang akumulasi total XP seorang siswa pada papan klasemen global. */
     private function recalculateUserTotalXp(string $userId) {
         $totalXp = Progress::where('user_id', $userId)->where('status', 'completed')->sum('score');
         ScoresAndRanking::updateOrCreate(['user_id' => $userId], ['total_xp' => $totalXp]);
     }
 
+    /** (Helper) Fungsi garbage collector untuk menghapus seluruh jejak file media saat misi dibongkar. */
     private function deleteMissionAssets(object $mission) {
         $uploadApi = new UploadApi(Configuration::instance(env('CLOUDINARY_URL')));
 
@@ -487,6 +459,7 @@ class AdminMissionController extends Controller
         } 
     }
 
+    /** (Helper) Membaca dan memparsing Public ID media dari direktori Cloudinary URL. */
     private function getPublicId(string $url) {
         $path = parse_url($url, PHP_URL_PATH);
         $segments = explode('/', $path);

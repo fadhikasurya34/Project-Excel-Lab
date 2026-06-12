@@ -24,10 +24,9 @@ class KelasController extends Controller
     /** (View) Menampilkan leaderboard internal kelas dan daftar Task */
     public function show(string $id)
     {
-        // PEMBARUAN: Tambahkan users.progress dan users.completedMaterials ke dalam with()
         $classroom = Classroom::with([
             'users.ranking', 
-            'users.progress',           
+            'users.progress',          
             'users.completedMaterials',
             'tasks.missions'
         ])->findOrFail($id);
@@ -43,7 +42,7 @@ class KelasController extends Controller
         return view('kelas.show', compact('classroom', 'currentUserRank'));
     }
 
-    /** * (NEW View) Menampilkan detail isi Task (Daftar Misi Pilihan Admin) */
+    /** (View) Menampilkan detail isi Task (Daftar Misi Pilihan Admin) */
     public function showTask(string $id)
     {
         $task = Task::with(['missions.level', 'classroom'])->findOrFail($id);
@@ -54,9 +53,9 @@ class KelasController extends Controller
         $missionIds = $task->missions->pluck('id');
 
         $userProgress = Progress::where('user_id', $user->id)
-                        ->whereIn('mission_id', $missionIds)
-                        ->get()
-                        ->keyBy('mission_id');
+                                ->whereIn('mission_id', $missionIds)
+                                ->get()
+                                ->keyBy('mission_id');
 
         return view('kelas.task-detail', compact('task', 'userProgress'));
     }

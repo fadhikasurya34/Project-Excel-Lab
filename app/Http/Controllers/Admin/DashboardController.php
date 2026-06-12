@@ -16,28 +16,26 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    /**
-     * Menampilkan dashboard statistik, grafik aktivitas, dan ranking tertinggi.
-     */
+    /** (View) Menampilkan dashboard statistik, grafik aktivitas, dan ranking tertinggi. */
     public function index()
     {
-        // 0. AUTO-HEALING: Sanitasi Data Residu
+        // Sanitasi Data Residu (Auto-Healing)
         $this->syncAllUserXp();
 
-        // 1. Kalkulasi Batas Maksimal (Absolute Max)
+        // Kalkulasi Batas Maksimal (Absolute Max)
         $absoluteMaxXp = Mission::sum('max_score');
         
-        // 2. Total Misi Keseluruhan
+        // Total Misi Keseluruhan
         $totalMissionsAvailable = Mission::count();
 
-        // 3. Rerata XP dari tabel yang sudah disanitasi
+        // Rerata XP dari tabel yang sudah disanitasi
         $avgXp = ScoresAndRanking::avg('total_xp') ?? 0;
 
-        // 4. Misi Selesai & Penggunaan Tiket
+        // Misi Selesai & Penggunaan Tiket Remedial
         $totalCompleted = Progress::where('status', 'completed')->count();
         $totalRemedialUsed = RetryTicket::sum('used_count');
 
-        // 5. Completion Rate (Persentase Penyelesaian Global)
+        // Completion Rate (Persentase Penyelesaian Global)
         $totalSiswa = User::where('role', 'siswa')->count();
         $maxPossibleCompletions = $totalSiswa * $totalMissionsAvailable;
         $completionRate = $maxPossibleCompletions > 0 
@@ -57,13 +55,13 @@ class DashboardController extends Controller
             'remedial'         => $totalRemedialUsed,
         ];
 
-        // 6. Top Performa (Leaderboard Admin)
+        // Top Performa (Leaderboard Admin)
         $topStudents = ScoresAndRanking::with(['user.classrooms'])
             ->orderByDesc('total_xp')
             ->take(5)
             ->get();
 
-        // 7. DATA GRAFIK: Agregasi perolehan XP harian dalam 7 hari terakhir
+        // Data Grafik: Agregasi perolehan XP harian dalam 7 hari terakhir
         $chartData = Progress::where('status', 'completed')
             ->where('completion_time', '>=', Carbon::now()->subDays(6))
             ->select(
@@ -81,9 +79,7 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact('stats', 'topStudents', 'chartData'));
     }
 
-    /**
-     * Helper: Rutinitas Self-Healing Database.
-     */
+    /** (Helper) Rutinitas penyelarasan ulang data XP pengguna di database. */
     private function syncAllUserXp()
     {
         // Agregasi nilai absolut dari tabel progress
@@ -100,7 +96,7 @@ class DashboardController extends Controller
             );
         }
 
-        // Hapus ranking user yang progresnya sudah kosong/reset
+        // Hapus (reset) ranking user yang progresnya sudah kosong
         $userIdsWithProgress = $realScores->pluck('user_id')->toArray();
         ScoresAndRanking::whereNotIn('user_id', $userIdsWithProgress)->update(['total_xp' => 0]);
     }

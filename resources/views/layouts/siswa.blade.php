@@ -156,9 +156,23 @@
                 {{-- 3. Tombol Profile & Sidebar --}}
                 <button @click="sidebarOpen = true" 
                         class="flex items-center p-1 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-full btn-pegas group shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
-                    @php $userColor = Auth::user()->profile_color ?? '10b981'; @endphp
+                    @php 
+                        $userColor = Auth::user()->profile_color ?? '10b981'; 
+                        
+                        // Logika Parser Format Avatar Baru
+                        $rawAvatar = Auth::user()->avatar ?? 'miniavs.?seed=Felix';
+                        $avatarParts = explode('.', $rawAvatar);
+                        
+                        $avatarStyle = $avatarParts[0] ?? 'miniavs';
+                        $avatarParams = $avatarParts[1] ?? '?seed=Felix';
+                        
+                        if (!str_starts_with($avatarParams, '?')) {
+                            $avatarParams = '?seed=' . $avatarParams;
+                        }
+                    @endphp
                     <div class="w-8 h-8 rounded-full border-2 border-white dark:border-slate-600 overflow-hidden" style="background-color: #{{ $userColor }};">
-                        <img src="https://api.dicebear.com/9.x/bottts/svg?seed={{ Auth::user()->avatar ?? 'Felix' }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5 transform scale-110">
+                        {{-- Pemanggilan API yang sinkron dengan sidebar dan edit profil --}}
+                        <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full object-contain p-0.5 transform scale-110">
                     </div>
                     <svg class="w-4 h-4 text-slate-400 mx-2 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
                 </button>

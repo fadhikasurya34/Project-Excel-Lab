@@ -1,4 +1,4 @@
-{{-- //* (View) Simulasi Misi Point & Click - Optimized Scroll & Gamified --}}
+{{-- (View) Halaman Simulasi Misi Interaktif Tipe Point & Click --}}
 
 @php
     $jsonData = $mission->steps->sortBy('step_order')->values()->map(function($step) {
@@ -24,7 +24,7 @@
 
 @push('styles')
 <style>
-    /* //* (Guard) Mode Landscape Mobile */
+    /* (Style) Pelindung wajib mode landscape untuk layar perangkat mobile */
     #landscape-notice { display: none; }
     @media screen and (orientation: portrait) and (max-width: 1024px) {
         #landscape-notice {
@@ -37,7 +37,7 @@
     .phone-rotate { animation: rotatePhone 2s ease-in-out infinite; }
     @keyframes rotatePhone { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
 
-    /* //* (Layout) Scroll & Anti-Gesture */
+    /* (Style) Penstabil scrolling agar latar tidak bergeser saat interaksi layar */
     .simulation-wrapper { 
         position: relative; 
         width: 100%; 
@@ -50,22 +50,22 @@
         height: 100%;
     }
 
-    /* //* (Visual) Glassmorphism Theme - Blue */
+    /* (Style) Tema transparan efek kaca (Glassmorphism) */
     .glass-ui-shared {
         background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
         border: 2px solid #3b82f6; 
         border-radius: 1.8rem; overflow: hidden;
     }
 
-    /* //* Proteksi tombol saat Dragging */
+    /* (Style) Proteksi agar tombol tak kasat mata tidak tertekan saat proses geser (drag) */
     body.is-dragging a, body.is-dragging button:not(.hud-btn) { 
         pointer-events: none !important; 
     }
 
-    /* HUD controller */
+    /* (Style) Konfigurasi panel Heads-Up Display (HUD) */
     .hud-controller { position: fixed; z-index: 90; width: 280px; pointer-events: auto; }
     
-    /* //* (Animation) Update: Efek Cahaya Neon TEBAL & Smooth (Blue-Emerald) */
+    /* (Style) Animasi pendaran cahaya pemikat atensi */
     @keyframes neon-misi-smooth {
         0%, 100% {
             box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), inset 0 0 10px rgba(16, 185, 129, 0.3);
@@ -83,7 +83,7 @@
         animation: neon-misi-smooth 2.5s infinite ease-in-out;
     }
 
-    /* //* (Buttons) Gamified Pegas */
+    /* (Style) Detail visual tombol interaktif bergaya pegas tiga dimensi */
     .btn-pegas-blue { background: #2563eb; border-bottom: 4px solid #1e3a8a; transition: all 0.1s; }
     .btn-pegas-blue:active { transform: translateY(2px); border-bottom-width: 1px; }
     .btn-pegas-emerald { background: #10b981; border-bottom: 4px solid #064e3b; transition: all 0.1s; }
@@ -93,13 +93,13 @@
     .btn-back-pegas {transition: all 0.1s ease;border-bottom-width: 6px;}
     .btn-back-pegas:active {transform: translateY(2px);border-bottom-width: 0px;}
     
-    /* //* Error Feedback */
+    /* (Style) Efek kilatan layar penanda kesalahan klik */
     .flash-error { position: fixed; inset: 0; background: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 100; animation: fade-out 0.4s forwards; }
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
     @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 
-    /* //* (Marker) Done State */
+    /* (Style) Desain area sentuh target utama (Hotspot) */
     .marker-ring {
         position: absolute; 
         width: 40px; height: 40px; 
@@ -110,10 +110,14 @@
         display: flex; align-items: center; justify-content: center;
         transition: all 0.3s; z-index: 20; cursor: pointer;
     }
+    
+    /* Status: Belum diklik */
     .marker-ring:not(.marker-done) {
         background: transparent;
         border-color: transparent;
     }
+    
+    /* Status: Sukses diklik */
     .marker-done { 
         background: transparent; 
         border-color: #10b981; 
@@ -124,7 +128,7 @@
 
     .font-game { font-family: 'Bangers', cursive; }
 
-    /* //* (GAMIFICATION - DUOLINGO STYLE) Bottom Sheet Modal */
+    /* (Style) Desain wadah popup umpan balik kemajuan siswa */
     .feedback-modal-wrapper {
         position: fixed; inset: 0; z-index: 10000;
         display: flex; align-items: flex-end; justify-content: center;
@@ -143,7 +147,7 @@
     }
     .dark .feedback-modal { background: #0f172a; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6); }
 
-    /* //* (GAMIFICATION) Floating Text Effect */
+    /* (Style) Efek umpan balik visual melayang (Floating Teks) */
     .floating-text {
         position: fixed; z-index: 10000; font-weight: 900; font-size: 1.5rem;
         color: #fbbf24; text-shadow: 0 4px 6px rgba(0,0,0,0.4); pointer-events: none;
@@ -181,7 +185,7 @@
 @section('content')
 <div x-data="missionEngine()" x-init="init()" class="relative w-full min-h-screen main-scroller bg-slate-950">
 
-    {{-- Modal Peringatan Awal --}}
+    {{-- (View) Peringatan instruksional wajib baca sebelum memulai misi --}}
     <div x-show="showIntro" x-cloak class="fixed inset-0 z-[1000] p-4 sm:p-6 bg-slate-950/90 backdrop-blur-md overflow-y-auto flex">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-lg shadow-2xl m-auto border-4 border-emerald-500 transform transition-all"
              x-transition:enter="ease-out duration-300"
@@ -193,7 +197,7 @@
                     <svg class="w-8 h-8 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 
-                {{-- FIX: Teks diubah menjadi PERHATIAN --}}
+                {{-- (View) Teks judul peringatan --}}
                 <h3 class="text-2xl md:text-3xl font-black text-emerald-600 dark:text-emerald-400 text-center mb-2 uppercase tracking-tight">PERHATIAN</h3>
                 <p class="text-[13px] text-slate-500 dark:text-slate-400 text-center mb-8 font-medium">Baca panduan ini agar kamu tidak membuang-buang XP.</p>
                 
@@ -221,7 +225,7 @@
         </div>
     </div>
 
-    {{-- (GAMIFICATION) Duolingo Style Modal Feedback (Hanya Sukses Akhir) --}}
+    {{-- (View) Papan notifikasi penyelesaian misi secara keseluruhan --}}
     <div x-show="feedbackModal.show" 
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="translate-y-full opacity-0"
@@ -257,7 +261,7 @@
         </div>
     </div>
 
-    {{-- 1. Landscape Guard --}}
+    {{-- (View) Peringatan paksaan menggunakan rotasi mendatar di HP --}}
     <div id="landscape-notice">
         <div class="phone-rotate mb-6 relative">
             <div class="absolute -inset-6 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -269,12 +273,12 @@
         <p class="text-slate-400 text-[9px] uppercase tracking-widest">Misi wajib menggunakan mode Landscape agar presisi klik akurat.</p>
     </div>
 
-    {{-- Flash Error --}}
+    {{-- (View) Tempat render kilatan merah --}}
     <template x-if="showErrorEffect">
         <div class="flash-error"></div>
     </template>
 
-    {{-- HUD Instruksi (Draggable) --}}
+    {{-- (View) Panel Informasi dan Panduan Navigasi Pengguna yang Bisa Digeser --}}
     <div class="hud-controller" :style="`top: ${boxY}px; left: ${boxX}px;`"
          @mousedown.stop="startDragging($event, 'box')" @touchstart.stop="startDragging($event, 'box')"
          @click.stop="">
@@ -310,7 +314,7 @@
         </div>
     </div>
 
-    {{-- Area Simulasi --}}
+    {{-- (View) Panggung utama yang menampilkan tangkapan layar antarmuka aplikasi --}}
     <div class="simulation-wrapper !p-0" @click="handleBackgroundClick($event)">
         <div class="relative w-full inline-block">
             <img :src="steps[currentStep] ? steps[currentStep].image : ''" class="w-full h-auto block select-none shadow-2xl">
@@ -326,7 +330,7 @@
         </div>
     </div>
     
-    {{-- Modal Hint --}}
+    {{-- (View) Modal khusus untuk menayangkan solusi petunjuk klik --}}
     <div x-show="showModal" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-sm">
         <div class="glass-ui-shared w-full max-w-[500px] flex flex-col shadow-2xl">
             <div class="p-4 border-b border-white/10 flex justify-between items-center bg-blue-500/10">
@@ -348,6 +352,7 @@
 @endsection
 
 @push('scripts')
+{{-- (Library) Dukungan efek visual taburan kertas --}}
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
@@ -359,13 +364,16 @@
             attempts: 0, currentPotentialXP: {{ $mission->max_score }},
             steps: @json($jsonData),
             feedbackModal: { show: false, type: '', title: '', subtitle: '', nextUrl: '' },
-            showIntro: true, // Variabel State Modal Peringatan Awal
+            
+            // (State) Variabel status modal peringatan awal
+            showIntro: true,
             
             audioPlayers: { click: null, benar: null, salah: null },
 
             storageKey: 'mission_{{ $mission->id }}_progress',
             isReview: {{ (auth()->user()->progress && auth()->user()->progress->where('mission_id', $mission->id)->where('status', 'completed')->isNotEmpty()) ? 'true' : 'false' }},
 
+            // (Action) Memuat status komponen awal termasuk inisiasi berkas audio
             init() {
                 try {
                     this.audioPlayers.click = new Audio('{{ asset("audio/click.mp3") }}');
@@ -378,7 +386,7 @@
 
                 if (this.isReview) {
                     this.currentPotentialXP = {{ $mission->max_score }};
-                    this.showIntro = false; // Matikan intro jika mode review
+                    this.showIntro = false;
                 } else {
                     const saved = localStorage.getItem(this.storageKey);
                     if (saved) {
@@ -389,7 +397,7 @@
                         this.attempts = data.attempts ?? 0;
                         this.currentPotentialXP = data.currentPotentialXP ?? {{ $mission->max_score }};
                         
-                        // Jika sudah ada progres (bukan murni dari awal 0), matikan Intro Modal
+                        // (Process) Mematikan modal intro jika siswa melanjutkan progres sebelumnya
                         if (this.currentStep > 0 || this.clickedHotspots.length > 0 || this.attempts > 0) {
                             this.showIntro = false;
                         }
@@ -399,6 +407,7 @@
                 this.$watch('currentStep', v => { document.getElementById('header-step-current').innerText = v + 1; });
             },
 
+            // (Helper) Mengeksekusi file suara secara selektif sesuai tipe umpan balik
             playSound(type) {
                 try {
                     let player = this.audioPlayers[type];
@@ -406,6 +415,7 @@
                 } catch(e) {}
             },
 
+            // (Process) Menyimpan rekam jejak pengguna melalui memori bawaan browser
             saveToLocal() {
                 if (this.isReview) return;
                 const payload = {
@@ -416,16 +426,19 @@
                 localStorage.setItem(this.storageKey, JSON.stringify(payload));
             },
 
+            // (Helper) Memverifikasi apakah seluruh target sasaran di layar terkini telah berhasil ditekan
             get allHotspotsInStepDone() {
                 let step = this.steps[this.currentStep];
                 return step && this.clickedHotspots.length === step.hotspots.length;
             },
 
+            // (Action) Memproses interaksi saat pengguna menyentuh area yang keliru di layar
             handleBackgroundClick(e) {
                 if (this.allHotspotsInStepDone || this.isDragging || this.showIntro) return;
                 this.triggerError(e);
             },
 
+            // (Action) Mengevaluasi akurasi urutan klik pengguna terhadap target sesungguhnya
             handleHotspotClick(hs, index, e) {
                 if (this.isDragging || this.showIntro) return;
                 if (index === this.currentHotspotIndex) {
@@ -443,6 +456,7 @@
                 }
             },
 
+            // (Process) Memberlakukan sanksi pengurangan XP dan mengaktifkan peringatan kesalahan
             triggerError(e) {
                 if (this.showErrorEffect || this.isDragging || this.showIntro) return;
                 this.showErrorEffect = true;
@@ -465,6 +479,7 @@
                 setTimeout(() => { this.showErrorEffect = false; }, 1500);
             },
 
+            // (Action) Menutup jendela konfirmasi penyelesaian dan memindahkan pengguna
             handleFeedbackButton() {
                 this.feedbackModal.show = false;
                 if (this.feedbackModal.type === 'success' && this.feedbackModal.nextUrl) {
@@ -472,6 +487,7 @@
                 }
             },
 
+            // (Helper) Merangkai pesan pada modal notifikasi hasil pengerjaan
             triggerFeedbackModal(type, title, subtitle, nextUrl = '') {
                 this.feedbackModal.type = type;
                 this.feedbackModal.title = title;
@@ -480,6 +496,7 @@
                 this.feedbackModal.show = true;
             },
 
+            // (Helper) Memantik algoritma animasi taburan kertas keberhasilan
             fireConfetti() {
                 var duration = 4 * 1000; var end = Date.now() + duration;
                 (function frame() {
@@ -489,6 +506,7 @@
                 }());
             },
 
+            // (Helper) Memantik algoritma animasi letupan partikel kesalahan
             fireCrossParticles() {
                 var defaults = { spread: 360, ticks: 100, gravity: 0.8, decay: 0.92, startVelocity: 40, colors: ['#ef4444', '#b91c1c'] };
                 function fire(particleRatio, opts) {
@@ -498,6 +516,7 @@
                 fire(0.2, { spread: 60 });
             },
 
+            // (Helper) Menciptakan umpan balik berupa teks mengambang sesaat pada koordinat klik
             spawnFloatingText(e, text, color = '#fbbf24') {
                 if (!e) return;
                 let clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
@@ -512,6 +531,7 @@
                 setTimeout(() => el.remove(), 1000);
             },
 
+            // (Action) Memfasilitasi perpindahan adegan tangkapan layar atau melakukan finalisasi misi ke server
             nextStep() {
                 if (this.currentStep < this.steps.length - 1) {
                     this.currentStep++;
@@ -535,6 +555,7 @@
                 }
             },
 
+            // (Process) Mengendalikan sistem pergerakan geser bebas (Drag) dari panel HUD
             startDragging(e, target) {
                 if (e.target.closest('button') || this.showIntro) return;
                 e.preventDefault(); this.isDragging = true;
