@@ -61,7 +61,13 @@
         $rankStatus = $user->rank_status;
         
         //* (Optimization) Hitung peringkat langsung dari database tanpa get() semua user
-        $globalRank = \App\Models\ScoresAndRanking::where('total_xp', '>', $user->total_xp)->count() + 1;
+        // Jika XP 0, status menjadi Unranked agar konsisten dengan Leaderboard
+        if ($user->total_xp > 0) {
+            $calculatedRank = \App\Models\ScoresAndRanking::where('total_xp', '>', $user->total_xp)->count() + 1;
+            $globalRank = '#' . $calculatedRank;
+        } else {
+            $globalRank = 'UNRANKED';
+        }
 
         $todayTicket = \App\Models\RetryTicket::where('user_id', $user->id)->where('date', now()->toDateString())->first();
         $remainingTickets = 3 - ($todayTicket ? $todayTicket->used_count : 0);
@@ -160,7 +166,8 @@
                         <p class="text-[11px] font-bold text-slate-700 dark:text-slate-300">Peringkat Server</p>
                     </div>
                 </div>
-                <span class="text-base font-black text-amber-600">#{{ $globalRank }}</span>
+                {{-- FIX: Tampilan teks rank yang lebih dinamis --}}
+                <span class="text-base font-black text-amber-600 {{ $globalRank === 'UNRANKED' ? 'text-[11px] tracking-widest' : '' }}">{{ $globalRank }}</span>
             </a>
 
             {{-- Title Badge --}}

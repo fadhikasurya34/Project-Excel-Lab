@@ -11,8 +11,12 @@ class PeringkatController extends Controller
     /** (View) Menampilkan halaman utama papan peringkat (Global) */
     public function index()
     {
-        // Menambahkan pengambilan data rankings agar variabel $rankings tersedia di view index
-        $rankings = ScoresAndRanking::with('user')->orderBy('total_xp', 'desc')->get();
+        // FIX: Hanya ambil yang punya XP > 0 dan batasi Top 50 saja
+        $rankings = ScoresAndRanking::with('user')
+            ->where('total_xp', '>', 0)
+            ->orderBy('total_xp', 'desc')
+            ->take(50)
+            ->get();
 
         return view('peringkat.index', compact('rankings'));
     }
@@ -20,8 +24,10 @@ class PeringkatController extends Controller
     /** (View) Menampilkan daftar leaderboard berdasarkan XP tertinggi (Global/Kelas) */
     public function show(string $type)
     {
-        // 1. Logika: Menggunakan Eager Loading 'user' agar performa database efisien (anti N+1 Query)
-        $query = ScoresAndRanking::with('user')->orderBy('total_xp', 'desc');
+        // 1. Logika: Menggunakan Eager Loading 'user' dengan filter XP > 0
+        $query = ScoresAndRanking::with('user')
+            ->where('total_xp', '>', 0)
+            ->orderBy('total_xp', 'desc');
 
         // 2. Filter: Logika khusus untuk membatasi peringkat hanya di dalam satu kelas
         if ($type === 'kelas') {
@@ -40,8 +46,8 @@ class PeringkatController extends Controller
             });
         }
 
-        // 3. Eksekusi query untuk mengambil data ranking
-        $rankings = $query->get();
+        // 3. Eksekusi query untuk mengambil maksimal Top 50 data ranking
+        $rankings = $query->take(50)->get();
 
         return view('peringkat.index', compact('rankings', 'type'));
     }

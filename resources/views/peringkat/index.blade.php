@@ -150,7 +150,7 @@
                         $gridClass = ($item['rank'] == 1) ? 'col-span-2 md:col-span-1 order-1 md:order-2' : (($item['rank'] == 2) ? 'col-span-1 order-2 md:order-1' : 'col-span-1 order-3 md:order-3');
                         
                         // FIX: SINKRONISASI AVATAR (ANTI ERROR SERVER VERCEL & PHP 7.x)
-                        $rawAvatar = (string) (optional($user)->avatar ?? 'Felix');
+                        $rawAvatar = (string) (optional($user)->avatar ?? 'ododo');
                         
                         if (strpos($rawAvatar, '.') === false) {
                             $avatarStyle = 'miniavs'; 
@@ -208,8 +208,7 @@
                     $isMe = optional($rank->user)->id == auth()->id();
                     $status = optional($rank->user)->rank_status ?? ['title' => 'Apprentice']; 
 
-                    // FIX: SINKRONISASI AVATAR UNTUK LIST PERINGKAT (ANTI ERROR SERVER VERCEL & PHP 7.x)
-                    $rawAvatarList = (string) (optional($rank->user)->avatar ?? 'Felix');
+                    $rawAvatarList = (string) (optional($rank->user)->avatar ?? 'ododo');
                     
                     if (strpos($rawAvatarList, '.') === false) {
                         $avatarStyleList = 'miniavs'; 
