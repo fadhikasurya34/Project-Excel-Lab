@@ -87,7 +87,7 @@ class User extends Authenticatable
         if ($pos <= 10) return ['title' => 'Elite Scholar', 'medal' => 'rank 6-10.png', 'color' => 'blue'];
         if ($pos <= 20) return ['title' => 'Rising Star', 'medal' => 'rank 11-20.png', 'color' => 'purple'];
 
-        return ['title' => 'Active Learner', 'medal' => 'Apprentice.png', 'color' => 'slate'];
+        return ['title' => 'Active Learner', 'medal' => 'apprentice.png', 'color' => 'slate'];
     }
 
     /** (Logic) Bootstrapping model: Menetapkan role 'siswa' secara default saat registrasi */

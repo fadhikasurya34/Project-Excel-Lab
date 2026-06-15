@@ -55,10 +55,9 @@
         .font-game { font-family: 'Bangers', cursive; }
     </style>
 
-@php
+    @php
         $user = Auth::user();
         $userColor = $user->profile_color ?? '3b82f6';
-        $rankStatus = $user->rank_status;
         
         //* (Optimization) Hitung peringkat langsung dari database (Support Tie-Breaker)
         if ($user->total_xp > 0) {
@@ -74,7 +73,11 @@
             $globalRank = '#' . $calculatedRank;
         } else {
             $globalRank = 'UNRANKED';
+            $calculatedRank = 999; // Fallback jika tidak punya rank
         }
+
+        // AMBIL STATUS PANGKAT LANGSUNG DARI MODEL (Akurat 100%)
+        $rankStatus = $user->rank_status;
 
         $todayTicket = \App\Models\RetryTicket::where('user_id', $user->id)->where('date', now()->toDateString())->first();
         $remainingTickets = 3 - ($todayTicket ? $todayTicket->used_count : 0);
@@ -82,7 +85,7 @@
         $firstClass = $userClasses->first();
 
         // *---------------------------------------------------*
-        // * LOGIKA SINKRONISASI AVATAR DINAMIS
+        // * LOGIKA SINKRONISASI AVATAR DINAMIS (ANTI 500 ERROR)
         // *---------------------------------------------------*
         $rawAvatar = (string) ($user->avatar ?? 'ododo');
         
