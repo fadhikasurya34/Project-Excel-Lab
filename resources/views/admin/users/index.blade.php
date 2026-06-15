@@ -114,9 +114,17 @@
                     let valB = b[this.sortBy];
 
                     if (this.sortBy === 'name') {
-                        return valA.localeCompare(valB) * modifier;
+                        let diffStr = valA.localeCompare(valB) * modifier;
+                        if (diffStr === 0) return a.id - b.id; // Tie-breaker jika nama sama
+                        return diffStr;
                     }
-                    return (valA - valB) * modifier;
+                    
+                    let diffNum = (valA - valB) * modifier;
+                    
+                    if (diffNum === 0) {
+                        return a.id - b.id; // Jika XP sama, urutkan berdasarkan ID terkecil
+                    }
+                    return diffNum;
                 });
             }
          }">

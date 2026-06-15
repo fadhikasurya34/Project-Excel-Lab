@@ -89,7 +89,12 @@
                 let filtered = this.users.filter(u => u.name.toLowerCase().includes(this.search.toLowerCase()));
                 return filtered.sort((a, b) => {
                     let mod = this.sortOrder === 'asc' ? 1 : -1;
-                    return (a[this.sortBy] - b[this.sortBy]) * mod;
+                    let diff = (a[this.sortBy] - b[this.sortBy]) * mod;
+                    
+                    if (diff === 0) {
+                        return a.id - b.id; // Jika XP sama, urutkan berdasarkan ID terkecil
+                    }
+                    return diff;
                 });
             },
             viewTaskProgress(task) {

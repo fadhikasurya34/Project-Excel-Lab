@@ -14,9 +14,13 @@ class AdminUserController extends Controller
     /** (View) Menampilkan daftar siswa beserta peringkat dan kelasnya. */
     public function index()
     {
+        // Sorting berdasarkan total_xp (dari relasi ranking) lalu ID untuk pemecah seri
         $students = User::where('role', '!=', 'admin')
             ->with(['ranking', 'classrooms'])
-            ->latest()
+            ->leftJoin('scores_and_rankings', 'users.id', '=', 'scores_and_rankings.user_id')
+            ->select('users.*')
+            ->orderByRaw('COALESCE(scores_and_rankings.total_xp, 0) DESC')
+            ->orderBy('users.id', 'asc')
             ->get();
 
         return view('admin.users.index', compact('students'));

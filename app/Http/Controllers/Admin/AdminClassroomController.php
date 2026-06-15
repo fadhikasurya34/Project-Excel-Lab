@@ -42,7 +42,14 @@ class AdminClassroomController extends Controller
     public function show(string $id)
     {
         try {
+            // Urutkan user berdasarkan total_xp dan ID (Tie-breaker)
             $classroom = Classroom::with([
+                'users' => function($query) {
+                    $query->leftJoin('scores_and_rankings', 'users.id', '=', 'scores_and_rankings.user_id')
+                          ->select('users.*')
+                          ->orderByRaw('COALESCE(scores_and_rankings.total_xp, 0) DESC')
+                          ->orderBy('users.id', 'asc');
+                },
                 'users.ranking',        
                 'users.progress',     
                 'users.completedMaterials', 
