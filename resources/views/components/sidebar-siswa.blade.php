@@ -55,15 +55,22 @@
         .font-game { font-family: 'Bangers', cursive; }
     </style>
 
-    @php
+@php
         $user = Auth::user();
         $userColor = $user->profile_color ?? '3b82f6';
         $rankStatus = $user->rank_status;
         
-        //* (Optimization) Hitung peringkat langsung dari database tanpa get() semua user
-        // Jika XP 0, status menjadi Unranked agar konsisten dengan Leaderboard
+        //* (Optimization) Hitung peringkat langsung dari database (Support Tie-Breaker)
         if ($user->total_xp > 0) {
-            $calculatedRank = \App\Models\ScoresAndRanking::where('total_xp', '>', $user->total_xp)->count() + 1;
+            // 1. Hitung yang XP-nya murni lebih besar
+            $higherXpCount = \App\Models\ScoresAndRanking::where('total_xp', '>', $user->total_xp)->count();
+            
+            // 2. Hitung yang XP-nya sama, TAPI ID-nya lebih kecil (mendaftar lebih dulu)
+            $sameXpOlderIdCount = \App\Models\ScoresAndRanking::where('total_xp', '=', $user->total_xp)
+                                    ->where('id', '<', optional($user->ranking)->id ?? 0)
+                                    ->count();
+                                    
+            $calculatedRank = $higherXpCount + $sameXpOlderIdCount + 1;
             $globalRank = '#' . $calculatedRank;
         } else {
             $globalRank = 'UNRANKED';
@@ -77,22 +84,19 @@
         // *---------------------------------------------------*
         // * LOGIKA SINKRONISASI AVATAR DINAMIS
         // *---------------------------------------------------*
-        $rawAvatar = $user->avatar ?? 'miniavs.?seed=Felix'; 
-        $avatarParts = explode('.', $rawAvatar);
+        $rawAvatar = (string) ($user->avatar ?? 'ododo');
         
-        if (count($avatarParts) > 1) {
-            // Format baru: "miniavs.?seed=xxxx"
-            $avatarStyle = $avatarParts[0];
-            $avatarParams = $avatarParts[1];
+        if (strpos($rawAvatar, '.') === false) {
+            $avatarStyle = 'miniavs'; 
+            $avatarParams = '?seed=' . urlencode($rawAvatar);
         } else {
-            // Format lawas: "Felix"
-            $avatarStyle = 'miniavs';
-            $avatarParams = $avatarParts[0];
-        }
-
-        // Pastikan parameter diawali dengan '?seed=' jika belum ada
-        if (!str_starts_with($avatarParams, '?')) {
-            $avatarParams = '?seed=' . $avatarParams;
+            $avatarParts = explode('.', $rawAvatar);
+            $avatarStyle = $avatarParts[0];
+            $avatarParams = $avatarParts[1] ?? '';
+            
+            if (strpos($avatarParams, '?') !== 0) {
+                $avatarParams = '?seed=' . $avatarParams;
+            }
         }
     @endphp
 

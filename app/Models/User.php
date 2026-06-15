@@ -62,7 +62,9 @@ class User extends Authenticatable
      */
     public function getRankStatusAttribute()
     {
-        $rankPosition = \App\Models\ScoresAndRanking::orderBy('total_xp', 'desc')
+        $rankPosition = \App\Models\ScoresAndRanking::where('total_xp', '>', 0)
+            ->orderBy('total_xp', 'desc')
+            ->orderBy('id', 'asc')
             ->pluck('user_id')
             ->toArray();
 
@@ -71,7 +73,7 @@ class User extends Authenticatable
         if ($myPos === false || $this->total_xp <= 0) {
             return [
                 'title' => 'Excel Apprentice', 
-                'medal' => 'newbie.png',
+                'medal' => 'Apprentice.png',
                 'color' => 'slate'
             ];
         }

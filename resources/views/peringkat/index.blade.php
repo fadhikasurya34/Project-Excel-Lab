@@ -149,7 +149,6 @@
                         $isMe = optional($user)->id == auth()->id();
                         $gridClass = ($item['rank'] == 1) ? 'col-span-2 md:col-span-1 order-1 md:order-2' : (($item['rank'] == 2) ? 'col-span-1 order-2 md:order-1' : 'col-span-1 order-3 md:order-3');
                         
-                        // FIX: SINKRONISASI AVATAR (ANTI ERROR SERVER VERCEL & PHP 7.x)
                         $rawAvatar = (string) (optional($user)->avatar ?? 'ododo');
                         
                         if (strpos($rawAvatar, '.') === false) {
@@ -176,8 +175,8 @@
                                 <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full object-cover scale-110">
                             </div>
 
-                            <div class="absolute -bottom-3 -left-4 md:-bottom-5 md:-left-6 z-40 transition-transform hover:scale-125 duration-300 drop-shadow-[0_10px_15px_rgba(0,0,0,0.4)]">
-                                <img src="{{ asset('images/' . ($status['medal'] ?? 'Apprentice.png')) }}" 
+                                <div class="absolute -bottom-3 -left-4 md:-bottom-5 md:-left-6 z-40 transition-transform hover:scale-125 duration-300 drop-shadow-[0_10px_15px_rgba(0,0,0,0.4)]">
+                                <img src="{{ asset('images/rank ' . $item['rank'] . '.png') }}" 
                                     class="h-14 w-auto md:h-24 object-contain">
                             </div>
                         </div>

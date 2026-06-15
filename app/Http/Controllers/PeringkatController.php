@@ -11,10 +11,10 @@ class PeringkatController extends Controller
     /** (View) Menampilkan halaman utama papan peringkat (Global) */
     public function index()
     {
-        // FIX: Hanya ambil yang punya XP > 0 dan batasi Top 50 saja
         $rankings = ScoresAndRanking::with('user')
             ->where('total_xp', '>', 0)
             ->orderBy('total_xp', 'desc')
+            ->orderBy('id', 'asc') 
             ->take(50)
             ->get();
 
@@ -27,7 +27,8 @@ class PeringkatController extends Controller
         // 1. Logika: Menggunakan Eager Loading 'user' dengan filter XP > 0
         $query = ScoresAndRanking::with('user')
             ->where('total_xp', '>', 0)
-            ->orderBy('total_xp', 'desc');
+            ->orderBy('total_xp', 'desc')
+            ->orderBy('id', 'asc'); 
 
         // 2. Filter: Logika khusus untuk membatasi peringkat hanya di dalam satu kelas
         if ($type === 'kelas') {
