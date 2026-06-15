@@ -105,14 +105,20 @@
                 <div class="lg:col-span-1 space-y-6">
                     <div class="admin-card p-6 sm:p-8 flex flex-col items-center">
                         @php
-                            $rawAvatar = $student->avatar ?? 'miniavs.?seed=Felix';
-                            $avatarParts = explode('.', $rawAvatar);
+                            // LOGIKA SINKRONISASI AVATAR DINAMIS (SUPPORT DATA LAMA)
+                            $rawAvatar = $student->avatar ?? 'ododo';
                             
-                            $avatarStyle = $avatarParts[0] ?? 'miniavs';
-                            $avatarParams = $avatarParts[1] ?? '?seed=Felix';
-                            
-                            if (!str_starts_with($avatarParams, '?')) {
-                                $avatarParams = '?seed=' . $avatarParams;
+                            if (!str_contains($rawAvatar, '.')) {
+                                $avatarStyle = 'miniavs'; // Data lama otomatis dipaksa pakai miniavs
+                                $avatarParams = '?seed=' . $rawAvatar;
+                            } else {
+                                $avatarParts = explode('.', $rawAvatar);
+                                $avatarStyle = $avatarParts[0];
+                                $avatarParams = $avatarParts[1] ?? '';
+                                
+                                if (!str_starts_with($avatarParams, '?')) {
+                                    $avatarParams = '?seed=' . $avatarParams;
+                                }
                             }
                         @endphp
                         <div class="w-24 h-24 rounded-[2rem] border-4 border-slate-50 shadow-md overflow-hidden mb-6" style="background-color: #{{ $student->profile_color ?? 'f97316' }}">
@@ -120,7 +126,6 @@
                         </div>
                         <h2 class="text-xl font-black text-slate-800 text-center leading-tight capitalize">{{ $student->name }}</h2>
                         <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wider mt-2 mb-8 truncate w-full text-center">{{ $student->email }}</p>
-
                         @php
                             $usedTickets = \App\Models\RetryTicket::where('user_id', $student->id)->where('date', now()->toDateString())->value('used_count') ?? 0;
                             $remainingTickets = max(0, 3 - $usedTickets);

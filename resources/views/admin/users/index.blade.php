@@ -72,17 +72,22 @@
             selectedRow: null,
             users: {{ $students->map(function($user) {
                 // LOGIKA SINKRONISASI AVATAR DINAMIS
-                $rawAvatar = $user->avatar ?? 'miniavs.?seed=Felix'; 
-                $avatarParts = explode('.', $rawAvatar);
+                $rawAvatar = $user->avatar ?? 'ododo'; 
                 
-                $avatarStyle = $avatarParts[0] ?? 'miniavs';
-                $avatarParams = $avatarParts[1] ?? '?seed=Felix';
-                
-                if (!str_starts_with($avatarParams, '?')) {
-                    $avatarParams = '?seed=' . $avatarParams;
+                if (!str_contains($rawAvatar, '.')) {
+                    $avatarStyle = 'miniavs'; 
+                    $avatarParams = '?seed=' . $rawAvatar;
+                } else {
+                    $avatarParts = explode('.', $rawAvatar);
+                    $avatarStyle = $avatarParts[0];
+                    $avatarParams = $avatarParts[1] ?? '';
+                    
+                    if (!str_starts_with($avatarParams, '?')) {
+                        $avatarParams = '?seed=' . $avatarParams;
+                    }
                 }
+                
                 $finalAvatarUrl = 'https://api.dicebear.com/9.x/' . $avatarStyle . '/svg' . $avatarParams . '&backgroundColor=transparent';
-
                 return [
                     'id' => $user->id,
                     'name' => (string) $user->name,

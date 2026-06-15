@@ -206,19 +206,25 @@
         </div>
 
         <div class="flex flex-col gap-2 mb-20">
-            @foreach($sortedUsers as $index => $siswa)
+                @foreach($sortedUsers as $index => $siswa)
                 @php 
                     $rank = $index + 1;
                     $isMe = $siswa->id == auth()->id();
                     
-                    // SINKRONISASI AVATAR DINAMIS
-                    $rawAvatar = $siswa->avatar ?? 'miniavs.?seed=Felix';
-                    $avatarParts = explode('.', $rawAvatar);
-                    $avatarStyle = $avatarParts[0] ?? 'miniavs';
-                    $avatarParams = $avatarParts[1] ?? '?seed=Felix';
+                    // SINKRONISASI AVATAR DINAMIS (SUPPORT DATA LAMA)
+                    $rawAvatar = $siswa->avatar ?? 'ododo';
                     
-                    if (!str_starts_with($avatarParams, '?')) {
-                        $avatarParams = '?seed=' . $avatarParams;
+                    if (!str_contains($rawAvatar, '.')) {
+                        $avatarStyle = 'miniavs'; // Data lama otomatis dipaksa pakai miniavs
+                        $avatarParams = '?seed=' . $rawAvatar;
+                    } else {
+                        $avatarParts = explode('.', $rawAvatar);
+                        $avatarStyle = $avatarParts[0];
+                        $avatarParams = $avatarParts[1] ?? '';
+                        
+                        if (!str_starts_with($avatarParams, '?')) {
+                            $avatarParams = '?seed=' . $avatarParams;
+                        }
                     }
                 @endphp
                 

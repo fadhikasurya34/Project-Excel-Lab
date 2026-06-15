@@ -151,7 +151,7 @@
                         
                         $rawAvatar = $user->avatar ?? 'ododo';
                         if (!str_contains($rawAvatar, '.')) {
-                            $avatarStyle = 'miniavs'; // Data lama otomatis dipaksa pakai miniavs
+                            $avatarStyle = 'miniavs';
                             $avatarParams = '?seed=' . $rawAvatar;
                         } else {
                             $avatarParts = explode('.', $rawAvatar);
@@ -206,13 +206,17 @@
                     $isMe = $rank->user->id == auth()->id();
                     $status = $rank->user->rank_status; 
 
-                    // FIX SINKRONISASI AVATAR UNTUK LIST PERINGKAT
-                    $rawAvatarList = $rank->user->avatar ?? 'miniavs.?seed=Felix';
-                    $avatarPartsList = explode('.', $rawAvatarList);
-                    $avatarStyleList = $avatarPartsList[0] ?? 'miniavs';
-                    $avatarParamsList = $avatarPartsList[1] ?? '?seed=Felix';
-                    if (!str_starts_with($avatarParamsList, '?')) {
-                        $avatarParamsList = '?seed=' . $avatarParamsList;
+                    $rawAvatarList = $rank->user->avatar ?? 'Caleb';
+                    if (!str_contains($rawAvatarList, '.')) {
+                        $avatarStyleList = 'miniavs'; 
+                        $avatarParamsList = '?seed=' . $rawAvatarList;
+                    } else {
+                        $avatarPartsList = explode('.', $rawAvatarList);
+                        $avatarStyleList = $avatarPartsList[0];
+                        $avatarParamsList = $avatarPartsList[1] ?? '';
+                        if (!str_starts_with($avatarParamsList, '?')) {
+                            $avatarParamsList = '?seed=' . $avatarParamsList;
+                        }vatarParamsList = '?seed=' . $avatarParamsList;
                     }
                 @endphp
                 <div class="list-item-rank glass-card-gamified {{ $isMe ? 'ring-2 ring-purple-500 border-transparent' : '' }} p-2 md:p-2.5 flex items-center justify-between group shadow-sm cursor-pointer select-none">
