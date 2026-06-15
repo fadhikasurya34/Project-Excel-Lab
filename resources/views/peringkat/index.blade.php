@@ -145,19 +145,21 @@
                 @if($item['data'])
                     @php 
                         $user = $item['data']->user;
-                        $status = $user->rank_status; 
-                        $isMe = $user->id == auth()->id();
+                        $status = optional($user)->rank_status ?? ['title' => 'Apprentice', 'medal' => 'Apprentice.png', 'color' => 'slate']; 
+                        $isMe = optional($user)->id == auth()->id();
                         $gridClass = ($item['rank'] == 1) ? 'col-span-2 md:col-span-1 order-1 md:order-2' : (($item['rank'] == 2) ? 'col-span-1 order-2 md:order-1' : 'col-span-1 order-3 md:order-3');
                         
-                        $rawAvatar = $user->avatar ?? 'ododo';
-                        if (!str_contains($rawAvatar, '.')) {
-                            $avatarStyle = 'miniavs';
-                            $avatarParams = '?seed=' . $rawAvatar;
+                        // FIX: SINKRONISASI AVATAR (ANTI ERROR SERVER VERCEL & PHP 7.x)
+                        $rawAvatar = (string) (optional($user)->avatar ?? 'Felix');
+                        
+                        if (strpos($rawAvatar, '.') === false) {
+                            $avatarStyle = 'miniavs'; 
+                            $avatarParams = '?seed=' . urlencode($rawAvatar);
                         } else {
                             $avatarParts = explode('.', $rawAvatar);
                             $avatarStyle = $avatarParts[0];
                             $avatarParams = $avatarParts[1] ?? '';
-                            if (!str_starts_with($avatarParams, '?')) {
+                            if (strpos($avatarParams, '?') !== 0) {
                                 $avatarParams = '?seed=' . $avatarParams;
                             }
                         }
@@ -182,7 +184,7 @@
 
                         <div class="relative z-30 w-full px-1">
                             <h3 class="text-slate-900 dark:text-white font-black text-xs md:text-lg leading-none truncate capitalize">
-                                {{ $user->name }}
+                                {{ optional($user)->name ?? 'Anonim' }}
                             </h3>
                             <p class="text-[7px] md:text-[9px] font-extrabold text-{{ $status['color'] ?? 'slate' }}-500 dark:text-{{ $status['color'] ?? 'slate' }}-400 uppercase tracking-[0.2em] mt-1.5 opacity-80">
                                 {{ $status['title'] ?? 'Excel Apprentice' }}
@@ -203,20 +205,22 @@
             @foreach($rankings->skip(3) as $rank)
                 @php 
                     $realRank = $loop->iteration + 3; 
-                    $isMe = $rank->user->id == auth()->id();
-                    $status = $rank->user->rank_status; 
+                    $isMe = optional($rank->user)->id == auth()->id();
+                    $status = optional($rank->user)->rank_status ?? ['title' => 'Apprentice']; 
 
-                    $rawAvatarList = $rank->user->avatar ?? 'Caleb';
-                    if (!str_contains($rawAvatarList, '.')) {
+                    // FIX: SINKRONISASI AVATAR UNTUK LIST PERINGKAT (ANTI ERROR SERVER VERCEL & PHP 7.x)
+                    $rawAvatarList = (string) (optional($rank->user)->avatar ?? 'Felix');
+                    
+                    if (strpos($rawAvatarList, '.') === false) {
                         $avatarStyleList = 'miniavs'; 
-                        $avatarParamsList = '?seed=' . $rawAvatarList;
+                        $avatarParamsList = '?seed=' . urlencode($rawAvatarList);
                     } else {
                         $avatarPartsList = explode('.', $rawAvatarList);
                         $avatarStyleList = $avatarPartsList[0];
                         $avatarParamsList = $avatarPartsList[1] ?? '';
-                        if (!str_starts_with($avatarParamsList, '?')) {
+                        if (strpos($avatarParamsList, '?') !== 0) {
                             $avatarParamsList = '?seed=' . $avatarParamsList;
-                        }vatarParamsList = '?seed=' . $avatarParamsList;
+                        }
                     }
                 @endphp
                 <div class="list-item-rank glass-card-gamified {{ $isMe ? 'ring-2 ring-purple-500 border-transparent' : '' }} p-2 md:p-2.5 flex items-center justify-between group shadow-sm cursor-pointer select-none">
@@ -228,14 +232,13 @@
                             {{ $realRank }}
                         </div>
 
-                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-[2.2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm shrink-0" style="background-color: #{{ $rank->user->profile_color ?? '3b82f6' }};">
-                            {{-- PEMANGGILAN AVATAR HASIL SINKRONISASI --}}
+                        <div class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-[2.2rem] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm shrink-0" style="background-color: #{{ optional($rank->user)->profile_color ?? '3b82f6' }};">
                             <img src="https://api.dicebear.com/9.x/{{ $avatarStyleList }}/svg{{ $avatarParamsList }}&backgroundColor=transparent" class="w-full h-full object-cover scale-110">
                         </div>
 
                         <div class="min-w-0 pr-2">
                             <h4 class="text-[10px] md:text-sm font-bold text-slate-800 dark:text-white capitalize truncate max-w-[200px] sm:max-w-[300px] md:max-w-none flex items-center">
-                                {{ $rank->user->name }}
+                                {{ optional($rank->user)->name ?? 'Anonim' }}
                                 @if($isMe) <span class="ml-1.5 px-1.5 py-0.5 bg-purple-600 text-white text-[6px] rounded-md uppercase font-black tracking-widest shrink-0">Kamu</span> @endif
                             </h4>
                             <p class="text-[7px] md:text-[8px] font-black text-slate-400 uppercase tracking-tighter truncate">{{ $status['title'] }}</p>
