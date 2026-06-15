@@ -149,13 +149,17 @@
                         $isMe = $user->id == auth()->id();
                         $gridClass = ($item['rank'] == 1) ? 'col-span-2 md:col-span-1 order-1 md:order-2' : (($item['rank'] == 2) ? 'col-span-1 order-2 md:order-1' : 'col-span-1 order-3 md:order-3');
                         
-                        // FIX SINKRONISASI AVATAR UNTUK PODIUM 3 BESAR
-                        $rawAvatar = $user->avatar ?? 'miniavs.?seed=Felix';
-                        $avatarParts = explode('.', $rawAvatar);
-                        $avatarStyle = $avatarParts[0] ?? 'miniavs';
-                        $avatarParams = $avatarParts[1] ?? '?seed=Felix';
-                        if (!str_starts_with($avatarParams, '?')) {
-                            $avatarParams = '?seed=' . $avatarParams;
+                        $rawAvatar = $user->avatar ?? 'ododo';
+                        if (!str_contains($rawAvatar, '.')) {
+                            $avatarStyle = 'miniavs'; // Data lama otomatis dipaksa pakai miniavs
+                            $avatarParams = '?seed=' . $rawAvatar;
+                        } else {
+                            $avatarParts = explode('.', $rawAvatar);
+                            $avatarStyle = $avatarParts[0];
+                            $avatarParams = $avatarParts[1] ?? '';
+                            if (!str_starts_with($avatarParams, '?')) {
+                                $avatarParams = '?seed=' . $avatarParams;
+                            }
                         }
                     @endphp
 
