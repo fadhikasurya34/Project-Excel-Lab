@@ -121,7 +121,7 @@
                                 }
                             }
                         @endphp
-                        <div class="w-24 h-24 rounded-[2rem] border-4 border-slate-50 shadow-md overflow-hidden mb-6" style="background-color: #{{ $student->profile_color ?? 'f97316' }}">
+                        <div class="w-24 h-24 rounded-[2rem] border-4 border-slate-50 shadow-md overflow-hidden mb-6" style="background-color: #{{ $student->profile_color ?? '3b82f6' }}">
                             <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full pt-0.5 scale-110">
                         </div>
                         <h2 class="text-xl font-black text-slate-800 text-center leading-tight capitalize">{{ $student->name }}</h2>

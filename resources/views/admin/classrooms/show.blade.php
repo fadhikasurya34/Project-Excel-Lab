@@ -58,7 +58,7 @@
                     'badge_medal' => (string) ($user->rank_status['medal'] ?? '-'),
                     'badge_title' => (string) ($user->rank_status['title'] ?? 'Newbie'),
                     'avatar' => $finalAvatarUrl,
-                    'profile_color' => (string) ($user->profile_color ?? 'a855f7'),
+                    'profile_color' => (string) ($user->profile_color ?? '3b82f6'),
                     'scores' => $user->progress->pluck('score', 'mission_id')->toArray() 
                 ];
             })->toJson() }},

@@ -359,12 +359,18 @@
 
             @php
                 // Pre-process Avatar Data untuk User Aktif (Auth) di Form Komentar
-                $rawAuthAvatar = Auth::user()->avatar ?? 'miniavs.?seed=Felix';
-                $authAvParts = explode('.', $rawAuthAvatar);
-                $authAvStyle = $authAvParts[0] ?? 'miniavs';
-                $authAvParams = $authAvParts[1] ?? '?seed=Felix';
-                if (!str_starts_with($authAvParams, '?')) {
-                    $authAvParams = '?seed=' . $authAvParams;
+                $rawAuthAvatar = (string) (Auth::user()->avatar ?? 'ododo');
+                
+                if (strpos($rawAuthAvatar, '.') === false) {
+                    $authAvStyle = 'miniavs';
+                    $authAvParams = '?seed=' . urlencode($rawAuthAvatar);
+                } else {
+                    $authAvParts = explode('.', $rawAuthAvatar);
+                    $authAvStyle = $authAvParts[0];
+                    $authAvParams = $authAvParts[1] ?? '';
+                    if (strpos($authAvParams, '?') !== 0) {
+                        $authAvParams = '?seed=' . $authAvParams;
+                    }
                 }
             @endphp
 
@@ -374,7 +380,7 @@
                 <div class="mb-10">
                     <form action="{{ route('materi.comment', $material->id) }}" method="POST" class="flex gap-4" onsubmit="submitAjax(event, this, 'Komentar dikirim!')">
                         @csrf
-                        <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm" style="background-color: #{{ Auth::user()->profile_color ?? '10b981' }}">
+                        <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm" style="background-color: #{{ Auth::user()->profile_color ?? '3b82f6' }}">
                             {{-- LOGIKA SINKRONISASI AVATAR DINAMIS --}}
                             <img src="https://api.dicebear.com/9.x/{{ $authAvStyle }}/svg{{ $authAvParams }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 scale-110">
                         </div>
@@ -401,15 +407,21 @@
                             <div class="flex gap-4 group">
                                 @php
                                     // Pre-process Avatar Data untuk Komentator
-                                    $rawCommentAvatar = $comment->user->avatar ?? 'miniavs.?seed=Felix';
-                                    $commentAvParts = explode('.', $rawCommentAvatar);
-                                    $commentAvStyle = $commentAvParts[0] ?? 'miniavs';
-                                    $commentAvParams = $commentAvParts[1] ?? '?seed=Felix';
-                                    if (!str_starts_with($commentAvParams, '?')) {
-                                        $commentAvParams = '?seed=' . $commentAvParams;
+                                    $rawCommentAvatar = (string) ($comment->user->avatar ?? 'ododo');
+                                    
+                                    if (strpos($rawCommentAvatar, '.') === false) {
+                                        $commentAvStyle = 'miniavs';
+                                        $commentAvParams = '?seed=' . urlencode($rawCommentAvatar);
+                                    } else {
+                                        $commentAvParts = explode('.', $rawCommentAvatar);
+                                        $commentAvStyle = $commentAvParts[0];
+                                        $commentAvParams = $commentAvParts[1] ?? '';
+                                        if (strpos($commentAvParams, '?') !== 0) {
+                                            $commentAvParams = '?seed=' . $commentAvParams;
+                                        }
                                     }
                                 @endphp
-                                <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-white dark:border-slate-700 shadow-md flex items-center justify-center z-10 overflow-hidden" style="background-color: #{{ $comment->user->profile_color ?? '10b981' }}">
+                                <div class="shrink-0 w-10 h-10 rounded-xl border-2 border-white dark:border-slate-700 shadow-md flex items-center justify-center z-10 overflow-hidden" style="background-color: #{{ $comment->user->profile_color ?? '3b82f6' }}">
                                     {{-- LOGIKA SINKRONISASI AVATAR DINAMIS --}}
                                     <img src="https://api.dicebear.com/9.x/{{ $commentAvStyle }}/svg{{ $commentAvParams }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 scale-110">
                                 </div>
@@ -470,16 +482,22 @@
                                         @foreach($comment->replies->sortByDesc('created_at') as $reply)
                                             @php
                                                 // Pre-process Avatar Data untuk Pembalas (Replier)
-                                                $rawReplyAvatar = $reply->user->avatar ?? 'miniavs.?seed=Felix';
-                                                $replyAvParts = explode('.', $rawReplyAvatar);
-                                                $replyAvStyle = $replyAvParts[0] ?? 'miniavs';
-                                                $replyAvParams = $replyAvParts[1] ?? '?seed=Felix';
-                                                if (!str_starts_with($replyAvParams, '?')) {
-                                                    $replyAvParams = '?seed=' . $replyAvParams;
+                                                $rawReplyAvatar = (string) ($reply->user->avatar ?? 'ododo');
+                                                
+                                                if (strpos($rawReplyAvatar, '.') === false) {
+                                                    $replyAvStyle = 'miniavs';
+                                                    $replyAvParams = '?seed=' . urlencode($rawReplyAvatar);
+                                                } else {
+                                                    $replyAvParts = explode('.', $rawReplyAvatar);
+                                                    $replyAvStyle = $replyAvParts[0];
+                                                    $replyAvParams = $replyAvParts[1] ?? '';
+                                                    if (strpos($replyAvParams, '?') !== 0) {
+                                                        $replyAvParams = '?seed=' . $replyAvParams;
+                                                    }
                                                 }
                                             @endphp
                                             <div class="flex gap-3 ml-4 relative z-10">
-                                                <div class="shrink-0 w-8 h-8 rounded-xl border-2 border-white dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" style="background-color: #{{ $reply->user->profile_color ?? '10b981' }}">
+                                                <div class="shrink-0 w-8 h-8 rounded-xl border-2 border-white dark:border-slate-700 shadow-sm flex items-center justify-center overflow-hidden" style="background-color: #{{ $reply->user->profile_color ?? '3b82f6' }}">
                                                     {{-- LOGIKA SINKRONISASI AVATAR DINAMIS --}}
                                                     <img src="https://api.dicebear.com/9.x/{{ $replyAvStyle }}/svg{{ $replyAvParams }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 scale-110">
                                                 </div>

@@ -241,7 +241,7 @@
                                 @endif
                             </div>
 
-                            <div class="w-14 h-14 rounded-[1.4rem] border-4 border-white dark:border-slate-800 shadow-md shrink-0 overflow-hidden" style="background-color: #{{ $siswa->profile_color ?? 'a855f7' }};">
+                            <div class="w-14 h-14 rounded-[1.4rem] border-4 border-white dark:border-slate-800 shadow-md shrink-0 overflow-hidden" style="background-color: #{{ $siswa->profile_color ?? '3b82f6' }};">
                                 <img src="https://api.dicebear.com/9.x/{{ $avatarStyle }}/svg{{ $avatarParams }}&backgroundColor=transparent" class="w-full h-full object-cover pt-1 scale-110">
                             </div>
 

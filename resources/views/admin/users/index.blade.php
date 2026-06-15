@@ -94,7 +94,7 @@
                     'email' => (string) $user->email,
                     'xp' => (int) $user->total_xp,
                     'avatar' => $finalAvatarUrl,
-                    'profile_color' => (string) ($user->profile_color ?? 'f97316'),
+                    'profile_color' => (string) ($user->profile_color ?? '3b82f6'),
                     'classroom' => (string) ($user->classrooms->first()->name ?? 'Tanpa Squad'),
                     'show_url' => route('admin.users.show', $user->id),
                     'reset_url' => route('admin.users.reset-xp', $user->id),
