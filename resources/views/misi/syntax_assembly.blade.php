@@ -169,6 +169,7 @@
         0% { transform: translateY(0) scale(1); opacity: 1; }
         100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
     }
+    .font-game { font-family: 'Bangers', cursive; }
 </style>
 @endpush
 
@@ -190,7 +191,7 @@
             </div>
         </div>
         
-        <div class="shrink-0 ml-3 md:ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-emerald-600 text-lg md:text-xl font-bold tracking-wider">
+        <div class="shrink-0 ml-3 md:ml-4 bg-emerald-50 dark:bg-emerald-950/30 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-emerald-600 text-lg md:text-xl font-game tracking-wider">
             <span id="header-xp-display">{{ $mission->max_score }}</span> XP
         </div>
     </div>
