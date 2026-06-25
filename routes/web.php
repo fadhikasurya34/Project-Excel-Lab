@@ -84,6 +84,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
     
     // Dashboard Statistik
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::view('/tutorial', 'admin.tutorial')->name('tutorial'); // <-- Perhatikan name-nya cukup 'tutorial'
 
     // Manajemen Materi Terpusat
     Route::controller(AdminMateriController::class)->group(function () {

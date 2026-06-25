@@ -628,7 +628,6 @@
                         }
                         this.fireConfetti();
                         
-                        // (Process) Menampilkan modal keberhasilan saat rumus tepat
                         this.triggerFeedbackModal('success', 'Tepat Sekali! 🎉', '+ ' + this.currentPotentialXP + ' XP Berhasil Diraih', data.next_url);
                         
                     } else {
@@ -640,10 +639,9 @@
                             this.sfxSalah.currentTime = 0; this.sfxSalah.play().catch(()=>{}); 
                         }
                         
-                        // (Process) Memicu efek partikel silang saat jawaban salah
                         this.fireCrossParticles(); 
 
-                        // (Process) Menampilkan teks melayang tanda kesalahan
+
                         if(e) this.spawnFloatingText(e, 'Masih salah! 😭', '#ef4444');
                         this.triggerFeedbackModal('error', 'Belum berhasil 😭', 'Ayo coba lagi!');
                         

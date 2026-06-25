@@ -57,7 +57,7 @@
 
                 <a href="{{ route('admin.materials.index') }}" 
                 class="flex items-center px-4 py-3.5 text-[11px] uppercase tracking-[0.1em] font-bold rounded-xl transition-all {{ request()->routeIs('admin.materials.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600' }}">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     Manajemen Materi
                 </a>
 
@@ -87,7 +87,17 @@
                     Profil Admin
                 </a>
 
+                <a href="{{ route('admin.tutorial') }}" 
+                class="flex items-center px-4 py-3.5 text-[11px] uppercase font-bold rounded-xl transition-all {{ request()->routeIs('admin.tutorial') ? 'text-indigo-600 bg-indigo-50' : 'text-slate-500 hover:bg-slate-50' }}">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Panduan Penggunaan
+                </a>
+
                 <form method="POST" action="{{ route('logout') }}" class="mt-4 pb-20">
+                    @csrf
+                <form method="POST" action="{{ route('logout') }}" class="mt-2 pb-20">
                     @csrf
                     <button type="submit" class="w-full flex items-center px-4 py-3.5 text-[11px] uppercase font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all text-left group">
                         <svg class="w-5 h-5 mr-3 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>

@@ -180,10 +180,8 @@ class MisiController extends Controller
             $userId = Auth::id();
             $currentMax = $mission->max_score;
 
-            // 1. Validasi skor agar tidak melebihi Max Score saat ini
             $validatedScore = min($earnedScore, $currentMax);
 
-            // 2. Ambil progres lama untuk perbandingan High Score
             $oldProgress = Progress::where('user_id', $userId)
                 ->where('mission_id', $mission->id)
                 ->first();
@@ -191,7 +189,6 @@ class MisiController extends Controller
             $oldScore = $oldProgress ? $oldProgress->score : 0;
             $finalHighScore = max($oldScore, $validatedScore);
 
-            // 3. Update status pengerjaan
             Progress::updateOrCreate(
                 ['user_id' => $userId, 'mission_id' => $mission->id],
                 [
@@ -200,8 +197,6 @@ class MisiController extends Controller
                     'completion_time' => now()
                 ]
             );
-
-            // 4. Hitung ulang statistik XP dan metrik penyelesaian
             
             $totalXpNow = Progress::where('user_id', $userId)
                 ->where('status', 'completed')
@@ -220,7 +215,6 @@ class MisiController extends Controller
                     });
                 })->count();
 
-            // 5. Simpan ke Tabel Skor & Ranking
             $scoreRecord = ScoresAndRanking::firstOrNew(['user_id' => $userId]);
             $scoreRecord->total_xp = $totalXpNow;
             $scoreRecord->completed_missions_count = $missionsCount;
@@ -265,17 +259,14 @@ class MisiController extends Controller
         $countsCorrect = array_count_values($tokensCorrect);
         $countsUser = array_count_values($tokensUser);
 
-        // 1. PRIORITAS 1: Peringatan Mutlak (Tanda =)
         if (isset($countsCorrect['=']) && !isset($countsUser['='])) {
             return "JANGAN LUPA, RUMUS EXCEL SELALU DIAWALI TANDA SAMA DENGAN (=).";
         }
 
-        // 2. PRIORITAS 2: Cek Keseimbangan Kurung
         if (substr_count($userAnswer, '(') !== substr_count($userAnswer, ')')) {
             return "ADA MASALAH PADA PASANGAN KURUNG. COBA CEK LAGI KESEIMBANGANNYA.";
         }
 
-        // 3. PRIORITAS 3: Peringatan Absolut Fungsi Utama Excel.
         $mainFunctions = ['IF', 'VLOOKUP', 'HLOOKUP', 'SUM', 'AVERAGE', 'MIN', 'MAX', 'AND', 'OR', 'NOT', 'COUNT'];
         foreach ($mainFunctions as $func) {
             if (isset($countsCorrect[$func]) && !isset($countsUser[$func])) {
@@ -283,10 +274,8 @@ class MisiController extends Controller
             }
         }
 
-        // 4. PRIORITAS 4: Deteksi Komponen yang Kurang (Missing)
         foreach ($countsCorrect as $token => $count) {
             if (!isset($countsUser[$token]) || $countsUser[$token] < $count) {
-                // Hint pintar untuk referensi absolut ($)
                 if ($token === '$') {
                     return "ADA REFERENSI SEL YANG HARUS DIKUNCI (ABSOLUT). JANGAN LUPA TANDA DOLLAR ($).";
                 }
@@ -294,7 +283,6 @@ class MisiController extends Controller
             }
         }
 
-        // 5. PRIORITAS 5: Deteksi Komponen yang Tidak Seharusnya (Penyusup)
         foreach ($countsUser as $token => $count) {
             if (!isset($countsCorrect[$token])) {
                 return "ADA KOMPONEN YANG TIDAK SEHARUSNYA BERADA DI RUMUS INI.";
@@ -304,7 +292,6 @@ class MisiController extends Controller
             }
         }
 
-        // 6. PRIORITAS 6: Deteksi Kesalahan Urutan (Sequence Error)
         for ($i = 0; $i < count($tokensCorrect); $i++) {
             if (isset($tokensUser[$i]) && $tokensUser[$i] !== $tokensCorrect[$i]) {
                 if ($i === 0 && $tokensUser[$i] !== '=') {
@@ -314,7 +301,7 @@ class MisiController extends Controller
             }
         }
 
-        // Default Fallback
+
         return "KOMPONEN SUDAH LENGKAP, PERIKSA KEMBALI POSISI DETAILNYA.";
     }
 

@@ -15,6 +15,34 @@
         transform: translateY(4px);
         border-bottom-width: 0px !important;
     }
+
+    /* Style wadah placeholder gambar tutorial siswa */
+    .tutorial-image-container {
+        width: 100%;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 2px dashed #cbd5e1;
+        background-color: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 1.5rem 0;
+        position: relative;
+        padding: 2rem;
+        text-align: center;
+    }
+    .dark .tutorial-image-container {
+        border-color: #334155;
+        background-color: #0f172a;
+    }
+    .tutorial-image-container img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        display: block;
+        border-radius: 0.5rem;
+    }
 </style>
 @endpush
 
@@ -49,34 +77,38 @@
                 Panduan Petualangan Excel
             </h1>
             <p class="text-slate-600 dark:text-slate-400 font-medium max-w-xl mx-auto text-sm leading-relaxed">
-                Bingung harus mulai dari mana? Ikuti alur belajar di bawah ini dan pelajari cara menyelesaikan setiap misi untuk menjadi Grandmaster Excel!
+                Pelajari alur petualangan, pelajari cara menyelesaikan misi, dan pahami sistem penilaian untuk menjadi Grandmaster Excel!
             </p>
         </div>
 
-        {{-- Navigasi Tab --}}
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+        {{-- Navigasi Tab (Diperbarui jadi 3 Tab) --}}
+        <div class="flex flex-col sm:flex-row justify-center gap-3 mb-12">
             <button @click="activeTab = 'belajar'" 
                     :class="activeTab === 'belajar' ? 'bg-emerald-500 text-white shadow-[0_8px_20px_-5px_rgba(16,185,129,0.4)] border-emerald-600 translate-y-1 border-b-2' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 btn-pegas hover:bg-slate-50 dark:hover:bg-slate-700'"
-                    class="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs border-2 transition-all duration-200">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                Peta Alur Belajar
+                    class="flex-1 max-w-[250px] flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] border-2 transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Peta Alur
             </button>
 
-            <button @click="activeTab = 'pengoperasian'" 
-                    :class="activeTab === 'pengoperasian' ? 'bg-blue-500 text-white shadow-[0_8px_20px_-5px_rgba(59,130,246,0.4)] border-blue-600 translate-y-1 border-b-2' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 btn-pegas hover:bg-slate-50 dark:hover:bg-slate-700'"
-                    class="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs border-2 transition-all duration-200">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Cara Pengoperasian
+            <button @click="activeTab = 'mekanisme'" 
+                    :class="activeTab === 'mekanisme' ? 'bg-orange-500 text-white shadow-[0_8px_20px_-5px_rgba(249,115,22,0.4)] border-orange-600 translate-y-1 border-b-2' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 btn-pegas hover:bg-slate-50 dark:hover:bg-slate-700'"
+                    class="flex-1 max-w-[250px] flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] border-2 transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Cara Main & Skor
+            </button>
+
+            <button @click="activeTab = 'faq'" 
+                    :class="activeTab === 'faq' ? 'bg-blue-500 text-white shadow-[0_8px_20px_-5px_rgba(59,130,246,0.4)] border-blue-600 translate-y-1 border-b-2' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 btn-pegas hover:bg-slate-50 dark:hover:bg-slate-700'"
+                    class="flex-1 max-w-[250px] flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] border-2 transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                FAQ & Bantuan
             </button>
         </div>
 
-        {{-- ================================================================= --}}
         {{-- KONTEN TAB 1: ALUR BELAJAR (Gaya Timeline Petualangan)            --}}
-        {{-- ================================================================= --}}
         <div x-show="activeTab === 'belajar'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-cloak>
-            
             <div class="relative wrap overflow-hidden p-4 md:p-8">
-                {{-- Garis putus-putus penghubung alur dengan penyesuaian posisi responsif agar tetap di tengah ikon saat landscape --}}
+                {{-- Garis putus-putus penghubung alur --}}
                 <div class="absolute border-opacity-100 border-l-4 border-dashed border-slate-300 dark:border-slate-700 h-full left-[36px] md:left-[56px]"></div>
 
                 {{-- Step 1: Gabung Kelas --}}
@@ -124,18 +156,8 @@
                         <h3 class="text-sm font-black text-emerald-500 uppercase tracking-widest mb-1">Tahap 3</h3>
                         <h4 class="text-xl font-bold text-slate-800 dark:text-white mb-3">Mulai Misi Eksekusi (Praktikum)</h4>
                         <p class="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-4">
-                            Uji kemampuanmu di menu <strong>Misi</strong>. Kamu akan diberikan antarmuka simulasi Microsoft Excel yang terasa nyata. Ada dua tipe serangan yang harus kamu kuasai:
+                            Uji kemampuanmu di menu <strong>Misi</strong>. Kamu akan diberikan antarmuka simulasi Microsoft Excel yang terasa nyata. Cek tab "Cara Main & Skor" untuk panduan lengkapnya!
                         </p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                <h5 class="text-xs font-black text-slate-800 dark:text-white uppercase mb-1">⌨️ Misi Sintaks</h5>
-                                <p class="text-[11px] text-slate-500">Tantangan mengetik! Kamu harus menuliskan rumus Excel yang tepat (misal: <code>=SUM(A1:A5)</code>) ke dalam kotak dialog yang muncul.</p>
-                            </div>
-                            <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                <h5 class="text-xs font-black text-slate-800 dark:text-white uppercase mb-1">🖱️ Misi Point & Click</h5>
-                                <p class="text-[11px] text-slate-500">Tantangan visual! Kamu harus mencari dan mengklik icon/menu yang benar tepat pada gambar lembar kerja Excel.</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -156,10 +178,120 @@
             </div>
         </div>
 
-        {{-- ================================================================= --}}
-        {{-- KONTEN TAB 2: PENGOPERASIAN (Gaya Accordion FAQ)                  --}}
-        {{-- ================================================================= --}}
-        <div x-show="activeTab === 'pengoperasian'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-cloak>
+        {{-- KONTEN TAB 2: CARA MAIN & SKOR (Mekanisme Tutorial)               --}}
+        <div x-show="activeTab === 'mekanisme'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-cloak class="space-y-8">
+            
+            {{-- Bagian 1: Sintaks --}}
+            <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-sm">
+                <h3 class="text-xl font-black text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                    <span class="text-2xl">⌨️</span> Cara Main: Perakitan Rumus (Syntax)
+                </h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-6">Misi ini menguji ingatanmu terhadap penulisan rumus Excel. Kamu harus menyusun blok kode agar menjadi rumus yang tepat.</p>
+
+                <div class="tutorial-image-container">
+                    <img src="{{ asset('images/TSS_sintaks.png') }}" alt="Misi Sintaks">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 mt-4">TSS_sintaks.png</span>
+                    <span class="text-xs font-bold text-slate-500">Ambil screenshot saat siswa sedang menggeser (drag & drop) blok rumus ke kotak jawaban.</span>
+                </div>
+
+                <ul class="space-y-5 mt-6 text-sm text-slate-600 dark:text-slate-400">
+                    <li class="flex gap-4">
+                        <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">1</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Memasukkan Rumus</div>
+                            <div class="leading-relaxed">Klik kotak komponen di bawah untuk memindahkannya ke Kotak Rakitan di atas.</div>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">2</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Menggeser & Menghapus</div>
+                            <div class="leading-relaxed">Jika susunannya salah, kamu bisa <strong class="text-blue-500">klik tahan lalu geser</strong> blok di Kotak Rakitan untuk menukar posisinya. Klik satu kali pada blok tersebut jika ingin menghapusnya.</div>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">3</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Verifikasi</div>
+                            <div class="leading-relaxed">Setelah yakin rumus tersusun sempurna, tekan tombol hijau <strong class="text-emerald-500">Verifikasi Rakitan</strong>.</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Bagian 2: Point & Click --}}
+            <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-sm">
+                <h3 class="text-xl font-black text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                    <span class="text-2xl">🖱️</span> Cara Main: Point & Click
+                </h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-6">Misi ini melatih kelincahan dan memori ototmu (muscle memory) dalam mengoperasikan menu-menu di Microsoft Excel sungguhan.</p>
+
+                <div class="tutorial-image-container">
+                    <img src="{{ asset('images/TSS_pointclick.png') }}" alt="Misi Point and Click">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 mt-4">TSS_pointclick.png</span>
+                    <span class="text-xs font-bold text-slate-500">Ambil screenshot saat siswa melihat pop-up instruksi/hint mengambang (HUD) di layar Point & Click.</span>
+                </div>
+
+                <ul class="space-y-5 mt-6 text-sm text-slate-600 dark:text-slate-400">
+                    <li class="flex gap-4">
+                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">1</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Baca Perintah</div>
+                            <div class="leading-relaxed">Perhatikan jendela instruksi (HUD) yang mengambang di pojok layar. Kotak ini bisa kamu geser jika menutupi gambar.</div>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">2</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Satu Ketukan Presisi</div>
+                            <div class="leading-relaxed">Cari posisi area/menu di lembar Excel yang diminta instruksi, lalu <strong>klik persis di area tersebut</strong>. Jangan asal klik!</div>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">3</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Gunakan Bantuan</div>
+                            <div class="leading-relaxed">Jika bingung, tekan tombol biru <strong class="text-blue-500">Hint Bantuan</strong> di kotak instruksi untuk melihat petunjuk tambahan.</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Bagian 3: Sistem Skor & Nyawa --}}
+            <div class="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 p-6 md:p-8 rounded-[2rem] shadow-sm">
+                <h3 class="text-xl font-black text-slate-900 dark:text-white mb-2 flex items-center gap-3">
+                    <span class="text-2xl">🏆</span> Sistem Penilaian (XP) & Remedial
+                </h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-6">Berhati-hatilah, karena kesalahanmu akan berakibat pada pengurangan perolehan XP!</p>
+
+                <div class="tutorial-image-container">
+                    <img src="{{ asset('images/TSS_skor.png') }}" alt="Sistem Skor XP">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2 mt-4">TSS_skor.png</span>
+                    <span class="text-xs font-bold text-slate-500">Ambil screenshot saat muncul modal/pop-up keberhasilan atau kegagalan yang memuat tulisan (+ XP) atau (- XP).</span>
+                </div>
+
+                <ul class="space-y-5 mt-6 text-sm text-slate-600 dark:text-slate-400">
+                    <li class="flex gap-4">
+                        <span class="text-xl shrink-0 mt-0.5">⭐</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Sistem Pengurangan XP</div>
+                            <div class="leading-relaxed">Kamu diperbolehkan melakukan kesalahan (salah klik/salah susun) hingga maksimal <strong>3 kali</strong> tanpa hukuman. Jika kesalahan melebihi 3 kali, maka XP potensial yang akan kamu dapatkan akan <strong>dipotong sebesar 5% setiap kali kamu melakukan kesalahan berikutnya</strong>.</div>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="text-xl shrink-0 mt-0.5">🎫</span>
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1.5">Tiket Remedial</div>
+                            <div class="leading-relaxed">Merasa XP yang diraih terlalu kecil akibat banyak salah? Kamu bisa mengulang misi tersebut menggunakan <strong>Tiket Remedial (Warna Kuning)</strong>. Setiap harinya, kamu otomatis dibekali 3 tiket remedial oleh sistem. Manfaatkan dengan bijak!</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        {{-- KONTEN TAB 3: FAQ & BANTUAN (Gaya Accordion)                      --}}
+        <div x-show="activeTab === 'faq'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-cloak>
             
             <div class="space-y-4" x-data="{ activeAccordion: null }">
                 
@@ -179,13 +311,12 @@
                 {{-- Accordion 2 --}}
                 <div class="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-[1.5rem] overflow-hidden transition-all duration-300" :class="activeAccordion === 2 ? 'shadow-lg border-blue-300 dark:border-blue-700' : 'shadow-sm'">
                     <button @click="activeAccordion = activeAccordion === 2 ? null : 2" class="w-full px-6 py-5 flex items-center justify-between focus:outline-none">
-                        <span class="font-bold text-slate-800 dark:text-white text-left">Apa itu sistem Nyawa & Tiket Remedial?</span>
+                        <span class="font-bold text-slate-800 dark:text-white text-left">Apakah saya harus main misi berurutan?</span>
                         <svg class="w-5 h-5 text-slate-400 transform transition-transform duration-300" :class="activeAccordion === 2 ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div x-show="activeAccordion === 2" x-collapse x-cloak>
                         <div class="px-6 pb-6 pt-2 text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium border-t border-slate-100 dark:border-slate-700">
-                            Dalam pengerjaan Misi, kamu diberi <strong>Nyawa (Hati)</strong>. Jika kamu salah menjawab/salah klik, nyawa akan berkurang.<br><br>
-                            Jika nilaimu jelek karena kehabisan nyawa, kamu bisa mengulang Misi menggunakan <strong>Tiket Remedial (Ikon Tiket Kuning)</strong>. Perhatikan jumlah sisa tiketmu di profil!
+                            <strong>Iya!</strong> Misi dikunci secara bertahap. Kamu harus mengumpulkan nilai minimal 75 di Level 1 untuk bisa membuka gembok Level 2. Sistem ini memastikan kamu benar-benar menguasai materi dasar sebelum lanjut ke tantangan yang lebih sulit.
                         </div>
                     </div>
                 </div>
